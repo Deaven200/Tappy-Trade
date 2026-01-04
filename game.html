@@ -863,11 +863,19 @@
 
                     // Calculate offline progress (max 8 hours)
                     if (offlineTime > 1000) {
+                        const beforeHarvested = S.stats?.harvested || 0;
+                        const beforeInv = getInvTotal();
                         update(Math.min(offlineTime, 8 * 3600000));
+                        const harvested = (S.stats?.harvested || 0) - beforeHarvested;
+                        const gained = getInvTotal() - beforeInv;
                         const hours = Math.floor(offlineTime / 3600000);
                         const mins = Math.floor((offlineTime % 3600000) / 60000);
                         if (hours > 0 || mins > 5) {
-                            notif(`⏰ Offline for ${hours}h ${mins}m - resources grew!`);
+                            if (harvested > 0 || gained > 0) {
+                                notif(`⏰ Offline for ${hours}h ${mins}m — workers gathered +${Math.max(0, gained)} items`);
+                            } else {
+                                notif(`⏰ Offline for ${hours}h ${mins}m - resources grew!`);
+                            }
                         }
                     }
 
@@ -901,6 +909,7 @@
 
         function update(dt) {
             const sec = dt / 1000;
+            let invTotal = getInvTotal();
             for (const p of S.plots) {
                 for (const s of p.subs) {
                     const cfg = T[s.t]; if (!cfg) continue;
@@ -908,23 +917,57 @@
                     if (cfg.r) {
                         const rate = cfg.r * (1 + 0.2 * (s.lv - 1)) * (s.boost || 1);
                         s.c = Math.min(cfg.m, s.c + rate * sec);
-                        if (cfg.x) for (const xid in cfg.x) if (Math.random() < cfg.x[xid] * sec) addItem(xid, 1);
+                        if (cfg.x) {
+                            for (const xid in cfg.x) {
+                                if (invTotal >= S.cap) break;
+                                const expected = cfg.x[xid] * sec;
+                                if (expected <= 0) continue;
+                                let count = Math.floor(expected);
+                                if (Math.random() < (expected - count)) count++;
+                                if (count <= 0) continue;
+                                count = Math.min(count, Math.max(0, S.cap - invTotal));
+                                if (count <= 0) continue;
+                                addItem(xid, count);
+                                invTotal += count;
+                            }
+                        }
                     }
                 }
             }
             // Workers
             for (const w of S.workers) {
+                const interval = w.interval || 5;
                 w.timer = (w.timer || 0) + sec;
-                if (w.timer >= w.interval) {
-                    w.timer = 0;
-                    const p = S.plots[w.plot]; if (!p) continue;
-                    const s = p.subs[w.sub]; if (!s) continue;
-                    const cfg = T[s.t]; if (!cfg) continue;
-                    if (cfg.tap && cfg.req) {
-                        if (hasItem(cfg.req, cfg.use)) { remItem(cfg.req, cfg.use); addItem(cfg.o, 1); S.stats.harvested++ }
-                    } else if (s.c >= 1) {
-                        s.c--; addItem(cfg.o, 1); S.stats.harvested++;
-                    }
+                const ticks = Math.floor(w.timer / interval);
+                if (ticks <= 0) continue;
+                w.timer = w.timer - ticks * interval;
+
+                const p = S.plots[w.plot]; if (!p) continue;
+                const s = p.subs[w.sub]; if (!s) continue;
+                const cfg = T[s.t]; if (!cfg) continue;
+
+                let space = Math.max(0, S.cap - invTotal);
+                if (space <= 0) continue;
+
+                if (cfg.tap && cfg.req) {
+                    const have = S.inv[cfg.req] || 0;
+                    const possible = cfg.use > 0 ? Math.floor(have / cfg.use) : 0;
+                    const make = Math.min(ticks, possible, space);
+                    if (make <= 0) continue;
+
+                    remItem(cfg.req, make * cfg.use);
+                    addItem(cfg.o, make);
+                    S.stats.harvested += make;
+                    invTotal += make - make * cfg.use;
+                    if (invTotal < 0) invTotal = 0;
+                } else {
+                    const available = Math.floor(s.c);
+                    const take = Math.min(ticks, available, space);
+                    if (take <= 0) continue;
+                    s.c -= take;
+                    addItem(cfg.o, take);
+                    S.stats.harvested += take;
+                    invTotal += take;
                 }
             }
             updatePrices();
@@ -1670,7 +1713,20 @@
             loadSavedUser(); // Restore logged-in account
             if (load()) {
                 const off = Date.now() - S.lastUpdate;
-                if (off > 1000) update(Math.min(off, 8 * 3600000));
+                if (off > 1000) {
+                    const beforeHarvested = S.stats?.harvested || 0;
+                    const beforeInv = getInvTotal();
+                    update(Math.min(off, 8 * 3600000));
+                    const harvested = (S.stats?.harvested || 0) - beforeHarvested;
+                    const gained = getInvTotal() - beforeInv;
+                    const hours = Math.floor(off / 3600000);
+                    const mins = Math.floor((off % 3600000) / 60000);
+                    if (hours > 0 || mins > 5) {
+                        if (harvested > 0 || gained > 0) {
+                            notif(`⏰ Offline for ${hours}h ${mins}m — workers gathered +${Math.max(0, gained)} items`);
+                        }
+                    }
+                }
                 toast('Welcome back!');
             } else {
                 $('tutorial').style.display = 'flex';
