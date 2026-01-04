@@ -1767,14 +1767,46 @@
         // Background music
         let bgMusic = null;
         function initMusic() {
-            bgMusic = new Audio('music/Little Jam.mp3');
+            // Try common paths so it works in both:
+            // - Vite/hosted builds (served from /music/...)
+            // - opening the HTML file directly (file://... where assets may live under /public)
+            const MUSIC_CANDIDATES = [
+                'music/Little Jam.mp3',
+                './music/Little Jam.mp3',
+                'public/music/Little Jam.mp3',
+                './public/music/Little Jam.mp3',
+            ];
+
+            let musicIdx = 0;
+            bgMusic = new Audio(MUSIC_CANDIDATES[musicIdx]);
             bgMusic.loop = true;
             bgMusic.volume = 0.3;
             bgMusic.muted = !S.sound;
+            bgMusic.preload = 'auto';
+
+            const tryNextSource = () => {
+                musicIdx++;
+                if (musicIdx >= MUSIC_CANDIDATES.length) {
+                    notif('🎵 Music file not found');
+                    return;
+                }
+                bgMusic.src = MUSIC_CANDIDATES[musicIdx];
+                bgMusic.load();
+            };
+
+            bgMusic.addEventListener('error', () => {
+                tryNextSource();
+            });
+
+            const tryPlay = () => {
+                if (!S.sound) return;
+                bgMusic.muted = false;
+                bgMusic.play().catch(() => { });
+            };
 
             // Start on first user interaction
             const startMusic = () => {
-                bgMusic.play().catch(() => { });
+                tryPlay();
                 document.removeEventListener('click', startMusic);
                 document.removeEventListener('touchstart', startMusic);
             };
