@@ -1777,6 +1777,10 @@
  cursor/music-folder-casing-change-3aec
                 '/music/Little Jam.mp3',
 
+ cursor/music-folder-casing-change-3aec
+                '/music/Little Jam.mp3',
+
+ main
  main
                 'music/Little Jam.mp3',
                 './music/Little Jam.mp3',
@@ -1818,22 +1822,34 @@
             const tryPlay = () => {
                 if (!S.sound) return;
                 bgMusic.muted = false;
-                bgMusic.play().catch(() => { });
+                try {
+                    await bgMusic.play();
+                    return true;
+                } catch (e) {
+                    toast(`Music blocked: ${e?.name || 'error'}`, 'err');
+                    return false;
+                }
             };
 
             // Start on first user interaction
             const startMusic = () => {
  cursor/music-folder-casing-change-3aec
+
+ cursor/music-folder-casing-change-3aec
+ main
                 tryPlay().then((started) => {
                     if (started) {
                         document.removeEventListener('click', startMusic);
                         document.removeEventListener('touchstart', startMusic);
                     }
                 });
+ cursor/music-folder-casing-change-3aec
+
 
                 tryPlay();
                 document.removeEventListener('click', startMusic);
                 document.removeEventListener('touchstart', startMusic);
+ main
  main
             };
             window.__ttStartMusic = startMusic;
