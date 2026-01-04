@@ -1776,7 +1776,10 @@
             // - Vite/hosted builds (served from /music/...)
             // - opening the HTML file directly (file://... where assets may live under /public)
             const MUSIC_CANDIDATES = [
+              cursor/music-folder-casing-change-3aec
                 '/music/Little Jam.mp3',
+
+ main
                 'music/Little Jam.mp3',
                 './music/Little Jam.mp3',
                 'public/music/Little Jam.mp3',
@@ -1805,6 +1808,7 @@
                 tryNextSource();
             });
 
+ cursor/music-folder-casing-change-3aec
             const tryPlay = async () => {
                 // If sound is off, don't force-play.
                 if (!S.sound) return false;
@@ -1817,10 +1821,18 @@
                     toast(`Music blocked: ${e?.name || 'error'}`, 'err');
                     return false;
                 }
+
+            const tryPlay = () => {
+                // If sound is off, don't force-play.
+                if (!S.sound) return;
+                bgMusic.muted = false;
+                bgMusic.play().catch(() => { /* autoplay may still be blocked */ });
+ main
             };
 
             // Start on first user interaction
             const startMusic = () => {
+ cursor/music-folder-casing-change-3aec
                 // Only remove the gesture listeners once playback actually starts.
                 tryPlay().then((started) => {
                     if (started) {
@@ -1828,6 +1840,11 @@
                         document.removeEventListener('touchstart', startMusic);
                     }
                 });
+
+                tryPlay();
+                document.removeEventListener('click', startMusic);
+                document.removeEventListener('touchstart', startMusic);
+ main
             };
             // Allow other UI (like sound toggle) to trigger play.
             window.__ttStartMusic = startMusic;
