@@ -1774,10 +1774,7 @@
             // - Vite/hosted builds (served from /music/...)
             // - opening the HTML file directly (file://... where assets may live under /public)
             const MUSIC_CANDIDATES = [
- cursor/music-folder-casing-change-3aec
                 '/music/Little Jam.mp3',
-
- main
                 'music/Little Jam.mp3',
                 './music/Little Jam.mp3',
                 'public/music/Little Jam.mp3',
@@ -1815,26 +1812,16 @@
                     toast(`Music blocked: ${e?.name || 'error'}`, 'err');
                     return false;
                 }
-            const tryPlay = () => {
-                if (!S.sound) return;
-                bgMusic.muted = false;
-                bgMusic.play().catch(() => { });
             };
 
             // Start on first user interaction
             const startMusic = () => {
- cursor/music-folder-casing-change-3aec
                 tryPlay().then((started) => {
                     if (started) {
                         document.removeEventListener('click', startMusic);
                         document.removeEventListener('touchstart', startMusic);
                     }
                 });
-
-                tryPlay();
-                document.removeEventListener('click', startMusic);
-                document.removeEventListener('touchstart', startMusic);
- main
             };
             window.__ttStartMusic = startMusic;
             document.addEventListener('click', startMusic);
