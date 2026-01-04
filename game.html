@@ -1753,6 +1753,9 @@
                 if (bgMusic) {
                     bgMusic.muted = !S.sound;
                 }
+                if (S.sound && window.__ttStartMusic) {
+                    window.__ttStartMusic();
+                }
                 save();
             };
             $('sound-btn').textContent = S.sound ? '🔊 Sound ON' : '🔇 Sound OFF';
@@ -1771,6 +1774,7 @@
             // - Vite/hosted builds (served from /music/...)
             // - opening the HTML file directly (file://... where assets may live under /public)
             const MUSIC_CANDIDATES = [
+                '/music/Little Jam.mp3',
                 'music/Little Jam.mp3',
                 './music/Little Jam.mp3',
                 'public/music/Little Jam.mp3',
@@ -1798,18 +1802,28 @@
                 tryNextSource();
             });
 
-            const tryPlay = () => {
-                if (!S.sound) return;
+            const tryPlay = async () => {
+                if (!S.sound) return false;
                 bgMusic.muted = false;
-                bgMusic.play().catch(() => { });
+                try {
+                    await bgMusic.play();
+                    return true;
+                } catch (e) {
+                    toast(`Music blocked: ${e?.name || 'error'}`, 'err');
+                    return false;
+                }
             };
 
             // Start on first user interaction
             const startMusic = () => {
-                tryPlay();
-                document.removeEventListener('click', startMusic);
-                document.removeEventListener('touchstart', startMusic);
+                tryPlay().then((started) => {
+                    if (started) {
+                        document.removeEventListener('click', startMusic);
+                        document.removeEventListener('touchstart', startMusic);
+                    }
+                });
             };
+            window.__ttStartMusic = startMusic;
             document.addEventListener('click', startMusic);
             document.addEventListener('touchstart', startMusic);
         }
