@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="description" content="Tappy Trade - A mobile idle trading game with player markets">
+  <title>Tappy Trade</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/style.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Stats Bar -->
+    <header class="stats-bar">
+      <div class="stat">
+        <span class="stat-icon">💰</span>
+        <span class="stat-value" id="money-display">$0</span>
+      </div>
+      <div class="stat">
+        <span class="stat-icon">📦</span>
+        <span class="stat-value" id="inventory-display">0/1000</span>
+      </div>
+    </header>
+
+    <!-- Plot Box (3 Sub-plots) -->
+    <section class="plot-box" id="plot-box">
+      <div class="sub-plot" id="sub-plot-0" data-index="0">
+        <div class="sub-plot-icon">🌲</div>
+        <div class="sub-plot-label">Forest</div>
+        <div class="sub-plot-status">Ready</div>
+      </div>
+      <div class="sub-plot" id="sub-plot-1" data-index="1">
+        <div class="sub-plot-icon">🫐</div>
+        <div class="sub-plot-label">Berries</div>
+        <div class="sub-plot-status">Ready</div>
+      </div>
+      <div class="sub-plot" id="sub-plot-2" data-index="2">
+        <div class="sub-plot-icon">🌿</div>
+        <div class="sub-plot-label">Herbs</div>
+        <div class="sub-plot-status">Ready</div>
+      </div>
+    </section>
+
+    <!-- Main Content Area -->
+    <main class="content-area" id="content-area">
+      <!-- Dynamic content loaded here -->
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+      <button class="nav-btn active" id="nav-btn-1" data-screen="home">
+        <span class="nav-num">1</span>
+        <span class="nav-label">Inventory</span>
+      </button>
+      <button class="nav-btn" id="nav-btn-2" data-screen="player-market">
+        <span class="nav-num">2</span>
+        <span class="nav-label">Player Mkt</span>
+      </button>
+      <button class="nav-btn" id="nav-btn-3" data-screen="gov-market">
+        <span class="nav-num">3</span>
+        <span class="nav-label">Gov Mkt</span>
+      </button>
+    </nav>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
