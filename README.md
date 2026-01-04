@@ -13,7 +13,7 @@ A multiplayer idle trading game where you harvest resources, build your empire, 
 
 ## Play Online
 
-Visit: `https://YOUR-USERNAME.github.io/Tappy_Trade/`
+Visit: `https://deaven200.github.io/Tappy-Trade-github/`
 
 ## How to Host (GitHub Pages)
 

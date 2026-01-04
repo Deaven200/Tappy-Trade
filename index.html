@@ -1643,7 +1643,7 @@
                 await db.collection('chat').add({
                     text,
                     userName: loggedInUser.username,
-                    oderId: loggedInUser.id,
+                    userId: loggedInUser.id,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 input.value = '';
