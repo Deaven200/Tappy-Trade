@@ -935,6 +935,9 @@
             { id: 'merchant', n: '💰 Merchant Visit', d: 'Sell prices +50%!', duration: 120000, effect: 'priceBoost', mult: 1.5 },
             { id: 'gold', n: '🎉 Gold Rush', d: 'Found buried treasure!', duration: 0, effect: 'bonus', amount: 500 },
             { id: 'bountiful', n: '🌾 Bountiful Harvest', d: 'All resources ready to harvest!', duration: 0, effect: 'fillAll' },
+            { id: 'drought', n: '🏜️ Drought', d: 'Farms produce 50% less!', duration: 120000, effect: 'farmBoost', mult: 0.5 },
+            { id: 'workerBonus', n: '⚡ Worker Bonus', d: 'Workers work 2x faster!', duration: 180000, effect: 'workerBoost', mult: 2 },
+            { id: 'lucky', n: '🍀 Lucky Find', d: 'Found random resources!', duration: 0, effect: 'randomItems' },
         ];
 
         // Daily Rewards (7-day cycle)
@@ -948,7 +951,7 @@
             { day: 7, reward: 1000, desc: '$1000 🎉' },
         ];
 
-        const S = { money: 0, inv: {}, cap: 100, sound: 1, plots: [{ subs: [{ t: 'forest', c: 5, lv: 1 }, { t: 'berryBush', c: 4, lv: 1 }, { t: 'herbPatch', c: 3, lv: 1 }] }], workers: [], stats: { harvested: 0, sold: 0, earned: 0, built: 0 }, ach: {}, prices: {}, priceDir: {}, tutorial: 0, lastUpdate: Date.now(), activeEvent: null, eventEndsAt: 0, nextEventAt: Date.now() + 300000, lastDailyReward: 0, dailyStreak: 0 };
+        const S = { money: 0, inv: {}, cap: 100, sound: 1, plots: [{ subs: [{ t: 'forest', c: 5, lv: 1 }, { t: 'berryBush', c: 4, lv: 1 }, { t: 'herbPatch', c: 3, lv: 1 }] }], workers: [], stats: { harvested: 0, sold: 0, earned: 0, built: 0 }, ach: {}, prices: {}, priceDir: {}, tutorial: 0, lastUpdate: Date.now(), activeEvent: null, eventEndsAt: 0, nextEventAt: Date.now() + 300000, lastDailyReward: 0, dailyStreak: 0, limitOrders: [] };
         let screen = 'home', buildP = null, buildS = null, tipTimer = null;
         const $ = id => document.getElementById(id);
 
@@ -1050,13 +1053,172 @@
             const rect = element.getBoundingClientRect();
             floatText(text, rect.left + rect.width / 2 - 20, rect.top);
         }
-        function playS(t) { if (!S.sound) return; try { const a = new (window.AudioContext || window.webkitAudioContext)(), o = a.createOscillator(), g = a.createGain(); o.connect(g); g.connect(a.destination); g.gain.value = 0.06; if (t === 'tap') { o.frequency.value = 800; o.start(); g.gain.exponentialRampToValueAtTime(0.01, a.currentTime + 0.06); o.stop(a.currentTime + 0.06) } else if (t === 'sell') { o.frequency.value = 600; o.start(); o.frequency.exponentialRampToValueAtTime(1100, a.currentTime + 0.1); g.gain.exponentialRampToValueAtTime(0.01, a.currentTime + 0.12); o.stop(a.currentTime + 0.12) } else if (t === 'ach') { o.frequency.value = 523; o.start(); setTimeout(() => o.frequency.value = 659, 100); setTimeout(() => o.frequency.value = 784, 200); g.gain.exponentialRampToValueAtTime(0.01, a.currentTime + 0.4); o.stop(a.currentTime + 0.4) } } catch (e) { } }
+        function playS(t) {
+            if (!S.sound) return;
+            vibrate(t); // Haptic feedback
+            try {
+                const a = new (window.AudioContext || window.webkitAudioContext)();
+                const o = a.createOscillator();
+                const g = a.createGain();
+                o.connect(g);
+                g.connect(a.destination);
+                g.gain.value = 0.06;
+
+                if (t === 'tap' || t === 'harvest') {
+                    o.frequency.value = 800;
+                    o.start();
+                    g.gain.exponentialRampToValueAtTime(0.01, a.currentTime + 0.06);
+                    o.stop(a.currentTime + 0.06);
+                } else if (t === 'sell') {
+                    o.frequency.value = 600;
+                    o.start();
+                    o.frequency.exponentialRampToValueAtTime(1100, a.currentTime + 0.1);
+                    g.gain.exponentialRampToValueAtTime(0.01, a.currentTime + 0.12);
+                    o.stop(a.currentTime + 0.12);
+                } else if (t === 'buy') {
+                    o.frequency.value = 400;
+                    o.start();
+                    o.frequency.exponentialRampToValueAtTime(600, a.currentTime + 0.1);
+                    g.gain.exponentialRampToValueAtTime(0.01, a.currentTime + 0.12);
+                    o.stop(a.currentTime + 0.12);
+                } else if (t === 'build' || t === 'upgrade') {
+                    o.frequency.value = 300;
+                    o.start();
+                    o.frequency.exponentialRampToValueAtTime(500, a.currentTime + 0.15);
+                    g.gain.exponentialRampToValueAtTime(0.01, a.currentTime + 0.2);
+                    o.stop(a.currentTime + 0.2);
+                } else if (t === 'ach') {
+                    o.frequency.value = 523;
+                    o.start();
+                    setTimeout(() => o.frequency.value = 659, 100);
+                    setTimeout(() => o.frequency.value = 784, 200);
+                    g.gain.exponentialRampToValueAtTime(0.01, a.currentTime + 0.4);
+                    o.stop(a.currentTime + 0.4);
+                } else if (t === 'err') {
+                    o.frequency.value = 200;
+                    o.start();
+                    g.gain.exponentialRampToValueAtTime(0.01, a.currentTime + 0.1);
+                    o.stop(a.currentTime + 0.1);
+                }
+            } catch (e) { }
+        }
+
+        // Haptic feedback for mobile
+        function vibrate(type) {
+            if (!navigator.vibrate) return;
+            if (type === 'tap' || type === 'harvest') navigator.vibrate(10);
+            else if (type === 'sell' || type === 'buy') navigator.vibrate(20);
+            else if (type === 'build' || type === 'upgrade') navigator.vibrate([10, 30, 20]);
+            else if (type === 'ach') navigator.vibrate([20, 50, 20, 50, 30]);
+            else if (type === 'err') navigator.vibrate([50, 20, 50]);
+        }
         function getInvTotal() { return Object.values(S.inv).reduce((a, b) => a + b, 0) }
         function hasItem(id, n) { return (S.inv[id] || 0) >= n }
         function addItem(id, n) { S.inv[id] = (S.inv[id] || 0) + n }
         function remItem(id, n) { const h = S.inv[id] || 0, r = Math.min(h, n); S.inv[id] = h - r; if (S.inv[id] <= 0) delete S.inv[id]; return r }
         function getPrice(id) { if (!S.prices[id]) S.prices[id] = R[id]?.p || 1; return S.prices[id] }
-        function updatePrices() { for (const id in R) { if (!S.prices[id]) S.prices[id] = R[id].p; if (!S.priceDir[id]) S.priceDir[id] = Math.random() > 0.5 ? 1 : -1; if (Math.random() < 0.1) { S.priceDir[id] *= -1 } S.prices[id] = Math.max(1, Math.min(R[id].p * 2, S.prices[id] + S.priceDir[id] * Math.floor(Math.random() * 2))) } }
+
+        // Prices slowly drift toward base price (not random anymore)
+        function updatePrices() {
+            for (const id in R) {
+                if (!S.prices[id]) S.prices[id] = R[id].p;
+                const basePrice = R[id].p;
+                // Slowly return toward base price (10% per update cycle)
+                if (S.prices[id] > basePrice) {
+                    S.prices[id] = Math.max(basePrice, S.prices[id] - 1);
+                } else if (S.prices[id] < basePrice) {
+                    S.prices[id] = Math.min(basePrice, S.prices[id] + 1);
+                }
+            }
+            // Process limit orders
+            processLimitOrders();
+        }
+
+        // Adjust price based on player trading
+        function adjustPrice(id, type, amount) {
+            if (!S.prices[id]) S.prices[id] = R[id]?.p || 1;
+            const basePrice = R[id]?.p || 1;
+            const impact = Math.ceil(amount / 10); // Every 10 items = 1 price change
+
+            if (type === 'sell') {
+                // Selling lowers price (supply increases)
+                S.prices[id] = Math.max(1, S.prices[id] - impact);
+            } else if (type === 'buy') {
+                // Buying raises price (demand increases)
+                S.prices[id] = Math.min(basePrice * 3, S.prices[id] + impact);
+            }
+        }
+
+        // Limit Order System
+        function createLimitOrder(type, resourceId, qty, targetPrice) {
+            if (!S.limitOrders) S.limitOrders = [];
+            S.limitOrders.push({
+                type, // 'sell' or 'buy'
+                resourceId,
+                qty,
+                targetPrice,
+                createdAt: Date.now()
+            });
+            save();
+            notif(`📈 ${type === 'sell' ? 'Sell' : 'Buy'} order placed: ${qty} ${R[resourceId]?.i} at $${targetPrice}`);
+        }
+
+        function cancelLimitOrder(index) {
+            if (!S.limitOrders) return;
+            S.limitOrders.splice(index, 1);
+            save();
+            toast('Order cancelled', 'ok');
+            render();
+        }
+
+        function processLimitOrders() {
+            if (!S.limitOrders || S.limitOrders.length === 0) return;
+
+            const toRemove = [];
+
+            for (let i = 0; i < S.limitOrders.length; i++) {
+                const order = S.limitOrders[i];
+                const currentPrice = getPrice(order.resourceId);
+
+                if (order.type === 'sell' && currentPrice >= order.targetPrice) {
+                    // Execute sell order
+                    const have = S.inv[order.resourceId] || 0;
+                    const toSell = Math.min(order.qty, have);
+                    if (toSell > 0) {
+                        const earn = toSell * order.targetPrice;
+                        remItem(order.resourceId, toSell);
+                        S.money += earn;
+                        S.stats.sold += toSell;
+                        S.stats.earned += earn;
+                        adjustPrice(order.resourceId, 'sell', toSell);
+                        notif(`📈 Auto-sold ${toSell} ${R[order.resourceId]?.i} for $${earn}!`);
+                        playS('sell');
+                    }
+                    toRemove.push(i);
+                } else if (order.type === 'buy' && currentPrice <= order.targetPrice) {
+                    // Execute buy order - buy from gov at current price + markup
+                    const buyPrice = Math.ceil(currentPrice * 1.2); // 20% markup
+                    const totalCost = order.qty * buyPrice;
+                    const space = S.cap - getInvTotal();
+                    const canBuy = Math.min(order.qty, space, Math.floor(S.money / buyPrice));
+
+                    if (canBuy > 0) {
+                        const cost = canBuy * buyPrice;
+                        S.money -= cost;
+                        addItem(order.resourceId, canBuy);
+                        adjustPrice(order.resourceId, 'buy', canBuy);
+                        notif(`📈 Auto-bought ${canBuy} ${R[order.resourceId]?.i} for $${cost}!`);
+                        playS('sell');
+                    }
+                    toRemove.push(i);
+                }
+            }
+
+            // Remove executed orders (in reverse to maintain indices)
+            for (let i = toRemove.length - 1; i >= 0; i--) {
+                S.limitOrders.splice(toRemove[i], 1);
+            }
+        }
         function canAfford(c) { if (c.m && S.money < c.m) return 0; for (const k in c) if (k !== 'm' && !hasItem(k, c[k])) return 0; return 1 }
         function pay(c) { if (c.m) S.money -= c.m; for (const k in c) if (k !== 'm') remItem(k, c[k]) }
 
@@ -1089,7 +1251,7 @@
             }
             // Workers
             for (const w of S.workers) {
-                const interval = w.interval || 5;
+                const interval = w.interval / getEventMultiplier('worker'); // Worker bonus event makes workers faster
                 w.timer = (w.timer || 0) + sec;
                 const ticks = Math.floor(w.timer / interval);
                 if (ticks <= 0) continue;
@@ -1176,6 +1338,19 @@
                     }
                 }
                 notif(`${event.n} — ${event.d}`);
+            } else if (event.effect === 'randomItems') {
+                // Give random items
+                const space = S.cap - getInvTotal();
+                const amount = Math.min(5, space);
+                if (amount > 0) {
+                    const resourceIds = Object.keys(R);
+                    const randomId = resourceIds[Math.floor(Math.random() * resourceIds.length)];
+                    addItem(randomId, amount);
+                    notif(`${event.n} — +${amount} ${R[randomId]?.i}!`);
+                    floatText(`+${amount} ${R[randomId]?.i}`, window.innerWidth / 2 - 30, 100);
+                } else {
+                    notif(`${event.n} — But inventory is full!`);
+                }
             }
             playS('ach');
         }
@@ -1184,6 +1359,7 @@
             if (!S.activeEvent) return 1;
             if (type === 'farm' && S.activeEvent.effect === 'farmBoost') return S.activeEvent.mult;
             if (type === 'price' && S.activeEvent.effect === 'priceBoost') return S.activeEvent.mult;
+            if (type === 'worker' && S.activeEvent.effect === 'workerBoost') return S.activeEvent.mult;
             return 1;
         }
 
@@ -1333,9 +1509,26 @@
             const price = getPrice(id);
             const earn = Math.floor(removed * price * getEventMultiplier('price'));
             S.money += earn; S.stats.sold += removed; S.stats.earned += earn;
+            adjustPrice(id, 'sell', removed); // Selling lowers price
             playS('sell');
-            // Show floating gold text near the stats bar
             floatText(`+$${earn}`, window.innerWidth / 2 - 30, 60, 'sell');
+            save(); render();
+        }
+
+        function buyFromGov(id, n) {
+            const price = Math.ceil(getPrice(id) * 1.2); // 20% markup to buy
+            const totalCost = n * price;
+            const space = S.cap - getInvTotal();
+
+            if (S.money < totalCost) { toast(`Need $${totalCost}`, 'err'); return; }
+            if (space < n) { toast('Not enough space!', 'err'); return; }
+
+            S.money -= totalCost;
+            addItem(id, n);
+            adjustPrice(id, 'buy', n); // Buying raises price
+            playS('sell');
+            floatText(`-$${totalCost}`, window.innerWidth / 2 - 30, 60, 'sell');
+            toast(`Bought ${n} ${R[id]?.i}`, 'ok');
             save(); render();
         }
 
@@ -1525,6 +1718,43 @@
 
         function closeTutorial() { $('tutorial').style.display = 'none'; S.tutorial = 1; save() }
 
+        function resetGame() {
+            if (!confirm('Are you sure you want to reset ALL progress? This cannot be undone!')) return;
+
+            // Clear local storage
+            localStorage.removeItem('tt4');
+
+            // Reset state to defaults
+            S.money = 0;
+            S.inv = {};
+            S.cap = 100;
+            S.plots = [{ subs: [{ t: 'forest', c: 5, lv: 1 }, { t: 'berryBush', c: 4, lv: 1 }, { t: 'herbPatch', c: 3, lv: 1 }] }];
+            S.workers = [];
+            S.stats = { harvested: 0, sold: 0, earned: 0, built: 0 };
+            S.ach = {};
+            S.prices = {};
+            S.priceDir = {};
+            S.tutorial = 0;
+            S.lastUpdate = Date.now();
+            S.activeEvent = null;
+            S.eventEndsAt = 0;
+            S.nextEventAt = Date.now() + 300000;
+            S.lastDailyReward = 0;
+            S.dailyStreak = 0;
+            S.limitOrders = [];
+
+            // Clear cloud save if logged in
+            if (loggedInUser && db) {
+                db.collection('saves').doc(loggedInUser.id).delete().catch(e => console.log('Cloud delete failed:', e));
+            }
+
+            closeMenu();
+            toast('Game reset!', 'ok');
+            $('tutorial').style.display = 'flex';
+            save();
+            render();
+        }
+
         function render() {
             $('money').textContent = '$' + S.money.toLocaleString();
             $('inv').textContent = getInvTotal();
@@ -1659,24 +1889,128 @@
         }
 
         function renderMarket(m) {
-            let h = `<div class="panel"><h3>🏛️ Government Market</h3><p style="color:var(--muted);font-size:0.75rem;margin-bottom:10px">Prices change over time!</p><div class="list">`;
+            let h = '';
+
+            // Sell Section
+            h += `<div class="panel"><h3>💰 Sell to Gov</h3><div class="list">`;
+            let hasItems = false;
             for (const id in S.inv) {
                 const r = R[id]; if (!r || S.inv[id] <= 0) continue;
+                hasItems = true;
                 const price = getPrice(id);
-                h += `<div class="item" onmouseenter="showTip(event,'${id}')"><span class="ic">${r.i}</span><span class="nm">${r.n}</span><span class="pr">$${price}</span><span class="qt">×${S.inv[id]}</span><button class="btn" onclick="sell('${id}',${S.inv[id]})">Sell</button></div>`;
+                h += `<div class="item" onmouseenter="showTip(event,'${id}')">
+                    <span class="ic">${r.i}</span>
+                    <span class="nm">${r.n}</span>
+                    <span class="pr">$${price}</span>
+                    <span class="qt">×${S.inv[id]}</span>
+                    <button class="btn green" onclick="sell('${id}',${S.inv[id]})">Sell All</button>
+                </div>`;
             }
-            if (Object.keys(S.inv).length === 0) h += `<div class="empty">Nothing to sell</div>`;
+            if (!hasItems) h += `<div class="empty">Nothing to sell</div>`;
             h += `</div></div>`;
-            h += `<div class="panel"><h3>📊 Price List</h3><div class="list">`;
+
+            // Buy Section
+            h += `<div class="panel"><h3>🛒 Buy from Gov</h3>
+                <p style="color:var(--muted);font-size:0.7rem;margin-bottom:8px">20% markup on purchases</p>
+                <div class="list" style="max-height:200px;overflow-y:auto">`;
+            for (const id in R) {
+                const r = R[id];
+                const price = getPrice(id);
+                const buyPrice = Math.ceil(price * 1.2);
+                h += `<div class="item">
+                    <span class="ic">${r.i}</span>
+                    <span class="nm">${r.n}</span>
+                    <span class="pr">$${buyPrice}</span>
+                    <button class="btn" onclick="buyFromGov('${id}',1)">Buy 1</button>
+                    <button class="btn" onclick="buyFromGov('${id}',10)">Buy 10</button>
+                </div>`;
+            }
+            h += `</div></div>`;
+
+            // Limit Orders Section
+            h += `<div class="panel"><h3>📈 Limit Orders</h3>
+                <p style="color:var(--muted);font-size:0.7rem;margin-bottom:8px">Set prices for auto-trading</p>`;
+
+            // Create new order form
+            h += `<div style="background:var(--bg2);padding:10px;border-radius:8px;margin-bottom:10px">
+                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+                    <select id="order-resource" style="flex:1;min-width:80px;padding:6px;border-radius:4px;background:var(--bg);color:var(--text);border:1px solid rgba(255,255,255,0.1)">
+                        ${Object.entries(R).map(([id, r]) => `<option value="${id}">${r.i} ${r.n}</option>`).join('')}
+                    </select>
+                    <select id="order-type" style="width:70px;padding:6px;border-radius:4px;background:var(--bg);color:var(--text);border:1px solid rgba(255,255,255,0.1)">
+                        <option value="sell">Sell</option>
+                        <option value="buy">Buy</option>
+                    </select>
+                </div>
+                <div style="display:flex;gap:6px;margin-bottom:8px">
+                    <input type="number" id="order-qty" placeholder="Qty" value="10" min="1" style="width:60px;padding:6px;border-radius:4px;background:var(--bg);color:var(--text);border:1px solid rgba(255,255,255,0.1)">
+                    <span style="line-height:32px">@</span>
+                    <input type="number" id="order-price" placeholder="Price" value="10" min="1" style="width:60px;padding:6px;border-radius:4px;background:var(--bg);color:var(--text);border:1px solid rgba(255,255,255,0.1)">
+                    <button class="btn green" onclick="submitLimitOrder()" style="flex:1">Create Order</button>
+                </div>
+                <p style="color:var(--muted);font-size:0.65rem">Sell when price ≥ target. Buy when price ≤ target.</p>
+            </div>`;
+
+            // Active orders
+            if (S.limitOrders && S.limitOrders.length > 0) {
+                h += `<div class="list">`;
+                S.limitOrders.forEach((order, i) => {
+                    const r = R[order.resourceId];
+                    const currentPrice = getPrice(order.resourceId);
+                    const willExecute = order.type === 'sell' ? currentPrice >= order.targetPrice : currentPrice <= order.targetPrice;
+                    h += `<div class="item" style="${willExecute ? 'border:1px solid var(--green)' : ''}">
+                        <span class="ic">${r?.i || '?'}</span>
+                        <span class="nm" style="font-size:0.8rem">${order.type.toUpperCase()} ${order.qty}x @ $${order.targetPrice}</span>
+                        <span class="pr" style="font-size:0.7rem">Now: $${currentPrice}</span>
+                        <button class="btn red" onclick="cancelLimitOrder(${i})" style="font-size:0.7rem">✕</button>
+                    </div>`;
+                });
+                h += `</div>`;
+            } else {
+                h += `<div class="empty" style="font-size:0.8rem">No active orders</div>`;
+            }
+            h += `</div>`;
+
+            // Price List
+            h += `<div class="panel"><h3>📊 All Prices</h3><div class="list" style="max-height:150px;overflow-y:auto">`;
             for (const id in R) {
                 const r = R[id];
                 const price = getPrice(id);
                 const base = r.p;
                 const diff = price - base;
-                h += `<div class="item"><span class="ic">${r.i}</span><span class="nm">${r.n}</span><span class="pr" style="color:${diff > 0 ? 'var(--green)' : diff < 0 ? 'var(--red)' : 'var(--muted)'}">$${price} ${diff > 0 ? '↑' : diff < 0 ? '↓' : ''}</span></div>`;
+                h += `<div class="item">
+                    <span class="ic">${r.i}</span>
+                    <span class="nm">${r.n}</span>
+                    <span class="pr" style="color:${diff > 0 ? 'var(--green)' : diff < 0 ? 'var(--red)' : 'var(--muted)'}">$${price} ${diff > 0 ? '↑' : diff < 0 ? '↓' : ''}</span>
+                </div>`;
             }
             h += `</div></div>`;
+
             m.innerHTML = h;
+        }
+
+        function submitLimitOrder() {
+            const resourceId = $('order-resource')?.value;
+            const type = $('order-type')?.value;
+            const qty = parseInt($('order-qty')?.value) || 0;
+            const targetPrice = parseInt($('order-price')?.value) || 0;
+
+            if (!resourceId || qty <= 0 || targetPrice <= 0) {
+                toast('Invalid order', 'err');
+                return;
+            }
+
+            // Check if player has items to sell (for sell orders)
+            if (type === 'sell') {
+                const have = S.inv[resourceId] || 0;
+                if (have < qty) {
+                    toast(`Need ${qty} ${R[resourceId]?.i} to place sell order`, 'err');
+                    return;
+                }
+            }
+
+            createLimitOrder(type, resourceId, qty, targetPrice);
+            render();
         }
 
         function renderStats(m) {
