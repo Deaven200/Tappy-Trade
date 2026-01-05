@@ -1,7 +1,7 @@
 // Tappy Trade Service Worker
 // Handles caching and automatic updates
 
-const CACHE_VERSION = 'tappy-trade-v1.0.0';
+const CACHE_VERSION = 'tappy-trade-v1.0.1';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -50,11 +50,11 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   // Skip non-GET requests
   if (event.request.method !== 'GET') return;
-  
+
   // Skip Firebase and external API requests
   if (event.request.url.includes('firebasestorage') ||
-      event.request.url.includes('googleapis') ||
-      event.request.url.includes('gstatic')) {
+    event.request.url.includes('googleapis') ||
+    event.request.url.includes('gstatic')) {
     return;
   }
 
