@@ -705,6 +705,87 @@
         .pop {
             animation: pop 0.15s ease
         }
+
+        /* Floating text animation */
+        @keyframes floatUp {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(-60px) scale(1.2);
+            }
+        }
+
+        .float-text {
+            position: fixed;
+            pointer-events: none;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--green);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            animation: floatUp 1s ease-out forwards;
+        }
+
+        .float-text.sell {
+            color: var(--gold);
+        }
+
+        /* Smooth progress bar */
+        .sub .bar div {
+            transition: width 0.3s ease-out;
+        }
+
+        /* Button pulse on success */
+        @keyframes successPulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7);
+            }
+
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 20px 10px rgba(74, 222, 128, 0);
+            }
+
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(74, 222, 128, 0);
+            }
+        }
+
+        .success-pulse {
+            animation: successPulse 0.4s ease;
+        }
+
+        /* Shake animation for errors */
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            75% {
+                transform: translateX(5px);
+            }
+        }
+
+        .shake {
+            animation: shake 0.3s ease;
+        }
+
+        /* Harvest ready glow */
+        .sub.ready {
+            animation: glow 2s infinite;
+        }
     </style>
 </head>
 
@@ -742,10 +823,12 @@
                 style="margin-bottom:12px;padding:10px;background:var(--bg2);border-radius:8px;font-size:0.85rem"></div>
             <button class="btn" style="width:100%;margin-bottom:8px" onclick="showAchievements()">🏆
                 Achievements</button>
+            <button class="btn" style="width:100%;margin-bottom:8px" onclick="showDaily()">🎁 Daily Rewards</button>
             <button class="btn purple" style="width:100%;margin-bottom:8px" id="sound-btn">🔊 Sound ON</button>
             <button class="btn purple" style="width:100%;margin-bottom:8px" onclick="showChat()">💬 Chat</button>
             <button class="btn" style="width:100%;margin-bottom:8px" id="account-btn" onclick="showAccount()">👤
                 Account</button>
+            <button class="btn" style="width:100%;margin-bottom:8px" onclick="showLeaderboard()">🏅 Leaderboard</button>
             <button class="btn red" style="width:100%" onclick="resetGame()">🗑️ Reset Game</button>
             <button class="btn" style="width:100%;margin-top:8px;background:var(--bg2)"
                 onclick="closeMenu()">Close</button>
@@ -800,6 +883,36 @@
             </div>
         </div>
     </div>
+    <!-- Daily Rewards Modal -->
+    <div class="modal" id="daily-modal">
+        <div class="modal-box">
+            <div class="modal-head">
+                <h3>🎁 Daily Rewards</h3><button class="modal-close" onclick="closeDaily()">×</button>
+            </div>
+            <div class="modal-body" id="daily-body">
+                <p style="text-align:center;color:var(--muted);margin-bottom:12px">Come back every day for bigger
+                    rewards!</p>
+                <div id="daily-calendar"
+                    style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:16px"></div>
+                <div style="text-align:center">
+                    <p id="daily-streak" style="margin-bottom:12px;font-size:0.9rem"></p>
+                    <button class="btn green" id="claim-daily-btn" onclick="claimDaily()"
+                        style="width:100%;padding:14px;font-size:1rem">🎁 Claim Today's Reward</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Leaderboard Modal -->
+    <div class="modal" id="leaderboard-modal">
+        <div class="modal-box" style="max-height:80vh">
+            <div class="modal-head">
+                <h3>🏅 Leaderboard</h3><button class="modal-close" onclick="closeLeaderboard()">×</button>
+            </div>
+            <div class="modal-body" id="leaderboard-body" style="overflow-y:auto;max-height:60vh">
+                <div class="empty">Loading...</div>
+            </div>
+        </div>
+    </div>
     <div class="tip" id="tip"></div>
     <div class="notif" id="notif"></div>
     <div class="tut" id="tutorial" style="display:none">
@@ -810,12 +923,32 @@
         </div>
     </div>
     <script>
-        const R = { wood: { n: 'Wood', i: '🪵', p: 5 }, berries: { n: 'Berries', i: '🫐', p: 8 }, herbs: { n: 'Herbs', i: '🌿', p: 10 }, stone: { n: 'Stone', i: '🪨', p: 4 }, wheat: { n: 'Wheat', i: '🌾', p: 6 }, potato: { n: 'Potatoes', i: '🥔', p: 7 }, carrot: { n: 'Carrots', i: '🥕', p: 7 }, corn: { n: 'Corn', i: '🌽', p: 8 }, soy: { n: 'Soybeans', i: '🫘', p: 9 }, egg: { n: 'Eggs', i: '🥚', p: 12 }, chicken: { n: 'Chicken', i: '🍗', p: 25 }, milk: { n: 'Milk', i: '🥛', p: 15 }, beef: { n: 'Beef', i: '🥩', p: 40 }, leather: { n: 'Leather', i: '🟫', p: 30 }, wool: { n: 'Wool', i: '🧶', p: 20 }, mutton: { n: 'Mutton', i: '🍖', p: 35 }, planks: { n: 'Planks', i: '🪵', p: 15 }, flour: { n: 'Flour', i: '🌾', p: 18 }, cloth: { n: 'Cloth', i: '🧵', p: 50 }, bread: { n: 'Bread', i: '🍞', p: 25 }, fertilizer: { n: 'Fertilizer', i: '💩', p: 50 } };
-        const T = { forest: { n: 'Forest', i: '🌲', o: 'wood', r: 0.08, m: 30 }, berryBush: { n: 'Berries', i: '🫐', o: 'berries', r: 0.1, m: 25 }, herbPatch: { n: 'Herbs', i: '🌿', o: 'herbs', r: 0.06, m: 20 }, quarry: { n: 'Quarry', i: '🪨', o: 'stone', r: 0.04, m: 20 }, wheatFarm: { n: 'Wheat', i: '🌾', o: 'wheat', r: 0.12, m: 40, b: 1 }, potatoFarm: { n: 'Potato', i: '🥔', o: 'potato', r: 0.1, m: 35, b: 1 }, carrotFarm: { n: 'Carrot', i: '🥕', o: 'carrot', r: 0.1, m: 35, b: 1 }, cornFarm: { n: 'Corn', i: '🌽', o: 'corn', r: 0.08, m: 30, b: 1 }, soyFarm: { n: 'Soy', i: '🫘', o: 'soy', r: 0.07, m: 25, b: 1 }, chickenCoop: { n: 'Chickens', i: '🐔', o: 'egg', r: 0.05, m: 20, b: 1, x: { chicken: 0.01 } }, cowPasture: { n: 'Cows', i: '🐄', o: 'milk', r: 0.03, m: 15, b: 1, x: { beef: 0.005, leather: 0.008 } }, sheepPen: { n: 'Sheep', i: '🐑', o: 'wool', r: 0.04, m: 18, b: 1, x: { mutton: 0.007 } }, sawmill: { n: 'Sawmill', i: '🏭', o: 'planks', m: 15, b: 1, req: 'wood', use: 2, tap: 1 }, mill: { n: 'Mill', i: '🏭', o: 'flour', m: 20, b: 1, req: 'wheat', use: 3, tap: 1 }, loom: { n: 'Loom', i: '🧵', o: 'cloth', m: 10, b: 1, req: 'wool', use: 3, tap: 1 }, bakery: { n: 'Bakery', i: '🥖', o: 'bread', m: 15, b: 1, req: 'flour', use: 2, tap: 1 }, storage: { n: 'Storage', i: '📦', b: 1, cap: 100 } };
+        const R = { wood: { n: 'Wood', i: '🪵', p: 5 }, berries: { n: 'Berries', i: '🍇', p: 8 }, herbs: { n: 'Herbs', i: '🌿', p: 10 }, stone: { n: 'Stone', i: '🪨', p: 4 }, wheat: { n: 'Wheat', i: '🌾', p: 6 }, potato: { n: 'Potatoes', i: '🥔', p: 7 }, carrot: { n: 'Carrots', i: '🥕', p: 7 }, corn: { n: 'Corn', i: '🌽', p: 8 }, soy: { n: 'Soybeans', i: '🫘', p: 9 }, egg: { n: 'Eggs', i: '🥚', p: 12 }, chicken: { n: 'Chicken', i: '🍗', p: 25 }, milk: { n: 'Milk', i: '🥛', p: 15 }, beef: { n: 'Beef', i: '🥩', p: 40 }, leather: { n: 'Leather', i: '🟫', p: 30 }, wool: { n: 'Wool', i: '🧶', p: 20 }, mutton: { n: 'Mutton', i: '🍖', p: 35 }, planks: { n: 'Planks', i: '🪵', p: 15 }, flour: { n: 'Flour', i: '🌾', p: 18 }, cloth: { n: 'Cloth', i: '🧵', p: 50 }, bread: { n: 'Bread', i: '🍞', p: 25 }, fertilizer: { n: 'Fertilizer', i: '💩', p: 50 } };
+        const T = { forest: { n: 'Forest', i: '🌲', o: 'wood', r: 0.08, m: 30 }, berryBush: { n: 'Berries', i: '🍇', o: 'berries', r: 0.1, m: 25 }, herbPatch: { n: 'Herbs', i: '🌿', o: 'herbs', r: 0.06, m: 20 }, quarry: { n: 'Quarry', i: '🪨', o: 'stone', r: 0.04, m: 20 }, wheatFarm: { n: 'Wheat', i: '🌾', o: 'wheat', r: 0.12, m: 40, b: 1 }, potatoFarm: { n: 'Potato', i: '🥔', o: 'potato', r: 0.1, m: 35, b: 1 }, carrotFarm: { n: 'Carrot', i: '🥕', o: 'carrot', r: 0.1, m: 35, b: 1 }, cornFarm: { n: 'Corn', i: '🌽', o: 'corn', r: 0.08, m: 30, b: 1 }, soyFarm: { n: 'Soy', i: '🫘', o: 'soy', r: 0.07, m: 25, b: 1 }, chickenCoop: { n: 'Chickens', i: '🐔', o: 'egg', r: 0.05, m: 20, b: 1, x: { chicken: 0.01 } }, cowPasture: { n: 'Cows', i: '🐄', o: 'milk', r: 0.03, m: 15, b: 1, x: { beef: 0.005, leather: 0.008 } }, sheepPen: { n: 'Sheep', i: '🐑', o: 'wool', r: 0.04, m: 18, b: 1, x: { mutton: 0.007 } }, sawmill: { n: 'Sawmill', i: '🏭', o: 'planks', m: 15, b: 1, req: 'wood', use: 2, tap: 1 }, mill: { n: 'Mill', i: '🏭', o: 'flour', m: 20, b: 1, req: 'wheat', use: 3, tap: 1 }, loom: { n: 'Loom', i: '🧵', o: 'cloth', m: 10, b: 1, req: 'wool', use: 3, tap: 1 }, bakery: { n: 'Bakery', i: '🥖', o: 'bread', m: 15, b: 1, req: 'flour', use: 2, tap: 1 }, storage: { n: 'Storage', i: '📦', b: 1, cap: 100 } };
         const B = { farms: [{ t: 'wheatFarm', c: { m: 500, wood: 20 } }, { t: 'potatoFarm', c: { m: 600, wood: 25 } }, { t: 'carrotFarm', c: { m: 600, wood: 25 } }, { t: 'cornFarm', c: { m: 700, wood: 30 } }, { t: 'soyFarm', c: { m: 800, wood: 35 } }], livestock: [{ t: 'chickenCoop', c: { m: 1000, wood: 40, wheat: 20 } }, { t: 'cowPasture', c: { m: 2500, wood: 60, wheat: 50 } }, { t: 'sheepPen', c: { m: 1500, wood: 50, wheat: 30 } }], manufacturing: [{ t: 'sawmill', c: { m: 2000, stone: 50 } }, { t: 'mill', c: { m: 1500, stone: 30, wood: 40 } }, { t: 'loom', c: { m: 3000, wood: 60, stone: 30 } }, { t: 'bakery', c: { m: 2500, stone: 40, wood: 30 } }], utility: [{ t: 'storage', c: { m: 1000, wood: 50 } }] };
         const PLOTS = [0, 5000, 15000, 35000, 75000];
         const ACH = [{ id: 'h100', n: 'Harvester', d: 'Harvest 100 items', g: 100, r: 100 }, { id: 'h1000', n: 'Farmer', d: 'Harvest 1000 items', g: 1000, r: 500 }, { id: 'm1000', n: 'Trader', d: 'Earn $1000', g: 1000, r: 200 }, { id: 'm10000', n: 'Merchant', d: 'Earn $10000', g: 10000, r: 1000 }, { id: 'p2', n: 'Landowner', d: 'Own 2 plots', g: 2, r: 500 }, { id: 'b1', n: 'Builder', d: 'Build 1 building', g: 1, r: 200 }, { id: 'b5', n: 'Architect', d: 'Build 5 buildings', g: 5, r: 1000 }, { id: 'w1', n: 'Employer', d: 'Hire 1 worker', g: 1, r: 300 }];
-        const S = { money: 0, inv: {}, cap: 100, sound: 1, plots: [{ subs: [{ t: 'forest', c: 5, lv: 1 }, { t: 'berryBush', c: 4, lv: 1 }, { t: 'herbPatch', c: 3, lv: 1 }] }], workers: [], stats: { harvested: 0, sold: 0, earned: 0, built: 0 }, ach: {}, prices: {}, priceDir: {}, tutorial: 0, lastUpdate: Date.now() };
+
+        // Random Events
+        const EVENTS = [
+            { id: 'rain', n: '🌧️ Rain Bonus', d: 'All farms produce 2x!', duration: 180000, effect: 'farmBoost', mult: 2 },
+            { id: 'merchant', n: '💰 Merchant Visit', d: 'Sell prices +50%!', duration: 120000, effect: 'priceBoost', mult: 1.5 },
+            { id: 'gold', n: '🎉 Gold Rush', d: 'Found buried treasure!', duration: 0, effect: 'bonus', amount: 500 },
+            { id: 'bountiful', n: '🌾 Bountiful Harvest', d: 'All resources ready to harvest!', duration: 0, effect: 'fillAll' },
+        ];
+
+        // Daily Rewards (7-day cycle)
+        const DAILY_REWARDS = [
+            { day: 1, reward: 100, desc: '$100' },
+            { day: 2, reward: 150, desc: '$150' },
+            { day: 3, reward: 200, desc: '$200' },
+            { day: 4, reward: 300, desc: '$300' },
+            { day: 5, reward: 500, desc: '$500' },
+            { day: 6, reward: 750, desc: '$750' },
+            { day: 7, reward: 1000, desc: '$1000 🎉' },
+        ];
+
+        const S = { money: 0, inv: {}, cap: 100, sound: 1, plots: [{ subs: [{ t: 'forest', c: 5, lv: 1 }, { t: 'berryBush', c: 4, lv: 1 }, { t: 'herbPatch', c: 3, lv: 1 }] }], workers: [], stats: { harvested: 0, sold: 0, earned: 0, built: 0 }, ach: {}, prices: {}, priceDir: {}, tutorial: 0, lastUpdate: Date.now(), activeEvent: null, eventEndsAt: 0, nextEventAt: Date.now() + 300000, lastDailyReward: 0, dailyStreak: 0 };
         let screen = 'home', buildP = null, buildS = null, tipTimer = null;
         const $ = id => document.getElementById(id);
 
@@ -837,6 +970,7 @@
                 await db.collection('saves').doc(loggedInUser.id).set({
                     state: JSON.stringify(S),
                     username: loggedInUser.username,
+                    money: S.money,
                     lastSave: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 console.log('Cloud save complete');
@@ -898,6 +1032,24 @@
         }, 30000);
         function toast(m, t = '') { const e = $('toast'); e.textContent = m; e.className = 'toast show ' + (t || ''); setTimeout(() => e.classList.remove('show'), 2000) }
         function notif(m) { const e = $('notif'); e.textContent = m; e.classList.add('show'); setTimeout(() => e.classList.remove('show'), 3000) }
+
+        // Floating text animation for harvest/sell feedback
+        function floatText(text, x, y, type = '') {
+            const el = document.createElement('div');
+            el.className = 'float-text ' + type;
+            el.textContent = text;
+            el.style.left = x + 'px';
+            el.style.top = y + 'px';
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 1000);
+        }
+
+        // Show floating text at element position
+        function floatTextAt(text, element, type = '') {
+            if (!element) return;
+            const rect = element.getBoundingClientRect();
+            floatText(text, rect.left + rect.width / 2 - 20, rect.top);
+        }
         function playS(t) { if (!S.sound) return; try { const a = new (window.AudioContext || window.webkitAudioContext)(), o = a.createOscillator(), g = a.createGain(); o.connect(g); g.connect(a.destination); g.gain.value = 0.06; if (t === 'tap') { o.frequency.value = 800; o.start(); g.gain.exponentialRampToValueAtTime(0.01, a.currentTime + 0.06); o.stop(a.currentTime + 0.06) } else if (t === 'sell') { o.frequency.value = 600; o.start(); o.frequency.exponentialRampToValueAtTime(1100, a.currentTime + 0.1); g.gain.exponentialRampToValueAtTime(0.01, a.currentTime + 0.12); o.stop(a.currentTime + 0.12) } else if (t === 'ach') { o.frequency.value = 523; o.start(); setTimeout(() => o.frequency.value = 659, 100); setTimeout(() => o.frequency.value = 784, 200); g.gain.exponentialRampToValueAtTime(0.01, a.currentTime + 0.4); o.stop(a.currentTime + 0.4) } } catch (e) { } }
         function getInvTotal() { return Object.values(S.inv).reduce((a, b) => a + b, 0) }
         function hasItem(id, n) { return (S.inv[id] || 0) >= n }
@@ -916,7 +1068,7 @@
                     const cfg = T[s.t]; if (!cfg) continue;
                     if (cfg.tap) continue;// Manufacturing needs tap
                     if (cfg.r) {
-                        const rate = cfg.r * (1 + 0.2 * (s.lv - 1)) * (s.boost || 1);
+                        const rate = cfg.r * (1 + 0.2 * (s.lv - 1)) * (s.boost || 1) * getEventMultiplier('farm');
                         s.c = Math.min(cfg.m, s.c + rate * sec);
                         if (cfg.x) {
                             for (const xid in cfg.x) {
@@ -973,21 +1125,94 @@
             }
             updatePrices();
             checkAchievements();
+            checkEvents();
+        }
+
+        // Event System
+        function checkEvents() {
+            const now = Date.now();
+
+            // Check if active event has ended
+            if (S.activeEvent && S.eventEndsAt && now >= S.eventEndsAt) {
+                notif(`${S.activeEvent.n} has ended!`);
+                S.activeEvent = null;
+                S.eventEndsAt = 0;
+            }
+
+            // Check if it's time for a new event
+            if (!S.activeEvent && S.nextEventAt && now >= S.nextEventAt) {
+                triggerRandomEvent();
+                // Schedule next event in 5-15 minutes
+                S.nextEventAt = now + 300000 + Math.random() * 600000;
+            }
+        }
+
+        function triggerRandomEvent() {
+            const event = EVENTS[Math.floor(Math.random() * EVENTS.length)];
+
+            if (event.duration > 0) {
+                // Timed event
+                S.activeEvent = event;
+                S.eventEndsAt = Date.now() + event.duration;
+                notif(`${event.n} — ${event.d}`);
+                playS('ach');
+            } else {
+                // Instant event
+                applyInstantEvent(event);
+            }
+            save();
+        }
+
+        function applyInstantEvent(event) {
+            if (event.effect === 'bonus') {
+                S.money += event.amount;
+                notif(`${event.n} — +$${event.amount}!`);
+                floatText(`+$${event.amount}`, window.innerWidth / 2 - 30, 100, 'sell');
+            } else if (event.effect === 'fillAll') {
+                for (const p of S.plots) {
+                    for (const s of p.subs) {
+                        const cfg = T[s.t];
+                        if (cfg && cfg.m) s.c = cfg.m;
+                    }
+                }
+                notif(`${event.n} — ${event.d}`);
+            }
+            playS('ach');
+        }
+
+        function getEventMultiplier(type) {
+            if (!S.activeEvent) return 1;
+            if (type === 'farm' && S.activeEvent.effect === 'farmBoost') return S.activeEvent.mult;
+            if (type === 'price' && S.activeEvent.effect === 'priceBoost') return S.activeEvent.mult;
+            return 1;
         }
 
         function tap(pi, si) {
             const s = S.plots[pi]?.subs[si]; if (!s) return;
             const cfg = T[s.t]; if (!cfg) return;
-            if (getInvTotal() >= S.cap) { toast('Inventory full!', 'err'); playS('err'); return }
+            const el = document.querySelector(`[data-p="${pi}"][data-s="${si}"]`);
+            if (getInvTotal() >= S.cap) {
+                toast('Inventory full!', 'err');
+                playS('err');
+                if (el) { el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); }
+                return;
+            }
             if (cfg.tap) {
                 if (!cfg.req) { toast('Nothing to produce', 'err'); return }
-                if (!hasItem(cfg.req, cfg.use)) { toast(`Need ${cfg.use} ${R[cfg.req]?.i || cfg.req}`, 'err'); playS('err'); return }
-                remItem(cfg.req, cfg.use); addItem(cfg.o, 1); S.stats.harvested++; playS('tap'); toast(`+1 ${R[cfg.o]?.i}`, 'ok');
+                if (!hasItem(cfg.req, cfg.use)) {
+                    toast(`Need ${cfg.use} ${R[cfg.req]?.i || cfg.req}`, 'err');
+                    playS('err');
+                    if (el) { el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); }
+                    return;
+                }
+                remItem(cfg.req, cfg.use); addItem(cfg.o, 1); S.stats.harvested++; playS('tap');
+                floatTextAt(`+1 ${R[cfg.o]?.i}`, el);
             } else {
                 if (s.c < 1) return;
                 s.c--; addItem(cfg.o, 1); S.stats.harvested++; playS('tap');
-                const el = document.querySelector(`[data-p="${pi}"][data-s="${si}"] .icon`);
-                if (el) { el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop') }
+                floatTextAt(`+1 ${R[cfg.o]?.i}`, el);
+                const iconEl = el?.querySelector('.icon');
+                if (iconEl) { iconEl.classList.remove('pop'); void iconEl.offsetWidth; iconEl.classList.add('pop'); }
             }
             save(); render();
         }
@@ -995,28 +1220,77 @@
         function openBuild(pi, si) {
             buildP = pi; buildS = si;
             let h = '';
-            const cats = [{ k: 'farms', t: '🌾 Farms' }, { k: 'livestock', t: '🐄 Livestock' }, { k: 'manufacturing', t: '🏭 Manufacturing' }, { k: 'utility', t: '📦 Utility' }];
-            for (const cat of cats) {
-                h += `<div class="cat"><div class="cat-title">${cat.t}</div>`;
-                for (const b of B[cat.k]) {
-                    const cfg = T[b.t]; if (!cfg) continue;
-                    const can = canAfford(b.c);
-                    const cst = Object.entries(b.c).map(([k, v]) => k === 'm' ? `<span class="m">$${v}</span>` : `<span class="r">${v}${R[k]?.i || k}</span>`).join(' ');
-                    h += `<div class="bld ${can ? '' : 'off'}" data-t="${b.t}"><div class="ic">${cfg.i}</div><div class="info"><div class="nm">${cfg.n}</div><div class="prod">${cfg.o ? `→ ${R[cfg.o]?.i || ''} ${R[cfg.o]?.n || ''}` : (cfg.cap ? `+${cfg.cap} storage` : '')}</div><div class="cost">${cst}</div></div></div>`;
-                }
-                h += `</div>`;
-            }
-            // Demolish option
             const cur = S.plots[pi]?.subs[si];
-            if (cur && T[cur.t]?.b) {
+            const curCfg = cur ? T[cur.t] : null;
+
+            // If there's an existing building, show upgrade option first
+            if (cur && curCfg?.b && cur.lv < 5) {
+                const upgradeCost = getUpgradeCost(cur.t, cur.lv);
+                const canUpgrade = canAfford(upgradeCost);
+                const costStr = Object.entries(upgradeCost).map(([k, v]) => k === 'm' ? `<span class="m">$${v}</span>` : `<span class="r">${v}${R[k]?.i || k}</span>`).join(' ');
+                const nextBonus = Math.round((1 + 0.2 * cur.lv) * 100);
+                h += `<div class="cat"><div class="cat-title">⬆️ Upgrade Current Building</div>`;
+                h += `<div class="bld ${canUpgrade ? '' : 'off'}" data-t="__upgrade" style="border:1px solid var(--purple)">`;
+                h += `<div class="ic">${curCfg.i}</div>`;
+                h += `<div class="info"><div class="nm" style="color:var(--purple)">${curCfg.n} Lv${cur.lv} → Lv${cur.lv + 1}</div>`;
+                h += `<div class="prod">Production: +${nextBonus}%</div>`;
+                h += `<div class="cost">${costStr}</div></div></div></div>`;
+            } else if (cur && curCfg?.b && cur.lv >= 5) {
+                h += `<div class="cat"><div class="cat-title">⬆️ Upgrade</div>`;
+                h += `<div class="bld off"><div class="ic">⭐</div><div class="info"><div class="nm">${curCfg.n} MAX LEVEL</div><div class="prod">This building is fully upgraded!</div></div></div></div>`;
+            }
+
+            // Build new options (only show if no building or it's a wild plot)
+            if (!curCfg?.b) {
+                const cats = [{ k: 'farms', t: '🌾 Farms' }, { k: 'livestock', t: '🐄 Livestock' }, { k: 'manufacturing', t: '🏭 Manufacturing' }, { k: 'utility', t: '📦 Utility' }];
+                for (const cat of cats) {
+                    h += `<div class="cat"><div class="cat-title">${cat.t}</div>`;
+                    for (const b of B[cat.k]) {
+                        const cfg = T[b.t]; if (!cfg) continue;
+                        const can = canAfford(b.c);
+                        const cst = Object.entries(b.c).map(([k, v]) => k === 'm' ? `<span class="m">$${v}</span>` : `<span class="r">${v}${R[k]?.i || k}</span>`).join(' ');
+                        h += `<div class="bld ${can ? '' : 'off'}" data-t="${b.t}"><div class="ic">${cfg.i}</div><div class="info"><div class="nm">${cfg.n}</div><div class="prod">${cfg.o ? `→ ${R[cfg.o]?.i || ''} ${R[cfg.o]?.n || ''}` : (cfg.cap ? `+${cfg.cap} storage` : '')}</div><div class="cost">${cst}</div></div></div>`;
+                    }
+                    h += `</div>`;
+                }
+            }
+
+            // Demolish option for buildings
+            if (cur && curCfg?.b) {
                 h += `<div class="cat"><div class="cat-title">⚠️ Demolish</div><div class="bld" data-t="__demolish" style="border:1px solid var(--red)"><div class="ic">🗑️</div><div class="info"><div class="nm" style="color:var(--red)">Remove Building</div><div class="prod">Returns 50% resources</div></div></div></div>`;
             }
             $('build-list').innerHTML = h;
             $('build-list').querySelectorAll('.bld:not(.off)').forEach(el => el.onclick = () => doBuild(el.dataset.t));
             $('build-modal').classList.add('show'); playS('tap');
         }
+
+        // Calculate upgrade cost based on building type and current level
+        function getUpgradeCost(buildingType, currentLevel) {
+            const base = Object.values(B).flat().find(b => b.t === buildingType);
+            if (!base) return { m: 9999999 };
+            const multiplier = currentLevel + 1;
+            const cost = {};
+            for (const k in base.c) {
+                cost[k] = Math.floor(base.c[k] * multiplier * 0.75);
+            }
+            return cost;
+        }
+
         function closeBuild() { $('build-modal').classList.remove('show') }
+
         function doBuild(t) {
+            if (t === '__upgrade') {
+                const s = S.plots[buildP]?.subs[buildS]; if (!s || s.lv >= 5) return;
+                const cost = getUpgradeCost(s.t, s.lv);
+                if (!canAfford(cost)) { toast('Cannot afford upgrade!', 'err'); return; }
+                pay(cost);
+                s.lv++;
+                playS('ach');
+                toast(`Upgraded to Lv${s.lv}!`, 'ok');
+                notif(`⬆️ ${T[s.t]?.n} upgraded to Level ${s.lv}!`);
+                closeBuild(); save(); render();
+                return;
+            }
             if (t === '__demolish') {
                 const s = S.plots[buildP]?.subs[buildS]; if (!s) return;
                 const orig = Object.values(B).flat().find(b => b.t === s.t);
@@ -1057,9 +1331,12 @@
         function sell(id, n) {
             const removed = remItem(id, n); if (!removed) return;
             const price = getPrice(id);
-            const earn = removed * price;
+            const earn = Math.floor(removed * price * getEventMultiplier('price'));
             S.money += earn; S.stats.sold += removed; S.stats.earned += earn;
-            playS('sell'); toast(`+$${earn}`, 'ok'); save(); render();
+            playS('sell');
+            // Show floating gold text near the stats bar
+            floatText(`+$${earn}`, window.innerWidth / 2 - 30, 60, 'sell');
+            save(); render();
         }
 
         function checkAchievements() {
@@ -1087,8 +1364,152 @@
             $('achieve-modal').classList.add('show'); closeMenu();
         }
         function closeAchieve() { $('achieve-modal').classList.remove('show') }
+
+        // Daily Rewards System
+        function showDaily() {
+            const cal = $('daily-calendar');
+            const streakEl = $('daily-streak');
+            const btn = $('claim-daily-btn');
+
+            // Render 7-day calendar
+            let h = '';
+            for (let i = 0; i < 7; i++) {
+                const day = i + 1;
+                const reward = DAILY_REWARDS[i];
+                const claimed = (S.dailyStreak || 0) >= day && !canClaimDaily();
+                const current = ((S.dailyStreak || 0) % 7) + 1 === day && canClaimDaily();
+                const dayClass = claimed ? 'claimed' : (current ? 'current' : '');
+                h += `<div class="daily-day ${dayClass}" style="text-align:center;padding:8px 4px;background:var(--bg2);border-radius:6px;border:2px solid ${current ? 'var(--gold)' : 'transparent'}">
+                    <div style="font-size:0.75rem;color:var(--muted)">Day ${day}</div>
+                    <div style="font-size:1.2rem">${claimed ? '✅' : '💰'}</div>
+                    <div style="font-size:0.7rem;color:var(--gold)">${reward.desc}</div>
+                </div>`;
+            }
+            cal.innerHTML = h;
+
+            // Update streak display
+            streakEl.innerHTML = `🔥 Current Streak: <b>${S.dailyStreak || 0}</b> days`;
+
+            // Update button
+            if (canClaimDaily()) {
+                const nextDay = ((S.dailyStreak || 0) % 7);
+                const reward = DAILY_REWARDS[nextDay];
+                btn.disabled = false;
+                btn.textContent = `🎁 Claim ${reward.desc}!`;
+                btn.classList.remove('off');
+            } else {
+                btn.disabled = true;
+                btn.textContent = '⏰ Come back tomorrow!';
+                btn.classList.add('off');
+            }
+
+            $('daily-modal').classList.add('show'); closeMenu();
+        }
+
+        function closeDaily() { $('daily-modal').classList.remove('show') }
+
+        function canClaimDaily() {
+            if (!S.lastDailyReward) return true;
+            const lastDate = new Date(S.lastDailyReward);
+            const today = new Date();
+            // Reset to start of day for comparison
+            lastDate.setHours(0, 0, 0, 0);
+            today.setHours(0, 0, 0, 0);
+            return today.getTime() > lastDate.getTime();
+        }
+
+        function claimDaily() {
+            if (!canClaimDaily()) return;
+
+            const lastDate = S.lastDailyReward ? new Date(S.lastDailyReward) : null;
+            const today = new Date();
+
+            // Check if streak should reset (more than 1 day gap)
+            if (lastDate) {
+                lastDate.setHours(0, 0, 0, 0);
+                today.setHours(0, 0, 0, 0);
+                const daysDiff = Math.floor((today - lastDate) / (1000 * 60 * 60 * 24));
+                if (daysDiff > 1) {
+                    S.dailyStreak = 0; // Reset streak
+                }
+            }
+
+            // Get current day reward (cycling 0-6)
+            const dayIndex = (S.dailyStreak || 0) % 7;
+            const reward = DAILY_REWARDS[dayIndex];
+
+            // Give reward
+            S.money += reward.reward;
+            S.dailyStreak = (S.dailyStreak || 0) + 1;
+            S.lastDailyReward = Date.now();
+
+            playS('ach');
+            floatText(`+$${reward.reward}`, window.innerWidth / 2 - 30, 100, 'sell');
+            notif(`🎁 Day ${dayIndex + 1} reward: ${reward.desc}!`);
+            toast(`Claimed ${reward.desc}!`, 'ok');
+
+            save();
+            closeDaily();
+            render();
+        }
+
+        function checkDailyReward() {
+            // Auto-show daily reward popup if available (after a short delay)
+            if (canClaimDaily()) {
+                setTimeout(() => {
+                    notif('🎁 Daily reward available!');
+                }, 2000);
+            }
+        }
+
         function showMenu() { $('menu-modal').classList.add('show') }
         function closeMenu() { $('menu-modal').classList.remove('show') }
+
+        // Leaderboard System
+        async function showLeaderboard() {
+            closeMenu();
+            $('leaderboard-modal').classList.add('show');
+            $('leaderboard-body').innerHTML = '<div class="empty">Loading leaderboard...</div>';
+
+            if (!db) {
+                $('leaderboard-body').innerHTML = '<div class="empty">⚠️ Connect to play online to view leaderboard</div>';
+                return;
+            }
+
+            try {
+                // Fetch top 20 players by money from cloud saves
+                const snap = await db.collection('saves')
+                    .orderBy('money', 'desc')
+                    .limit(20)
+                    .get();
+
+                if (snap.empty) {
+                    $('leaderboard-body').innerHTML = '<div class="empty">No players yet!</div>';
+                    return;
+                }
+
+                let h = '';
+                let rank = 1;
+                snap.docs.forEach(doc => {
+                    const data = doc.data();
+                    const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+                    const isMe = loggedInUser && loggedInUser.id === doc.id;
+                    h += `<div style="display:flex;align-items:center;padding:12px;background:var(--bg2);border-radius:8px;margin-bottom:6px;${isMe ? 'border:2px solid var(--gold)' : ''}">
+                        <span style="width:40px;font-weight:700;font-size:1.2rem">${medal}</span>
+                        <span style="flex:1;font-weight:${rank <= 3 ? '600' : '400'}">${data.username || 'Anonymous'}</span>
+                        <span style="color:var(--gold);font-weight:700">$${(data.money || 0).toLocaleString()}</span>
+                    </div>`;
+                    rank++;
+                });
+
+                $('leaderboard-body').innerHTML = h;
+            } catch (e) {
+                console.error('Leaderboard error:', e);
+                $('leaderboard-body').innerHTML = '<div class="empty">Failed to load leaderboard</div>';
+            }
+        }
+
+        function closeLeaderboard() { $('leaderboard-modal').classList.remove('show') }
 
         function showTip(e, id) {
             clearTimeout(tipTimer);
@@ -1765,12 +2186,48 @@
             initFirebase();
             setInterval(() => { update(1000); save(); render() }, 1000);
 
+            // Check for daily reward
+            checkDailyReward();
+
+            // Day/night cycle updates
+            updateDayNight();
+            setInterval(updateDayNight, 60000); // Update every minute
+
             // Background music
             initMusic();
         }
 
+        // Day/Night Cycle
+        function updateDayNight() {
+            const hour = new Date().getHours();
+            const root = document.documentElement;
+
+            if (hour >= 6 && hour < 12) {
+                // Morning (6am-12pm)
+                root.style.setProperty('--bg', '#1a1a2e');
+                root.style.setProperty('--bg2', '#16213e');
+                document.body.style.background = 'linear-gradient(180deg, #1a1a2e 0%, #16213e 100%)';
+            } else if (hour >= 12 && hour < 18) {
+                // Afternoon (12pm-6pm)
+                root.style.setProperty('--bg', '#1e1e3f');
+                root.style.setProperty('--bg2', '#252552');
+                document.body.style.background = 'linear-gradient(180deg, #1e1e3f 0%, #252552 100%)';
+            } else if (hour >= 18 && hour < 21) {
+                // Evening (6pm-9pm) - sunset colors
+                root.style.setProperty('--bg', '#1a1025');
+                root.style.setProperty('--bg2', '#251a35');
+                document.body.style.background = 'linear-gradient(180deg, #1a1025 0%, #251a35 100%)';
+            } else {
+                // Night (9pm-6am)
+                root.style.setProperty('--bg', '#0d0d1a');
+                root.style.setProperty('--bg2', '#12121f');
+                document.body.style.background = 'linear-gradient(180deg, #0d0d1a 0%, #12121f 100%)';
+            }
+        }
+
         // Background music
         let bgMusic = null;
+        let musicStarted = false;
         function initMusic() {
             // Try common paths so it works in both hosted and local file scenarios
             const MUSIC_CANDIDATES = [
@@ -1791,7 +2248,7 @@
             const tryNextSource = () => {
                 musicIdx++;
                 if (musicIdx >= MUSIC_CANDIDATES.length) {
-                    notif('🎵 Music file not found');
+                    console.log('Music file not found in any location');
                     return;
                 }
                 bgMusic.src = MUSIC_CANDIDATES[musicIdx];
@@ -1803,32 +2260,47 @@
             });
 
             const tryPlay = async () => {
-                // If sound is off, don't force-play
+                if (musicStarted) return true;
                 if (!S.sound) return false;
                 bgMusic.muted = false;
                 try {
                     await bgMusic.play();
+                    musicStarted = true;
                     return true;
                 } catch (e) {
-                    // Autoplay may be blocked by browser
+                    console.log('Music autoplay blocked:', e.name);
                     return false;
                 }
             };
 
-            // Start on first user interaction
+            // Start on first user interaction - iOS requires touchend, not touchstart
             const startMusic = () => {
+                if (musicStarted) {
+                    removeListeners();
+                    return;
+                }
                 tryPlay().then((started) => {
                     if (started) {
-                        document.removeEventListener('click', startMusic);
-                        document.removeEventListener('touchstart', startMusic);
+                        removeListeners();
                     }
                 });
             };
 
+            const removeListeners = () => {
+                document.removeEventListener('click', startMusic);
+                document.removeEventListener('touchstart', startMusic);
+                document.removeEventListener('touchend', startMusic);
+                document.removeEventListener('keydown', startMusic);
+            };
+
             // Allow other UI (like sound toggle) to trigger play
             window.__ttStartMusic = startMusic;
+
+            // Multiple event types for better mobile compatibility
             document.addEventListener('click', startMusic);
-            document.addEventListener('touchstart', startMusic);
+            document.addEventListener('touchstart', startMusic, { passive: true });
+            document.addEventListener('touchend', startMusic, { passive: true });
+            document.addEventListener('keydown', startMusic);
         }
         init();
     </script>
