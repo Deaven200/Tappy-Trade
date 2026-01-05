@@ -927,7 +927,32 @@
         const T = { forest: { n: 'Forest', i: '🌲', o: 'wood', r: 0.08, m: 30 }, berryBush: { n: 'Berries', i: '🍇', o: 'berries', r: 0.1, m: 25 }, herbPatch: { n: 'Herbs', i: '🌿', o: 'herbs', r: 0.06, m: 20 }, quarry: { n: 'Quarry', i: '🪨', o: 'stone', r: 0.04, m: 20 }, wheatFarm: { n: 'Wheat', i: '🌾', o: 'wheat', r: 0.12, m: 40, b: 1 }, potatoFarm: { n: 'Potato', i: '🥔', o: 'potato', r: 0.1, m: 35, b: 1 }, carrotFarm: { n: 'Carrot', i: '🥕', o: 'carrot', r: 0.1, m: 35, b: 1 }, cornFarm: { n: 'Corn', i: '🌽', o: 'corn', r: 0.08, m: 30, b: 1 }, soyFarm: { n: 'Soy', i: '🫘', o: 'soy', r: 0.07, m: 25, b: 1 }, chickenCoop: { n: 'Chickens', i: '🐔', o: 'egg', r: 0.05, m: 20, b: 1, x: { chicken: 0.01 } }, cowPasture: { n: 'Cows', i: '🐄', o: 'milk', r: 0.03, m: 15, b: 1, x: { beef: 0.005, leather: 0.008 } }, sheepPen: { n: 'Sheep', i: '🐑', o: 'wool', r: 0.04, m: 18, b: 1, x: { mutton: 0.007 } }, sawmill: { n: 'Sawmill', i: '🏭', o: 'planks', m: 15, b: 1, req: 'wood', use: 2, tap: 1 }, mill: { n: 'Mill', i: '🏭', o: 'flour', m: 20, b: 1, req: 'wheat', use: 3, tap: 1 }, loom: { n: 'Loom', i: '🧵', o: 'cloth', m: 10, b: 1, req: 'wool', use: 3, tap: 1 }, bakery: { n: 'Bakery', i: '🥖', o: 'bread', m: 15, b: 1, req: 'flour', use: 2, tap: 1 }, storage: { n: 'Storage', i: '📦', b: 1, cap: 100 } };
         const B = { farms: [{ t: 'wheatFarm', c: { m: 500, wood: 20 } }, { t: 'potatoFarm', c: { m: 600, wood: 25 } }, { t: 'carrotFarm', c: { m: 600, wood: 25 } }, { t: 'cornFarm', c: { m: 700, wood: 30 } }, { t: 'soyFarm', c: { m: 800, wood: 35 } }], livestock: [{ t: 'chickenCoop', c: { m: 1000, wood: 40, wheat: 20 } }, { t: 'cowPasture', c: { m: 2500, wood: 60, wheat: 50 } }, { t: 'sheepPen', c: { m: 1500, wood: 50, wheat: 30 } }], manufacturing: [{ t: 'sawmill', c: { m: 2000, stone: 50 } }, { t: 'mill', c: { m: 1500, stone: 30, wood: 40 } }, { t: 'loom', c: { m: 3000, wood: 60, stone: 30 } }, { t: 'bakery', c: { m: 2500, stone: 40, wood: 30 } }], utility: [{ t: 'storage', c: { m: 1000, wood: 50 } }] };
         const PLOTS = [0, 5000, 15000, 35000, 75000];
-        const ACH = [{ id: 'h100', n: 'Harvester', d: 'Harvest 100 items', g: 100, r: 100 }, { id: 'h1000', n: 'Farmer', d: 'Harvest 1000 items', g: 1000, r: 500 }, { id: 'm1000', n: 'Trader', d: 'Earn $1000', g: 1000, r: 200 }, { id: 'm10000', n: 'Merchant', d: 'Earn $10000', g: 10000, r: 1000 }, { id: 'p2', n: 'Landowner', d: 'Own 2 plots', g: 2, r: 500 }, { id: 'b1', n: 'Builder', d: 'Build 1 building', g: 1, r: 200 }, { id: 'b5', n: 'Architect', d: 'Build 5 buildings', g: 5, r: 1000 }, { id: 'w1', n: 'Employer', d: 'Hire 1 worker', g: 1, r: 300 }];
+        const ACH = [
+            // Harvest milestones
+            { id: 'h100', n: 'Harvester', d: 'Harvest 100 items', g: 100, r: 100 },
+            { id: 'h1000', n: 'Farmer', d: 'Harvest 1000 items', g: 1000, r: 500 },
+            { id: 'h5000', n: 'Agriculturist', d: 'Harvest 5000 items', g: 5000, r: 2000 },
+            // Money milestones
+            { id: 'm1000', n: 'Trader', d: 'Earn $1000', g: 1000, r: 200 },
+            { id: 'm10000', n: 'Merchant', d: 'Earn $10000', g: 10000, r: 1000 },
+            { id: 'm50000', n: 'Tycoon', d: 'Earn $50000', g: 50000, r: 5000 },
+            { id: 'm100000', n: 'Mogul', d: 'Earn $100000', g: 100000, r: 10000 },
+            // Land ownership
+            { id: 'p2', n: 'Landowner', d: 'Own 2 plots', g: 2, r: 500 },
+            { id: 'p4', n: 'Estate Owner', d: 'Own 4 plots', g: 4, r: 2000 },
+            // Building milestones
+            { id: 'b1', n: 'Builder', d: 'Build 1 building', g: 1, r: 200 },
+            { id: 'b5', n: 'Architect', d: 'Build 5 buildings', g: 5, r: 1000 },
+            { id: 'b10', n: 'Developer', d: 'Build 10 buildings', g: 10, r: 3000 },
+            // Worker milestones
+            { id: 'w1', n: 'Employer', d: 'Hire 1 worker', g: 1, r: 300 },
+            { id: 'w5', n: 'Manager', d: 'Hire 5 workers', g: 5, r: 1500 },
+            { id: 'w10', n: 'CEO', d: 'Hire 10 workers', g: 10, r: 5000 },
+            // Trading achievements
+            { id: 'lo1', n: 'Investor', d: 'Create a limit order', g: 1, r: 250 },
+            { id: 'sell100', n: 'Salesman', d: 'Sell 100 items', g: 100, r: 300 },
+            { id: 'sell1000', n: 'Wholesaler', d: 'Sell 1000 items', g: 1000, r: 1500 },
+        ];
 
         // Random Events
         const EVENTS = [
@@ -1159,6 +1184,8 @@
                 targetPrice,
                 createdAt: Date.now()
             });
+            if (!S.stats.ordersCreated) S.stats.ordersCreated = 0;
+            S.stats.ordersCreated++;
             save();
             notif(`📈 ${type === 'sell' ? 'Sell' : 'Buy'} order placed: ${qty} ${R[resourceId]?.i} at $${targetPrice}`);
         }
@@ -1230,7 +1257,7 @@
                     const cfg = T[s.t]; if (!cfg) continue;
                     if (cfg.tap) continue;// Manufacturing needs tap
                     if (cfg.r) {
-                        const rate = cfg.r * (1 + 0.2 * (s.lv - 1)) * (s.boost || 1) * getEventMultiplier('farm');
+                        const rate = cfg.r * (1 + 0.2 * (s.lv - 1)) * (s.boost || 1) * getEventMultiplier('farm') * getPrestigeMultiplier();
                         s.c = Math.min(cfg.m, s.c + rate * sec);
                         if (cfg.x) {
                             for (const xid in cfg.x) {
@@ -1535,15 +1562,30 @@
         function checkAchievements() {
             for (const a of ACH) {
                 if (S.ach[a.id]) continue;
-                let done = 0;
-                if (a.id === 'h100' || a.id === 'h1000') done = S.stats.harvested >= a.g;
-                else if (a.id === 'm1000' || a.id === 'm10000') done = S.stats.earned >= a.g;
-                else if (a.id === 'p2') done = S.plots.length >= a.g;
-                else if (a.id === 'b1' || a.id === 'b5') done = S.stats.built >= a.g;
-                else if (a.id === 'w1') done = S.workers.length >= a.g;
+                let done = false;
+
+                // Harvest milestones (h100, h1000, h5000)
+                if (a.id.startsWith('h')) done = S.stats.harvested >= a.g;
+                // Money earned milestones (m1000, m10000, m50000, m100000)
+                else if (a.id.startsWith('m')) done = S.stats.earned >= a.g;
+                // Plot ownership (p2, p4)
+                else if (a.id.startsWith('p')) done = S.plots.length >= a.g;
+                // Buildings built (b1, b5, b10)
+                else if (a.id.startsWith('b') && !a.id.startsWith('bu')) done = S.stats.built >= a.g;
+                // Workers hired (w1, w5, w10)
+                else if (a.id.startsWith('w')) done = S.workers.length >= a.g;
+                // Limit orders (lo1)
+                else if (a.id === 'lo1') done = (S.stats.ordersCreated || 0) >= a.g;
+                // Items sold (sell100, sell1000)
+                else if (a.id.startsWith('sell')) done = S.stats.sold >= a.g;
+                // Prestige (prestige1) - handled separately
+                else if (a.id === 'prestige1') done = (S.prestige || 0) >= a.g;
+
                 if (done) {
-                    S.ach[a.id] = 1; S.money += a.r;
-                    playS('ach'); notif(`🏆 ${a.n} (+$${a.r})`);
+                    S.ach[a.id] = 1;
+                    if (a.r > 0) S.money += a.r;
+                    playS('ach');
+                    notif(`🏆 ${a.n}${a.r > 0 ? ` (+$${a.r})` : ''}`);
                 }
             }
         }
@@ -1721,38 +1763,24 @@
         function resetGame() {
             if (!confirm('Are you sure you want to reset ALL progress? This cannot be undone!')) return;
 
-            // Clear local storage
-            localStorage.removeItem('tt4');
-
-            // Reset state to defaults
-            S.money = 0;
-            S.inv = {};
-            S.cap = 100;
-            S.plots = [{ subs: [{ t: 'forest', c: 5, lv: 1 }, { t: 'berryBush', c: 4, lv: 1 }, { t: 'herbPatch', c: 3, lv: 1 }] }];
-            S.workers = [];
-            S.stats = { harvested: 0, sold: 0, earned: 0, built: 0 };
-            S.ach = {};
-            S.prices = {};
-            S.priceDir = {};
-            S.tutorial = 0;
-            S.lastUpdate = Date.now();
-            S.activeEvent = null;
-            S.eventEndsAt = 0;
-            S.nextEventAt = Date.now() + 300000;
-            S.lastDailyReward = 0;
-            S.dailyStreak = 0;
-            S.limitOrders = [];
+            // Clear ALL local storage
+            localStorage.clear();
 
             // Clear cloud save if logged in
             if (loggedInUser && db) {
-                db.collection('saves').doc(loggedInUser.id).delete().catch(e => console.log('Cloud delete failed:', e));
+                db.collection('saves').doc(loggedInUser.id).delete()
+                    .then(() => {
+                        toast('Game reset!', 'ok');
+                        setTimeout(() => location.reload(), 500);
+                    })
+                    .catch(e => {
+                        console.log('Cloud delete failed:', e);
+                        location.reload();
+                    });
+            } else {
+                toast('Game reset!', 'ok');
+                setTimeout(() => location.reload(), 500);
             }
-
-            closeMenu();
-            toast('Game reset!', 'ok');
-            $('tutorial').style.display = 'flex';
-            save();
-            render();
         }
 
         function render() {
