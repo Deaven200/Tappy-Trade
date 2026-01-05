@@ -1176,16 +1176,42 @@
             { day: 7, reward: 1000, desc: '$1000 🎉' },
         ];
 
-        // ===== VERSION TRACKING =====
-        const GAME_VERSION = 'v1.1.1-fixed';
-        const VERSION_DATE = '2026-01-05 13:17';
-        console.log('%c🎮 TAPPY TRADE', 'font-size:20px; font-weight:bold; color:#ffd700');
-        console.log('%cVersion: ' + GAME_VERSION, 'font-size:14px; color:#4ade80');
-        console.log('%cBuild Date: ' + VERSION_DATE, 'font-size:12px; color:#60a5fa');
-        console.log('%c────────────────────────────', 'color:#666');
+        // ===== VERSION & CONFIG =====
+        const GAME_VERSION = 'v1.2.0-cleanup';
+        const VERSION_DATE = '2026-01-05 15:54';
+        const SAVE_VERSION = 2; // Increment when save format changes
 
-        const S = { money: 0, inv: {}, cap: 1000, sound: 1, theme: 'dark', fontSize: 'normal', plots: [{ subs: [{ t: 'forest', c: 5, lv: 1 }, { t: 'berryBush', c: 4, lv: 1 }, { t: 'herbPatch', c: 3, lv: 1 }] }], workers: [], stats: { harvested: 0, sold: 0, earned: 0, built: 0 }, ach: {}, prices: {}, priceDir: {}, tutorial: 0, lastUpdate: Date.now(), activeEvent: null, eventEndsAt: 0, nextEventAt: Date.now() + 300000, lastDailyReward: 0, dailyStreak: 0, limitOrders: [] };
-        console.log('💾 Initial State - Inventory Cap:', S.cap, '| renderChat exists:', typeof renderChat);
+        const CONFIG = {
+            BASE_INVENTORY_CAP: 1000,
+            STORAGE_CAP_PER_BUILDING: 250,
+            EVENT_CHECK_INTERVAL: 300000, // 5 minutes
+            SAVE_INTERVAL: 10000, // 10 seconds
+            MAX_OFFLINE_HOURS: 8,
+            DEBUG_MODE: false // Set to false for production
+        };
+
+        if (CONFIG.DEBUG_MODE) {
+            console.log('%c🎮 TAPPY TRADE', 'font-size:20px; font-weight:bold; color:#ffd700');
+            console.log('%cVersion: ' + GAME_VERSION, 'font-size:14px; color:#4ade80');
+            console.log('%cSave Version: ' + SAVE_VERSION, 'font-size:12px; color:#60a5fa');
+        }
+
+        const S = { saveVersion: SAVE_VERSION, money: 0, inv: {}, cap: CONFIG.BASE_INVENTORY_CAP, sound: 1, theme: 'dark', fontSize: 'normal', plots: [{ subs: [{ t: 'forest', c: 5, lv: 1 }, { t: 'berryBush', c: 4, lv: 1 }, { t: 'herbPatch', c: 3, lv: 1 }] }], workers: [], stats: { harvested: 0, sold: 0, earned: 0, built: 0 }, ach: {}, prices: {}, priceDir: {}, tutorial: 0, lastUpdate: Date.now(), activeEvent: null, eventEndsAt: 0, nextEventAt: Date.now() + CONFIG.EVENT_CHECK_INTERVAL, lastDailyReward: 0, dailyStreak: 0, limitOrders: [] };
+
+        // Save migration function
+        function migrateSave(loadedState) {
+            const version = loadedState.saveVersion || 1;
+            if (CONFIG.DEBUG_MODE) console.log('Migrating save from version', version, 'to', SAVE_VERSION);
+
+            // Version 1 → 2: Fix inventory cap
+            if (version < 2) {
+                loadedState.cap = CONFIG.BASE_INVENTORY_CAP;
+                loadedState.saveVersion = 2;
+                if (CONFIG.DEBUG_MODE) console.log('✅ Migrated cap to', CONFIG.BASE_INVENTORY_CAP);
+            }
+
+            return loadedState;
+        }
 
         let screen = 'home', buildP = null, buildS = null, tipTimer = null;
         const $ = id => document.getElementById(id);
@@ -1225,7 +1251,7 @@
                 window._cloudSaveQueued = true;
             }
         }
-        function load() { try { const d = JSON.parse(localStorage.getItem('tt4')); if (d) { Object.assign(S, d); return 1 } } catch (e) { } return 0 }
+        function load() { try { const d = JSON.parse(localStorage.getItem('tt4')); if (d) { const migrated = migrateSave(d); Object.assign(S, migrated); return 1 } } catch (e) { } return 0 }
 
         // Cloud save functions
         async function saveToCloud() {
@@ -1238,7 +1264,7 @@
                     money: S.money,
                     lastSave: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                console.log('Cloud save complete');
+                // Removed console.log for production
             } catch (e) {
                 console.error('Cloud save failed:', e);
             }
@@ -1258,8 +1284,9 @@
                     const now = Date.now();
                     const offlineTime = now - cloudState.lastUpdate;
 
-                    // Apply cloud state
-                    Object.assign(S, cloudState);
+                    // Apply migrations and cloud state
+                    const migrated = migrateSave(cloudState);
+                    Object.assign(S, migrated);
 
                     // Calculate offline progress (max 8 hours)
                     if (offlineTime > 1000) {
@@ -2040,6 +2067,13 @@
         }
 
         function render() {
+            // Don't re-render if user is typing in an input or textarea
+            const focused = document.activeElement;
+            if (focused && (focused.tagName === 'INPUT' || focused.tagName === 'TEXTAREA' || focused.tagName === 'SELECT')) {
+                // Skip re-render to preserve focus
+                return;
+            }
+
             $('money').textContent = '$' + S.money.toLocaleString();
             $('inv').textContent = getInvTotal();
             const m = $('main');
@@ -2047,11 +2081,7 @@
             else if (screen === 'inventory') renderInventory(m);
             else if (screen === 'workers') renderWorkers(m);
             else if (screen === 'player') {
-                // Don't re-render if user is typing in an input
-                const focused = document.activeElement;
-                if (!focused || (focused.tagName !== 'INPUT' && focused.tagName !== 'SELECT')) {
-                    renderPlayerMarket(m);
-                }
+                renderPlayerMarket(m);
             }
             else if (screen === 'market') renderMarket(m);
             else if (screen === 'chat') renderChat(m);
@@ -2391,7 +2421,7 @@
                 await db.collection('chat').add({
                     text: msg,
                     username: loggedInUser.name,
-                    oderId: loggedInUser.id,
+                    userId: loggedInUser.id,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 input.value = '';
@@ -2401,7 +2431,7 @@
         }
 
         function renderChat(m) {
-            console.log('🔍 renderChat called! userId:', userId, 'loggedInUser:', loggedInUser, 'chatMessages:', chatMessages?.length);
+            // Debug log removed for production
             let h = `<div class="panel" style="display:flex;flex-direction:column;height:calc(100vh - 140px)">
                 <h3>💬 Global Chat</h3>`;
 
@@ -2440,7 +2470,7 @@
 
             h += `</div>`;
             m.innerHTML = h;
-            console.log('✅ Chat HTML set! Length:', h.length);
+            // Debug log removed for production
 
             // Auto-scroll to bottom
             const msgContainer = $('chat-messages');
