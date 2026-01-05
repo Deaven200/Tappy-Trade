@@ -3117,10 +3117,22 @@
                     .then((registration) => {
                         console.log('✅ Service Worker registered successfully');
 
-                        // Check for updates every hour
+                        // Check for updates every 5 minutes (more aggressive)
                         setInterval(() => {
                             registration.update();
-                        }, 3600000);
+                        }, 300000); // 5 minutes
+
+                        // Check for updates when user comes back to the app
+                        document.addEventListener('visibilitychange', () => {
+                            if (!document.hidden) {
+                                registration.update();
+                            }
+                        });
+
+                        // Check for updates when app gains focus
+                        window.addEventListener('focus', () => {
+                            registration.update();
+                        });
 
                         // Listen for updates
                         registration.addEventListener('updatefound', () => {
@@ -3128,11 +3140,12 @@
 
                             newWorker.addEventListener('statechange', () => {
                                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                    // New version available!
-                                    if (confirm('🎉 A new version of Tappy Trade is available! Reload to update?')) {
+                                    // New version available - auto reload after 3 seconds
+                                    console.log('🎉 New version found! Auto-updating in 3 seconds...');
+                                    setTimeout(() => {
                                         newWorker.postMessage({ type: 'SKIP_WAITING' });
                                         window.location.reload();
-                                    }
+                                    }, 3000);
                                 }
                             });
                         });
