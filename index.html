@@ -2391,6 +2391,7 @@
         }
 
         function renderChat(m) {
+            console.log('🔍 renderChat called! userId:', userId, 'loggedInUser:', loggedInUser, 'chatMessages:', chatMessages?.length);
             let h = `<div class="panel" style="display:flex;flex-direction:column;height:calc(100vh - 140px)">
                 <h3>💬 Global Chat</h3>`;
 
@@ -2429,6 +2430,7 @@
 
             h += `</div>`;
             m.innerHTML = h;
+            console.log('✅ Chat HTML set! Length:', h.length);
 
             // Auto-scroll to bottom
             const msgContainer = $('chat-messages');
