@@ -874,9 +874,9 @@
             animation: shake 0.3s ease;
         }
 
-        /* Harvest ready glow */
+        /* Harvest ready glow - DISABLED */
         .sub.ready {
-            animation: glow 2s infinite;
+            /* animation: glow 2s infinite; */
         }
 
         /* Light Theme */
@@ -1113,7 +1113,7 @@
             processed: { n: 'Processed Goods', items: ['planks', 'flour', 'cloth', 'bread'] }
         };
 
-        const T = { forest: { n: 'Forest', i: '🌲', o: 'wood', r: 0.2, m: 30 }, berryBush: { n: 'Berries', i: '🍇', o: 'berries', r: 0.25, m: 25 }, herbPatch: { n: 'Herbs', i: '🌿', o: 'herbs', r: 0.15, m: 20 }, quarry: { n: 'Quarry', i: '⛰️', o: 'stone', r: 0.1, m: 20 }, wheatFarm: { n: 'Wheat', i: '🌾', o: 'wheat', r: 0.3, m: 40, b: 1 }, potatoFarm: { n: 'Potato', i: '🥔', o: 'potato', r: 0.25, m: 35, b: 1 }, carrotFarm: { n: 'Carrot', i: '🥕', o: 'carrot', r: 0.25, m: 35, b: 1 }, cornFarm: { n: 'Corn', i: '🌽', o: 'corn', r: 0.2, m: 30, b: 1 }, soyFarm: { n: 'Soy', i: '🌱', o: 'soy', r: 0.18, m: 25, b: 1 }, chickenCoop: { n: 'Chickens', i: '🐔', o: 'egg', r: 0.12, m: 20, b: 1, x: { chicken: 0.02 } }, cowPasture: { n: 'Cows', i: '🐄', o: 'milk', r: 0.08, m: 15, b: 1, x: { beef: 0.01, leather: 0.015 } }, sheepPen: { n: 'Sheep', i: '🐑', o: 'wool', r: 0.1, m: 18, b: 1, x: { mutton: 0.015 } }, sawmill: { n: 'Sawmill', i: '🏭', o: 'planks', m: 15, b: 1, req: 'wood', use: 2, tap: 1 }, mill: { n: 'Mill', i: '🏭', o: 'flour', m: 20, b: 1, req: 'wheat', use: 3, tap: 1 }, loom: { n: 'Loom', i: '🧵', o: 'cloth', m: 10, b: 1, req: 'wool', use: 3, tap: 1 }, bakery: { n: 'Bakery', i: '🥖', o: 'bread', m: 15, b: 1, req: 'flour', use: 2, tap: 1 }, storage: { n: 'Storage', i: '📦', b: 1, cap: 100 } };
+        const T = { forest: { n: 'Forest', i: '🌲', o: 'wood', r: 0.08, m: 30 }, berryBush: { n: 'Berries', i: '🍇', o: 'berries', r: 0.1, m: 25 }, herbPatch: { n: 'Herbs', i: '🌿', o: 'herbs', r: 0.06, m: 20 }, quarry: { n: 'Quarry', i: '⛰️', o: 'stone', r: 0.04, m: 20 }, wheatFarm: { n: 'Wheat', i: '🌾', o: 'wheat', r: 0.12, m: 40, b: 1 }, potatoFarm: { n: 'Potato', i: '🥔', o: 'potato', r: 0.1, m: 35, b: 1 }, carrotFarm: { n: 'Carrot', i: '🥕', o: 'carrot', r: 0.1, m: 35, b: 1 }, cornFarm: { n: 'Corn', i: '🌽', o: 'corn', r: 0.08, m: 30, b: 1 }, soyFarm: { n: 'Soy', i: '🌱', o: 'soy', r: 0.07, m: 25, b: 1 }, chickenCoop: { n: 'Chickens', i: '🐔', o: 'egg', r: 0.05, m: 20, b: 1, x: { chicken: 0.01 } }, cowPasture: { n: 'Cows', i: '🐄', o: 'milk', r: 0.03, m: 15, b: 1, x: { beef: 0.005, leather: 0.008 } }, sheepPen: { n: 'Sheep', i: '🐑', o: 'wool', r: 0.04, m: 18, b: 1, x: { mutton: 0.007 } }, sawmill: { n: 'Sawmill', i: '🏭', o: 'planks', m: 15, b: 1, req: 'wood', use: 2, tap: 1 }, mill: { n: 'Mill', i: '🏭', o: 'flour', m: 20, b: 1, req: 'wheat', use: 3, tap: 1 }, loom: { n: 'Loom', i: '🧵', o: 'cloth', m: 10, b: 1, req: 'wool', use: 3, tap: 1 }, bakery: { n: 'Bakery', i: '🥖', o: 'bread', m: 15, b: 1, req: 'flour', use: 2, tap: 1 }, storage: { n: 'Storage', i: '📦', b: 1, cap: 100 } };
         const B = { farms: [{ t: 'wheatFarm', c: { m: 500, wood: 20 } }, { t: 'potatoFarm', c: { m: 600, wood: 25 } }, { t: 'carrotFarm', c: { m: 600, wood: 25 } }, { t: 'cornFarm', c: { m: 700, wood: 30 } }, { t: 'soyFarm', c: { m: 800, wood: 35 } }], livestock: [{ t: 'chickenCoop', c: { m: 1000, wood: 40, wheat: 20 } }, { t: 'cowPasture', c: { m: 2500, wood: 60, wheat: 50 } }, { t: 'sheepPen', c: { m: 1500, wood: 50, wheat: 30 } }], manufacturing: [{ t: 'sawmill', c: { m: 2000, stone: 50 } }, { t: 'mill', c: { m: 1500, stone: 30, wood: 40 } }, { t: 'loom', c: { m: 3000, wood: 60, stone: 30 } }, { t: 'bakery', c: { m: 2500, stone: 40, wood: 30 } }], utility: [{ t: 'storage', c: { m: 1000, wood: 50 } }] };
         const PLOTS = [0, 5000, 15000, 35000, 75000];
         const ACH = [
@@ -1358,6 +1358,63 @@
         function addItem(id, n) { S.inv[id] = (S.inv[id] || 0) + n }
         function remItem(id, n) { const h = S.inv[id] || 0, r = Math.min(h, n); S.inv[id] = h - r; if (S.inv[id] <= 0) delete S.inv[id]; return r }
         function getPrice(id) { if (!S.prices[id]) S.prices[id] = R[id]?.p || 1; return S.prices[id] }
+
+        // Game Update Loop
+        function update(dt) {
+            const seconds = dt / 1000;
+
+            // Update all resources
+            S.plots.forEach(p => {
+                p.subs.forEach(s => {
+                    const cfg = T[s.t];
+                    if (!cfg || !cfg.r) return;
+
+                    // Get event multipliers
+                    const farmBoost = getEventMultiplier('farmBoost');
+                    const rate = cfg.r * (s.lv || 1) * seconds * farmBoost;
+
+                    s.c = Math.min((cfg.m || Infinity), s.c + rate);
+                });
+            });
+
+            // Worker auto-harvest (every 5 seconds)
+            const workerBoost = getEventMultiplier('workerBoost');
+            S.workers.forEach(w => {
+                const s = S.plots[w.plot]?.subs[w.sub];
+                if (!s) return;
+                const cfg = T[s.t];
+                if (!cfg) return;
+
+                const interval = 5000 / workerBoost;
+                w.timer = (w.timer || 0) + dt;
+
+                if (w.timer >= interval) {
+                    w.timer = 0;
+                    const cnt = Math.floor(s.c);
+                    if (cnt > 0) {
+                        if (getInvTotal() < S.cap) {
+                            s.c = Math.max(0, s.c - 1);
+                            if (cfg.o) addItem(cfg.o, 1);
+                            if (cfg.x) {
+                                for (const [id, chance] of Object.entries(cfg.x)) {
+                                    if (Math.random() < chance) addItem(id, 1);
+                                }
+                            }
+                            S.stats.harvested = (S.stats.harvested || 0) + 1;
+                        }
+                    }
+                }
+            });
+
+            // Events
+            checkEvents();
+
+            //Update prices
+            updatePrices();
+
+            // Check achievements
+            checkAchievements();
+        }
 
         // Prices slowly drift toward base price (not random anymore)
         function updatePrices() {
