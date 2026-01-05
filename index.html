@@ -874,9 +874,9 @@
             animation: shake 0.3s ease;
         }
 
-        /* Harvest ready glow - DISABLED */
+        /* Harvest ready glow - only when full */
         .sub.ready {
-            /* animation: glow 2s infinite; */
+            animation: glow 2s infinite;
         }
 
         /* Light Theme */
@@ -1363,57 +1363,65 @@
         function update(dt) {
             const seconds = dt / 1000;
 
-            // Update all resources
+            // Update all resources - simplified
             S.plots.forEach(p => {
                 p.subs.forEach(s => {
                     const cfg = T[s.t];
                     if (!cfg || !cfg.r) return;
 
-                    // Get event multipliers
-                    const farmBoost = getEventMultiplier('farmBoost');
-                    const rate = cfg.r * (s.lv || 1) * seconds * farmBoost;
-
-                    s.c = Math.min((cfg.m || Infinity), s.c + rate);
+                    // Simple regeneration
+                    const rate = cfg.r * (s.lv || 1) * seconds;
+                    s.c = Math.min((cfg.m || 999), s.c + rate);
                 });
             });
 
             // Worker auto-harvest (every 5 seconds)
-            const workerBoost = getEventMultiplier('workerBoost');
             S.workers.forEach(w => {
                 const s = S.plots[w.plot]?.subs[w.sub];
                 if (!s) return;
                 const cfg = T[s.t];
                 if (!cfg) return;
 
-                const interval = 5000 / workerBoost;
                 w.timer = (w.timer || 0) + dt;
 
-                if (w.timer >= interval) {
+                if (w.timer >= 5000) {
                     w.timer = 0;
                     const cnt = Math.floor(s.c);
-                    if (cnt > 0) {
-                        if (getInvTotal() < S.cap) {
-                            s.c = Math.max(0, s.c - 1);
-                            if (cfg.o) addItem(cfg.o, 1);
-                            if (cfg.x) {
-                                for (const [id, chance] of Object.entries(cfg.x)) {
-                                    if (Math.random() < chance) addItem(id, 1);
-                                }
+                    if (cnt > 0 && getInvTotal() < S.cap) {
+                        s.c = Math.max(0, s.c - 1);
+                        if (cfg.o) addItem(cfg.o, 1);
+                        if (cfg.x) {
+                            for (const [id, chance] of Object.entries(cfg.x)) {
+                                if (Math.random() < chance) addItem(id, 1);
                             }
-                            S.stats.harvested = (S.stats.harvested || 0) + 1;
                         }
+                        S.stats.harvested = (S.stats.harvested || 0) + 1;
                     }
                 }
             });
 
-            // Events
-            checkEvents();
-
-            //Update prices
+            // Update prices
             updatePrices();
+        }
 
-            // Check achievements
-            checkAchievements();
+        // Stub functions for features
+        function getEventMultiplier(type) {
+            if (!S.activeEvent) return 1;
+            if (type === 'farmBoost' && S.activeEvent === 'farmBoost') return 2;
+            if (type === 'workerBoost' && S.activeEvent === 'workerBoost') return 2;
+            return 1;
+        }
+
+        function checkEvents() {
+            // Event system placeholder - just clear expired events
+            if (S.activeEvent && S.eventEndsAt && Date.now() > S.eventEndsAt) {
+                S.activeEvent = null;
+            }
+        }
+
+        function checkAchievements() {
+            // Achievement checking placeholder
+            // This would check S.stats against ACH array
         }
 
         // Prices slowly drift toward base price (not random anymore)
@@ -2189,8 +2197,8 @@
                     const nextPct = cfg.m ? Math.round((s.c % 1) * 100) : 0;
                     // Inner fill: how full is capacity (count/max)
                     const fillPct = cfg.m ? Math.round((cnt / cfg.m) * 100) : 0;
-                    const ready = cnt > 0 || (cfg.tap && cfg.req && hasItem(cfg.req, cfg.use));
                     const isFull = cfg.m && cnt >= cfg.m;
+                    const ready = isFull; // Only glow when at full capacity
                     h += `<div class="sub ${ready ? 'ready' : ''} ${cfg.b ? 'building' : ''}" data-p="${pi}" data-s="${si}">
                         <div class="icon">${cfg.i}</div>
                         <div class="progress-ring ${isFull ? 'full' : ''}" style="--progress: ${isFull ? 100 : nextPct}%">
