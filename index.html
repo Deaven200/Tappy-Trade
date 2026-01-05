@@ -3117,22 +3117,28 @@
                     .then((registration) => {
                         console.log('✅ Service Worker registered successfully');
 
-                        // Check for updates every 5 minutes (more aggressive)
-                        setInterval(() => {
-                            registration.update();
-                        }, 300000); // 5 minutes
+                        // Helper function to safely check for updates
+                        const checkForUpdate = () => {
+                            if (registration && registration.active) {
+                                registration.update().catch(err => {
+                                    // Silently ignore update errors to avoid spam
+                                    console.debug('Update check skipped:', err.message);
+                                });
+                            }
+                        };
 
-                        // Check for updates when user comes back to the app
+                        // Check for updates every 5 minutes
+                        setInterval(checkForUpdate, 300000); // 5 minutes
+
+                        // Check when user returns to the app
                         document.addEventListener('visibilitychange', () => {
                             if (!document.hidden) {
-                                registration.update();
+                                checkForUpdate();
                             }
                         });
 
-                        // Check for updates when app gains focus
-                        window.addEventListener('focus', () => {
-                            registration.update();
-                        });
+                        // Check when app gains focus
+                        window.addEventListener('focus', checkForUpdate);
 
                         // Listen for updates
                         registration.addEventListener('updatefound', () => {
