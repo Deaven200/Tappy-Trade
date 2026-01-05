@@ -1,7 +1,7 @@
 // Tappy Trade Service Worker
 // Handles caching and automatic updates
 
-const CACHE_VERSION = 'tappy-trade-v1.0.7';
+const CACHE_VERSION = 'tappy-trade-v1.1.0';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
