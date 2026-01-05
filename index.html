@@ -1176,7 +1176,17 @@
             { day: 7, reward: 1000, desc: '$1000 🎉' },
         ];
 
+        // ===== VERSION TRACKING =====
+        const GAME_VERSION = 'v1.1.0-chat-debug';
+        const VERSION_DATE = '2026-01-05 13:13';
+        console.log('%c🎮 TAPPY TRADE', 'font-size:20px; font-weight:bold; color:#ffd700');
+        console.log('%cVersion: ' + GAME_VERSION, 'font-size:14px; color:#4ade80');
+        console.log('%cBuild Date: ' + VERSION_DATE, 'font-size:12px; color:#60a5fa');
+        console.log('%c────────────────────────────', 'color:#666');
+
         const S = { money: 0, inv: {}, cap: 1000, sound: 1, theme: 'dark', fontSize: 'normal', plots: [{ subs: [{ t: 'forest', c: 5, lv: 1 }, { t: 'berryBush', c: 4, lv: 1 }, { t: 'herbPatch', c: 3, lv: 1 }] }], workers: [], stats: { harvested: 0, sold: 0, earned: 0, built: 0 }, ach: {}, prices: {}, priceDir: {}, tutorial: 0, lastUpdate: Date.now(), activeEvent: null, eventEndsAt: 0, nextEventAt: Date.now() + 300000, lastDailyReward: 0, dailyStreak: 0, limitOrders: [] };
+        console.log('💾 Initial State - Inventory Cap:', S.cap, '| renderChat exists:', typeof renderChat);
+
         let screen = 'home', buildP = null, buildS = null, tipTimer = null;
         const $ = id => document.getElementById(id);
 
