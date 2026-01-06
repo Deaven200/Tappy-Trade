@@ -2598,6 +2598,16 @@
             appId: "1:408809771678:web:205415f89cac488604618f"
         };
 
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDLfDJ8cU17BjPRdxh3Q9mBt4pKjMGfHV0",
+            authDomain: "tappy-trade.firebaseapp.com",
+            projectId: "tappy-trade",
+            storageBucket: "tappy-trade.firebasestorage.app",
+            messagingSenderId: "990904496527",
+            appId: "1:990904496527:web:45e1f6a0c10f6b5a8e0831"
+        };
+
         let db = null, auth = null, userId = null, unsubOrders = null;
         let orders = [];
 
@@ -2612,7 +2622,6 @@
                 userId = result.user.uid;
                 console.log('Firebase connected, user:', userId);
                 notif('🌐 Connected to market!');
-                initChat(); // Initialize chat listener
 
                 // Listen for orders
                 unsubOrders = db.collection('orders')
