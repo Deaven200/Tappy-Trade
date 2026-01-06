@@ -1556,7 +1556,14 @@
                     const cnt = Math.floor(s.c);
                     if (cnt > 0 && getInvTotal() < S.cap) {
                         s.c = Math.max(0, s.c - 1);
+                        // Handle regular output
                         if (cfg.o) addItem(cfg.o, 1);
+                        // Handle resource pools (e.g., wild subplots)
+                        if (cfg.pool) {
+                            const randomItem = cfg.pool[Math.floor(Math.random() * cfg.pool.length)];
+                            addItem(randomItem, 1);
+                        }
+                        // Handle extra/bonus resources
                         if (cfg.x) {
                             for (const [id, chance] of Object.entries(cfg.x)) {
                                 if (Math.random() < chance) addItem(id, 1);
