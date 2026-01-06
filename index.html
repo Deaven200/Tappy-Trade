@@ -1177,8 +1177,8 @@
         ];
 
         // ===== VERSION & CONFIG =====
-        const GAME_VERSION = 'v1.3.0-qa-fixes';
-        const VERSION_DATE = '2026-01-05 16:52';
+        const GAME_VERSION = 'v1.3.1-simplified';
+        const VERSION_DATE = '2026-01-05 18:51';
         const SAVE_VERSION = 2; // Increment when save format changes
 
         const CONFIG = {
@@ -2129,7 +2129,10 @@
 
                 // Calculate total value
                 const totalValue = items.reduce((sum, [id, qty]) => sum + qty * (R[id]?.p || 0), 0);
-                h += `<div style="font-size:0.75rem;color:var(--muted);margin-bottom:10px">Total Value: <span style="color:var(--gold)">$${totalValue.toLocaleString()}</span></div>`;
+                h += `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+                    <div style="font-size:0.75rem;color:var(--muted)">Total Value: <span style="color:var(--gold)">$${totalValue.toLocaleString()}</span></div>
+                    <button class="btn green" onclick="sellAll()" style="padding:6px 12px">💰 Sell All</button>
+                </div>`;
 
                 if (invView === 'grid') {
                     h += `<div class="inv-grid">`;
