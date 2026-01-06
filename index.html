@@ -1921,7 +1921,7 @@
             const cost = PLOTS[S.plots.length] || 999999;
             if (S.money < cost) { toast('Not enough!', 'err'); return }
             S.money -= cost;
-            S.plots.push({ subs: [{ t: 'forest', c: 3, lv: 1 }, { t: 'berryBush', c: 2, lv: 1 }, { t: 'quarry', c: 1, lv: 1 }] });
+            S.plots.push({ subs: [{ t: 'wild', c: 10, lv: 1 }, { t: 'wild', c: 10, lv: 1 }, { t: 'wild', c: 10, lv: 1 }] });
             playS('sell'); toast('New plot!', 'ok'); save(); render();
         }
 
