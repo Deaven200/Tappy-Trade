@@ -1065,6 +1065,14 @@
             <h3 style="margin-bottom:12px">☰ Menu</h3>
             <div id="account-status"
                 style="margin-bottom:12px;padding:10px;background:var(--bg2);border-radius:8px;font-size:0.85rem"></div>
+            <div
+                style="margin-bottom:12px;padding:10px;background:var(--bg2);border-radius:8px;display:flex;justify-content:space-between;align-items:center">
+                <div>
+                    <div style="font-size:0.7rem;color:var(--muted);margin-bottom:4px">Farm Name</div>
+                    <div id="farm-name-display" style="font-weight:600"></div>
+                </div>
+                <button class="btn" onclick="renameFarm()" style="font-size:0.7rem">✏️ Rename</button>
+            </div>
             <button class="btn" style="width:100%;margin-bottom:8px" onclick="showStats()">📊 Statistics</button>
             <button class="btn" style="width:100%;margin-bottom:8px" onclick="showHelp()">❓ Help</button>
             <button class="btn" style="width:100%;margin-bottom:8px" onclick="showAchievements()">🏆
@@ -1194,7 +1202,7 @@
             processed: { n: 'Processed Goods', items: ['planks', 'flour', 'cloth', 'bread'] }
         };
 
-        const T = { forest: { n: 'Forest', i: '🌲', o: 'wood', r: 0.08, m: 30 }, berryBush: { n: 'Berries', i: '🍇', o: 'berries', r: 0.1, m: 25 }, herbPatch: { n: 'Herbs', i: '🌿', o: 'herbs', r: 0.06, m: 20 }, quarry: { n: 'Quarry', i: '⛰️', o: 'stone', r: 0.04, m: 20 }, wheatFarm: { n: 'Wheat', i: '🌾', o: 'wheat', r: 0.12, m: 40, b: 1 }, potatoFarm: { n: 'Potato', i: '🥔', o: 'potato', r: 0.1, m: 35, b: 1 }, carrotFarm: { n: 'Carrot', i: '🥕', o: 'carrot', r: 0.1, m: 35, b: 1 }, cornFarm: { n: 'Corn', i: '🌽', o: 'corn', r: 0.08, m: 30, b: 1 }, soyFarm: { n: 'Soy', i: '🌱', o: 'soy', r: 0.07, m: 25, b: 1 }, chickenCoop: { n: 'Chickens', i: '🐔', o: 'egg', r: 0.05, m: 20, b: 1, x: { chicken: 0.01 } }, cowPasture: { n: 'Cows', i: '🐄', o: 'milk', r: 0.03, m: 15, b: 1, x: { beef: 0.005, leather: 0.008 } }, sheepPen: { n: 'Sheep', i: '🐑', o: 'wool', r: 0.04, m: 18, b: 1, x: { mutton: 0.007 } }, sawmill: { n: 'Sawmill', i: '🏭', o: 'planks', m: 15, b: 1, req: 'wood', use: 2, tap: 1 }, mill: { n: 'Mill', i: '🏭', o: 'flour', m: 20, b: 1, req: 'wheat', use: 3, tap: 1 }, loom: { n: 'Loom', i: '🧵', o: 'cloth', m: 10, b: 1, req: 'wool', use: 3, tap: 1 }, bakery: { n: 'Bakery', i: '🥖', o: 'bread', m: 15, b: 1, req: 'flour', use: 2, tap: 1 }, storage: { n: 'Storage', i: '📦', b: 1, cap: 250 } };
+        const T = { wild: { n: 'Wilderness', i: '🌿', m: 10, tap: 1, pool: ['wood', 'berries', 'herbs', 'stone'] }, forest: { n: 'Forest', i: '🌲', o: 'wood', r: 0.08, m: 30 }, berryBush: { n: 'Berries', i: '🍇', o: 'berries', r: 0.1, m: 25 }, herbPatch: { n: 'Herbs', i: '🌿', o: 'herbs', r: 0.06, m: 20 }, quarry: { n: 'Quarry', i: '⛰️', o: 'stone', r: 0.04, m: 20 }, wheatFarm: { n: 'Wheat', i: '🌾', o: 'wheat', r: 0.12, m: 40, b: 1 }, potatoFarm: { n: 'Potato', i: '🥔', o: 'potato', r: 0.1, m: 35, b: 1 }, carrotFarm: { n: 'Carrot', i: '🥕', o: 'carrot', r: 0.1, m: 35, b: 1 }, cornFarm: { n: 'Corn', i: '🌽', o: 'corn', r: 0.08, m: 30, b: 1 }, soyFarm: { n: 'Soy', i: '🌱', o: 'soy', r: 0.07, m: 25, b: 1 }, chickenCoop: { n: 'Chickens', i: '🐔', o: 'egg', r: 0.05, m: 20, b: 1, x: { chicken: 0.01 } }, cowPasture: { n: 'Cows', i: '🐄', o: 'milk', r: 0.03, m: 15, b: 1, x: { beef: 0.005, leather: 0.008 } }, sheepPen: { n: 'Sheep', i: '🐑', o: 'wool', r: 0.04, m: 18, b: 1, x: { mutton: 0.007 } }, sawmill: { n: 'Sawmill', i: '🏭', o: 'planks', m: 15, b: 1, req: 'wood', use: 2, tap: 1 }, mill: { n: 'Mill', i: '🏭', o: 'flour', m: 20, b: 1, req: 'wheat', use: 3, tap: 1 }, loom: { n: 'Loom', i: '🧵', o: 'cloth', m: 10, b: 1, req: 'wool', use: 3, tap: 1 }, bakery: { n: 'Bakery', i: '🥖', o: 'bread', m: 15, b: 1, req: 'flour', use: 2, tap: 1 }, storage: { n: 'Storage', i: '📦', b: 1, cap: 250 } };
         const B = { farms: [{ t: 'wheatFarm', c: { m: 500, wood: 20 } }, { t: 'potatoFarm', c: { m: 600, wood: 25 } }, { t: 'carrotFarm', c: { m: 600, wood: 25 } }, { t: 'cornFarm', c: { m: 700, wood: 30 } }, { t: 'soyFarm', c: { m: 800, wood: 35 } }], livestock: [{ t: 'chickenCoop', c: { m: 1000, wood: 40, wheat: 20 } }, { t: 'cowPasture', c: { m: 2500, wood: 60, wheat: 50 } }, { t: 'sheepPen', c: { m: 1500, wood: 50, wheat: 30 } }], manufacturing: [{ t: 'sawmill', c: { m: 2000, stone: 50 } }, { t: 'mill', c: { m: 1500, stone: 30, wood: 40 } }, { t: 'loom', c: { m: 3000, wood: 60, stone: 30 } }, { t: 'bakery', c: { m: 2500, stone: 40, wood: 30 } }], utility: [{ t: 'storage', c: { m: 1000, wood: 50 } }] };
         const PLOTS = [0, 5000, 15000, 35000, 75000];
         const ACH = [
@@ -1266,7 +1274,7 @@
             console.log('%cSave Version: ' + SAVE_VERSION, 'font-size:12px; color:#60a5fa');
         }
 
-        const S = { saveVersion: SAVE_VERSION, money: 0, inv: {}, cap: CONFIG.BASE_INVENTORY_CAP, sound: 1, theme: 'dark', fontSize: 'normal', plots: [{ subs: [{ t: 'forest', c: 5, lv: 1 }, { t: 'berryBush', c: 4, lv: 1 }, { t: 'herbPatch', c: 3, lv: 1 }] }], workers: [], stats: { harvested: 0, sold: 0, earned: 0, built: 0 }, ach: {}, prices: {}, priceDir: {}, tutorial: 0, lastUpdate: Date.now(), activeEvent: null, eventEndsAt: 0, nextEventAt: Date.now() + CONFIG.EVENT_CHECK_INTERVAL, lastDailyReward: 0, dailyStreak: 0, limitOrders: [] };
+        const S = { saveVersion: SAVE_VERSION, money: 0, inv: {}, cap: CONFIG.BASE_INVENTORY_CAP, sound: 1, theme: 'dark', fontSize: 'normal', plots: [{ subs: [{ t: 'wild', c: 10, lv: 1 }, { t: 'wild', c: 10, lv: 1 }, { t: 'wild', c: 10, lv: 1 }] }], workers: [], stats: { harvested: 0, sold: 0, earned: 0, built: 0 }, ach: {}, prices: {}, priceDir: {}, tutorial: 0, lastUpdate: Date.now(), activeEvent: null, eventEndsAt: 0, nextEventAt: Date.now() + CONFIG.EVENT_CHECK_INTERVAL, lastDailyReward: 0, dailyStreak: 0, limitOrders: [], farmName: "Untitled Farm", hasRenamedFarm: false };
 
         // Save migration function
         function migrateSave(loadedState) {
@@ -1279,6 +1287,10 @@
                 loadedState.saveVersion = 2;
                 if (CONFIG.DEBUG_MODE) console.log('✅ Migrated cap to', CONFIG.BASE_INVENTORY_CAP);
             }
+
+            // Add missing fields
+            if (!loadedState.farmName) loadedState.farmName = "Untitled Farm";
+            if (loadedState.hasRenamedFarm === undefined) loadedState.hasRenamedFarm = false;
 
             return loadedState;
         }
@@ -1304,6 +1316,43 @@
             }
 
             setTimeout(() => container.remove(), 4000);
+        }
+
+        // ===== GAME FEATURES =====
+        // Calculate synergy bonus - +10% regen when all 3 subplots match
+        function calculateSynergyBonus(plot) {
+            if (!plot || !plot.subs || plot.subs.length < 3) return 1.0;
+            const types = plot.subs.map(s => s.t);
+            // Check if all three match (excluding wild subplots)
+            const allMatch = types.every(t => t === types[0]) && types[0] !== 'wild';
+            return allMatch ? 1.1 : 1.0;
+        }
+
+        // Get themed background for plot based on subplot types
+        function getPlotBackground(plot) {
+            if (!plot || !plot.subs || plot.subs.length < 3) return 'var(--bg2)';
+            const types = plot.subs.map(s => s.t);
+            const allMatch = types.every(t => t === types[0]);
+            if (!allMatch) return 'var(--bg2)';
+
+            const type = types[0];
+            // Forest theme
+            if (type === 'forest' || type === 'berryBush' || type === 'herbPatch' || type === 'quarry') {
+                return 'linear-gradient(135deg, #1a4d2e 0%, #2d5016 100%)';
+            }
+            // Farm theme
+            if (type === 'wheatFarm' || type === 'potatoFarm' || type === 'carrotFarm' || type === 'cornFarm' || type === 'soyFarm') {
+                return 'linear-gradient(135deg, #8b6914 0%, #a0522d 100%)';
+            }
+            // Livestock theme
+            if (type === 'chickenCoop' || type === 'cowPasture' || type === 'sheepPen') {
+                return 'linear-gradient(135deg, #654321 0%, #8b4513 100%)';
+            }
+            // Manufacturing theme
+            if (type === 'sawmill' || type === 'mill' || type === 'loom' || type === 'bakery') {
+                return 'linear-gradient(135deg, #36454f 0%, #708090 100%)';
+            }
+            return 'var(--bg2)';
         }
 
         // Apply theme and font size
@@ -1735,8 +1784,22 @@
                 if (el) { el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); }
                 return;
             }
-            if (cfg.tap) {
-                if (!cfg.req) { toast('Nothing to produce', 'err'); return }
+
+            // Wild subplot gives random resources
+            if (cfg.pool) {
+                const randomItem = cfg.pool[Math.floor(Math.random() * cfg.pool.length)];
+                addItem(randomItem, 1);
+                S.stats.harvested++;
+                playS('tap');
+                floatTextAt(`+1 ${R[randomItem]?.i}`, el);
+                const iconEl = el?.querySelector('.icon');
+                if (iconEl) { iconEl.classList.remove('pop'); void iconEl.offsetWidth; iconEl.classList.add('pop'); }
+                save(); render();
+                return;
+            }
+
+            // Manufacturing/crafting buildings
+            if (cfg.req) {
                 if (!hasItem(cfg.req, cfg.use)) {
                     toast(`Need ${cfg.use} ${R[cfg.req]?.i || cfg.req}`, 'err');
                     playS('err');
@@ -2282,7 +2345,7 @@
                     const fillPct = cfg.m ? Math.round((cnt / cfg.m) * 100) : 0;
                     const isFull = cfg.m && cnt >= cfg.m;
                     const ready = isFull; // Only glow when at full capacity
-                    h += `<div class="sub ${ready ? 'ready' : ''} ${cfg.b ? 'building' : ''}" data-p="${pi}" data-s="${si}">
+                    h += `<div class="sub ${ready ? 'ready' : ''} ${cfg.b ? 'building' : ''}" data-p="${pi}" data-s="${si}" style="opacity:0.85;backdrop-filter:blur(2px)">
                         <div class="icon">${cfg.i}</div>
                         <div class="progress-ring ${isFull ? 'full' : ''}" style="--progress: ${isFull ? 100 : nextPct}%">
                             <div class="progress-ring-inner" style="background: linear-gradient(to top, var(--green) ${fillPct}%, var(--card) ${fillPct}%)">
@@ -3072,6 +3135,30 @@
             }
         });
 
+        // ===== FARM NAMING =====
+        function renameFarm() {
+            const currentName = S.farmName || "Untitled Farm";
+            const name = prompt(`Enter farm name (max 20 chars):`, currentName);
+            if (!name || name.trim() === '') return;
+            if (name.length > 20) {
+                toast('Name too long! Max 20 characters', 'err');
+                return;
+            }
+
+            const trimmedName = name.trim();
+            if (S.hasRenamedFarm && S.money < 1000) {
+                toast('Renaming costs $1000!', 'err');
+                return;
+            }
+
+            if (S.hasRenamedFarm) S.money -= 1000;
+            S.farmName = trimmedName;
+            S.hasRenamedFarm = true;
+            save();
+            toast(`Farm renamed to "${trimmedName}"!`, 'ok');
+            closeMenu();
+        }
+
         // ===== RESET GAME =====
         function resetGame() {
             if (confirm('Are you sure you want to reset ALL your progress? This cannot be undone!')) {
@@ -3089,6 +3176,9 @@
                 modal.classList.remove('show');
             } else {
                 updateAccountUI();
+                // Update farm name display
+                const farmNameEl = $('farm-name-display');
+                if (farmNameEl) farmNameEl.textContent = S.farmName || "Untitled Farm";
                 modal.classList.add('show');
             }
         }
