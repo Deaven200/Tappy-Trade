@@ -3018,13 +3018,16 @@
                 });
         }
 
-        function renderChat(m) {
+        function renderChat() {
+            const container = $('chat-messages');
+            if (!container) return;
+
             if (!chatMessages || chatMessages.length === 0) {
-                m.innerHTML = '<div class="panel"><h3>💬 Chat</h3><div class="empty">No messages yet. Log in to start chatting!</div></div>';
+                container.innerHTML = '<div class="empty">No messages yet. Log in to start chatting!</div>';
                 return;
             }
 
-            let h = '<div class="panel"><h3>💬 Chat</h3><div style="max-height:calc(100vh - 200px);overflow-y:auto">';
+            let h = '';
 
             chatMessages.forEach(msg => {
                 const isOwn = loggedInUser && msg.userId === loggedInUser.id;
@@ -3034,8 +3037,9 @@
                 </div>`;
             });
 
-            h += '</div></div>';
-            m.innerHTML = h;
+
+            container.innerHTML = h;
+            container.scrollTop = container.scrollHeight;
         }
 
         async function sendChat() {
