@@ -2422,7 +2422,7 @@
             try {
                 await db.collection('chat').add({
                     text: msg,
-                    username: loggedInUser.name,
+                    username: loggedInUser.username,
                     userId: loggedInUser.id,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
