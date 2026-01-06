@@ -1051,20 +1051,6 @@
         </nav>
     </div>
 
-    <!-- Menu Modal -->
-    <div id="menu-overlay" class="menu-overlay" onclick="closeMenu()"></div>
-    <div id="menu-modal" class="menu-modal">
-        <div class="menu-header">
-            <h3>Menu</h3>
-            <button onclick="closeMenu()"
-                style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--text)">×</button>
-        </div>
-        <div class="menu-content">
-            <button class="menu-item" onclick="showStats()">📊 Statistics</button>
-            <button class="menu-item" onclick="showHelp()">❓ Help</button>
-        </div>
-    </div>
-
     <div class="toast" id="toast"></div>
     <div class="modal" id="build-modal">
         <div class="modal-box">
@@ -3139,7 +3125,12 @@
 
         function showHelp() {
             closeMenu();
-            const helpText = `
+            screen = 'help';
+            render();
+        }
+
+        function renderHelp(m) {
+            m.innerHTML = `
                 <div class="panel">
                     <h3>📖 How to Play Tappy Trade</h3>
                     
@@ -3169,7 +3160,6 @@
                     <button class="btn" onclick="screen='home';render()" style="margin-top:20px;width:100%">Back to Game</button>
                 </div>
             `;
-            document.getElementById('main').innerHTML = helpText;
         }
 
         // ===== INIT =====
