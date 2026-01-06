@@ -2195,6 +2195,7 @@
             }
             else if (screen === 'chat') renderChat(m);
             else if (screen === 'stats') renderStats(m);
+            else if (screen === 'help') renderHelp(m);
             // Update nav button active states
             document.querySelectorAll('.nav button').forEach(b => {
                 b.classList.toggle('active', b.dataset.s === screen);
@@ -3092,23 +3093,17 @@
         let menuOpen = false;
 
         function toggleMenu() {
-            menuOpen = !menuOpen;
-            const menu = document.getElementById('menu-modal');
-            const overlay = document.getElementById('menu-overlay');
-
-            if (menuOpen) {
-                menu.classList.add('active');
-                overlay.classList.add('active');
+            const modal = $('menu-modal');
+            if (modal.classList.contains('show')) {
+                modal.classList.remove('show');
             } else {
-                menu.classList.remove('active');
-                overlay.classList.remove('active');
+                updateAccountUI();
+                modal.classList.add('show');
             }
         }
 
         function closeMenu() {
-            menuOpen = false;
-            document.getElementById('menu-modal').classList.remove('active');
-            document.getElementById('menu-overlay').classList.remove('active');
+            $('menu-modal').classList.remove('show');
         }
 
         function renderStats(m) {
