@@ -1065,6 +1065,8 @@
             <h3 style="margin-bottom:12px">☰ Menu</h3>
             <div id="account-status"
                 style="margin-bottom:12px;padding:10px;background:var(--bg2);border-radius:8px;font-size:0.85rem"></div>
+            <button class="btn" style="width:100%;margin-bottom:8px" onclick="showStats()">📊 Statistics</button>
+            <button class="btn" style="width:100%;margin-bottom:8px" onclick="showHelp()">❓ Help</button>
             <button class="btn" style="width:100%;margin-bottom:8px" onclick="showAchievements()">🏆
                 Achievements</button>
             <button class="btn" style="width:100%;margin-bottom:8px" onclick="showDaily()">🎁 Daily Rewards</button>
@@ -2179,7 +2181,6 @@
             else if (screen === 'player') {
                 renderPlayerMarket(m);
             }
-            else if (screen === 'chat') renderChat(m);
             else if (screen === 'stats') renderStats(m);
             else if (screen === 'help') renderHelp(m);
             // Update nav button active states
@@ -3194,10 +3195,14 @@
                     // Button 1 toggles between home and inventory
                     if (b.id === 'nav-1') {
                         screen = screen === 'inventory' ? 'home' : 'inventory';
+                        render();
+                    } else if (b.dataset.s === 'chat') {
+                        // Chat opens a modal instead of rendering inline
+                        showChat();
                     } else {
                         screen = b.dataset.s;
+                        render();
                     }
-                    render();
                 };
             });
 
