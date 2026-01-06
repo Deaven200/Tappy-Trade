@@ -3030,7 +3030,25 @@
                 });
         }
 
-        // Duplicate renderChat removed - using main definition at line ~2403
+        function renderChat(m) {
+            if (!chatMessages || chatMessages.length === 0) {
+                m.innerHTML = '<div class="panel"><h3>💬 Chat</h3><div class="empty">No messages yet. Log in to start chatting!</div></div>';
+                return;
+            }
+
+            let h = '<div class="panel"><h3>💬 Chat</h3><div style="max-height:calc(100vh - 200px);overflow-y:auto">';
+
+            chatMessages.forEach(msg => {
+                const isOwn = loggedInUser && msg.userId === loggedInUser.id;
+                h += `<div style="padding:10px;margin-bottom:8px;background:var(--bg2);border-radius:8px;${isOwn ? 'border-left:3px solid var(--gold)' : ''}">
+                    <div style="font-weight:600;color:${isOwn ? 'var(--gold)' : 'var(--text)'};margin-bottom:4px">${msg.userName || 'Anonymous'}</div>
+                    <div style="color:var(--text);font-size:0.9rem">${msg.text}</div>
+                </div>`;
+            });
+
+            h += '</div></div>';
+            m.innerHTML = h;
+        }
 
         async function sendChat() {
             const input = $('chat-input');
@@ -3091,6 +3109,31 @@
             menuOpen = false;
             document.getElementById('menu-modal').classList.remove('active');
             document.getElementById('menu-overlay').classList.remove('active');
+        }
+
+        function renderStats(m) {
+            const stats = S.stats || {};
+            let h = '<div class="panel"><h3>📊 Statistics</h3>';
+
+            h += '<div class="list">';
+            h += `<div class="item"><span class="ic">🌾</span><span class="nm">Total Harvested</span><span class="qt">${(stats.harvested || 0).toLocaleString()}</span></div>`;
+            h += `<div class="item"><span class="ic">💰</span><span class="nm">Total Earned</span><span class="qt">$${(stats.earned || 0).toLocaleString()}</span></div>`;
+            h += `<div class="item"><span class="ic">📤</span><span class="nm">Items Sold</span><span class="qt">${(stats.sold || 0).toLocaleString()}</span></div>`;
+            h += `<div class="item"><span class="ic">🏗️</span><span class="nm">Buildings Built</span><span class="qt">${(stats.built || 0).toLocaleString()}</span></div>`;
+            h += `<div class="item"><span class="ic">👷</span><span class="nm">Workers Hired</span><span class="qt">${S.workers.length}</span></div>`;
+            h += `<div class="item"><span class="ic">📊</span><span class="nm">Plots Owned</span><span class="qt">${S.plots.length}</span></div>`;
+            h += '</div>';
+
+            h += '<div style="margin-top:16px;padding:12px;background:var(--bg2);border-radius:8px;text-align:center">';
+            h += `<div style="font-size:0.7rem;color:var(--muted);margin-bottom:4px">Game Version</div>`;
+            h += `<div style="font-weight:600">${GAME_VERSION}</div>`;
+            h += `<div style="font-size:0.65rem;color:var(--muted);margin-top:4px">${VERSION_DATE}</div>`;
+            h += '</div>';
+
+            h += '<button class="btn" onclick="screen=\'home\';render()" style="width:100%;margin-top:12px">Back to Home</button>';
+            h += '</div>';
+
+            m.innerHTML = h;
         }
 
         function showStats() {
