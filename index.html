@@ -974,13 +974,11 @@
         </header>
         <div class="main" id="main"></div>
         <nav class="nav">
-            <button data-s="home" id="nav-1" class="active"><span class="num">1</span><span class="lbl"
-                    id="nav-1-label">Home</span></button>
-            <button data-s="workers"><span class="num">2</span><span class="lbl">Workers</span></button>
-            <button data-s="player"><span class="num">3</span><span class="lbl">Trade</span></button>
-            <button data-s="market"><span class="num">4</span><span class="lbl">Gov</span></button>
+            <button data-s="home" id="nav-1"><span class="num">1</span><span class="lbl">Home</span></button>
+            <button data-s="inventory" id="nav-2"><span class="num">2</span><span class="lbl">Inventory</span></button>
+            <button data-s="workers"><span class="num">3</span><span class="lbl">Workers</span></button>
+            <button data-s="player"><span class="num">4</span><span class="lbl">Market</span></button>
             <button data-s="chat"><span class="num">5</span><span class="lbl">Chat</span></button>
-            <button data-s="stats"><span class="num">6</span><span class="lbl">Stats</span></button>
         </nav>
     </div>
     <div class="toast" id="toast"></div>
@@ -1177,8 +1175,8 @@
         ];
 
         // ===== VERSION & CONFIG =====
-        const GAME_VERSION = 'v1.3.1-simplified';
-        const VERSION_DATE = '2026-01-05 18:51';
+        const GAME_VERSION = 'v1.3.2-launch';
+        const VERSION_DATE = '2026-01-05 19:38';
         const SAVE_VERSION = 2; // Increment when save format changes
 
         const CONFIG = {
@@ -1807,6 +1805,32 @@
             save(); render();
         }
 
+        function sellAll() {
+            let totalEarned = 0;
+            const items = Object.keys(S.inv).filter(id => S.inv[id] > 0);
+
+            items.forEach(id => {
+                const qty = S.inv[id];
+                const price = getPrice(id);
+                const earn = Math.floor(qty * price * getEventMultiplier('price'));
+                totalEarned += earn;
+                S.stats.sold += qty;
+                S.stats.earned += earn;
+                adjustPrice(id, 'sell', qty);
+                delete S.inv[id];
+            });
+
+            if (totalEarned > 0) {
+                S.money += totalEarned;
+                playS('sell');
+                floatText(`+$${totalEarned}`, window.innerWidth / 2 - 30, 60, 'sell');
+                toast(`Sold everything for $${totalEarned}!`, 'ok');
+                save(); render();
+            } else {
+                toast('Nothing to sell!', 'err');
+            }
+        }
+
         function buyFromGov(id, n) {
             const price = Math.ceil(getPrice(id) * 1.2); // 20% markup to buy
             const totalCost = n * price;
@@ -2085,15 +2109,11 @@
             else if (screen === 'player') {
                 renderPlayerMarket(m);
             }
-            else if (screen === 'market') renderMarket(m);
-            else if (screen === 'chat') renderChat(m);
             else if (screen === 'stats') renderStats(m);
             // Update nav button active states
             document.querySelectorAll('.nav button').forEach(b => {
-                b.classList.toggle('active', b.dataset.s === screen || (b.id === 'nav-1' && (screen === 'home' || screen === 'inventory')));
+                b.classList.toggle('active', b.dataset.s === screen);
             });
-            // Update button 1 label
-            $('nav-1-label').textContent = screen === 'inventory' ? 'Home' : 'Inventory';
         }
 
         function renderInventory(m) {
