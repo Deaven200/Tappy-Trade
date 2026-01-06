@@ -1177,8 +1177,8 @@
         ];
 
         // ===== VERSION & CONFIG =====
-        const GAME_VERSION = 'v1.2.0-cleanup';
-        const VERSION_DATE = '2026-01-05 15:54';
+        const GAME_VERSION = 'v1.3.0-qa-fixes';
+        const VERSION_DATE = '2026-01-05 16:52';
         const SAVE_VERSION = 2; // Increment when save format changes
 
         const CONFIG = {
@@ -1544,6 +1544,7 @@
                         const earn = toSell * order.targetPrice;
                         remItem(order.resourceId, toSell);
                         S.money += earn;
+                        S.stats.earned += earn;
                         S.stats.sold += toSell;
                         S.stats.earned += earn;
                         adjustPrice(order.resourceId, 'sell', toSell);
@@ -1618,6 +1619,7 @@
         function applyInstantEvent(event) {
             if (event.effect === 'bonus') {
                 S.money += event.amount;
+                S.stats.earned += event.amount;
                 notif(`${event.n} — +$${event.amount}!`);
                 floatText(`+$${event.amount}`, window.innerWidth / 2 - 30, 100, 'sell');
             } else if (event.effect === 'fillAll') {
@@ -2426,7 +2428,8 @@
                 });
                 input.value = '';
             } catch (e) {
-                toast('Send failed', 'err');
+                console.error('Chat send error:', e);
+                toast('Send failed: ' + (e.message || 'Unknown error'), 'err');
             }
         }
 
