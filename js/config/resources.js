@@ -31,7 +31,13 @@ export const RESOURCES = {
     flour: { n: 'Flour', i: '🌾', p: 18 },
     cloth: { n: 'Cloth', i: '🧵', p: 50 },
     bread: { n: 'Bread', i: '🍞', p: 25 },
-    fertilizer: { n: 'Fertilizer', i: '💩', p: 50 }
+    fertilizer: { n: 'Fertilizer', i: '💩', p: 50 },
+
+    // Specialty Products
+    honey: { n: 'Honey', i: '🍯', p: 40 },
+    apple: { n: 'Apples', i: '🍎', p: 15 },
+    grape: { n: 'Grapes', i: '🍇', p: 18 },
+    fish: { n: 'Fish', i: '🐟', p: 20 }
 };
 
 /**
@@ -41,7 +47,8 @@ export const ITEM_CATEGORIES = {
     raw: { n: 'Raw Materials', items: ['wood', 'stone', 'berries', 'herbs'] },
     crops: { n: 'Crops', items: ['wheat', 'potato', 'carrot', 'corn', 'soy'] },
     livestock: { n: 'Livestock', items: ['egg', 'chicken', 'milk', 'beef', 'leather', 'wool', 'mutton'] },
-    processed: { n: 'Processed Goods', items: ['planks', 'flour', 'cloth', 'bread'] }
+    processed: { n: 'Processed Goods', items: ['planks', 'flour', 'cloth', 'bread'] },
+    specialty: { n: 'Specialty', items: ['honey', 'apple', 'grape', 'fish'] }
 };
 
 // Backwards compatibility - R is used throughout the codebase

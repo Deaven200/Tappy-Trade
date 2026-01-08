@@ -102,7 +102,7 @@ export function openBuild(pi, si) {
 
     // Build new options (only show if no building or it's a wild plot)
     if (!curCfg?.b) {
-        const cats = [{ k: 'gathering', t: '🌿 Gathering' }, { k: 'farms', t: '🌾 Farms' }, { k: 'livestock', t: '🐄 Livestock' }, { k: 'manufacturing', t: '🏭 Manufacturing' }, { k: 'utility', t: '📦 Utility' }];
+        const cats = [{ k: 'gathering', t: '🌿 Gathering' }, { k: 'farms', t: '🌾 Farms' }, { k: 'livestock', t: '🐄 Livestock' }, { k: 'manufacturing', t: '🏭 Manufacturing' }, { k: 'specialty', t: '🐝 Specialty' }, { k: 'utility', t: '📦 Utility' }];
         for (const cat of cats) {
             h += `<div class="cat"><div class="cat-title">${cat.t}</div>`;
             for (const b of B[cat.k]) {

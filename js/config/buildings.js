@@ -66,6 +66,12 @@ export const SUBPLOT_TYPES = {
     loom: { n: 'Loom', i: '🧵', o: 'cloth', m: 10, b: 1, req: 'wool', use: 3, tap: 1 },
     bakery: { n: 'Bakery', i: '🥖', o: 'bread', m: 10, b: 1, req: 'flour', use: 2, tap: 1 },
 
+    // Specialty Production
+    apiary: { n: 'Apiary', i: '🐝', o: 'honey', r: 0.02, m: 5, b: 1 },
+    orchard: { n: 'Orchard', i: '🍎', o: 'apple', r: 0.09, m: 10, b: 1 },
+    vineyard: { n: 'Vineyard', i: '🍇', o: 'grape', r: 0.06, m: 8, b: 1 },
+    fishpond: { n: 'Fishpond', i: '🐟', o: 'fish', r: 0.08, m: 12, b: 1 },
+
     // Utility
     storage: { n: 'Storage', i: '📦', b: 1, cap: 250 }
 };
@@ -98,6 +104,12 @@ export const BUILDINGS = {
         { t: 'mill', c: { m: 1500, stone: 30, wood: 40 } },
         { t: 'loom', c: { m: 3000, wood: 60, stone: 30 } },
         { t: 'bakery', c: { m: 2500, stone: 40, wood: 30 } }
+    ],
+    specialty: [
+        { t: 'apiary', c: { m: 2000, wood: 40 } },
+        { t: 'orchard', c: { m: 1800, wood: 45 } },
+        { t: 'vineyard', c: { m: 2200, wood: 50, stone: 25 } },
+        { t: 'fishpond', c: { m: 1600, wood: 35 } }
     ],
     utility: [
         { t: 'storage', c: { m: 1000, wood: 50 } }
