@@ -1,7 +1,7 @@
 // Tappy Trade Service Worker
 // Handles caching and automatic updates
 
-const CACHE_VERSION = 'tappy-trade-v1.3.3';
+const CACHE_VERSION = 'tappy-trade-v1.3.4-discord-fix';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
