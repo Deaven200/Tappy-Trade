@@ -34,7 +34,7 @@ export function closeSuggestions() {
 }
 
 /**
- * Send suggestion via EmailJS
+ * Send suggestion via Discord webhook
  */
 export async function sendSuggestion() {
     const textarea = $('suggestion-text');
@@ -58,26 +58,44 @@ export async function sendSuggestion() {
     if (sendBtn) sendBtn.textContent = '📤 Sending...';
 
     try {
-        // Using EmailJS - free tier allows 200 emails/month
-        // You'll need to set up EmailJS account at https://www.emailjs.com/
+        // Discord Webhook URL
+        const DISCORD_WEBHOOK_URL = 'https://discordapp.com/api/webhooks/1458900023461810177/dhEYECFOdDHZW_2d2H-gja_O8JFvMiHexY8dbato2Xp2lLuziALS4V6ENnfvRdMpt56l';
 
-        // For now, use mailto as fallback
-        const subject = 'Tappy Trade - Player Suggestion';
-        const body = `Suggestion from player:\n\n${text}\n\n---\nSent from Tappy Trade`;
-        const mailtoLink = `mailto:tappy0trade@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        // Create Discord embed
+        const embed = {
+            title: '💡 New Suggestion from Tappy Trade!',
+            description: text,
+            color: 0x4ade80, // Green
+            timestamp: new Date().toISOString(),
+            footer: { text: 'Tappy Trade Suggestions' }
+        };
 
-        window.location.href = mailtoLink;
+        // Send to Discord
+        const response = await fetch(DISCORD_WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                username: 'Tappy Trade Bot',
+                avatar_url: 'https://em-content.zobj.net/thumbs/120/google/350/light-bulb_1f4a1.png',
+                embeds: [embed]
+            })
+        });
 
-        toast('Opening email client...', 'ok');
-        setTimeout(() => {
+        if (response.ok) {
+            toast('Suggestion sent! Thank you! 🎉', 'ok');
             closeSuggestions();
             textarea.value = '';
-        }, 1000);
+        } else {
+            throw new Error('Webhook failed');
+        }
 
     } catch (error) {
         console.error('Failed to send suggestion:', error);
         toast('Failed to send. Please try again!', 'err');
     } finally {
-        if (sendBtn) sendBtn.textContent = originalText;
+        if (sendBtn) {
+            sendBtn.disabled = false;
+            sendBtn.textContent = originalText;
+        }
     }
 }
