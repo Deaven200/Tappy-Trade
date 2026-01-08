@@ -1974,7 +1974,8 @@
         }
 
         // ===== SERVICE WORKER TEMPORARILY DISABLED =====
-        // if ('serviceWorker' in navigator) {
+        /*
+        if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('./service-worker.js')
                 .then((registration) => {
@@ -2022,8 +2023,9 @@
                 .catch((error) => {
                     console.log('❌ Service Worker registration failed:', error);
                 });
-        });
         }
+        */
+        console.log('⚠️ Service Worker DISABLED - Fresh files will load');
 
         // Helper functions that were deleted as duplicates
         function floatTextAt(text, el) {
