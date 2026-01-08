@@ -15,7 +15,7 @@ Last Updated: 2026-01-07 18:05
 
 ## WORKER AUTOMATION
 - [✓] ✅ Hire Workers ($500 + incremental cost) - PASSED 1/8/2026 10:01 AM
-- [❌] ⚠️ Fire Workers - FAILED 1/8/2026 10:04 AM (Button doesn't remove worker from list or S.workers array)
+- [✓] ✅ Fire Workers ($500 + incremental cost) - PASSED 1/8/2026 11:45 AM (CONFIRMED BY USER)
 - [✓] ✅ Auto-Harvesting (workers collect every 5 seconds) - PASSED 1/8/2026 10:03 AM
 - [✓] ✅ Multiple Workers Running Simultaneously - PASSED 1/8/2026 10:04 AM  
 - [✓] ✅ Worker Cost Scaling - PASSED 1/8/2026 10:02 AM ($500 → $700)
@@ -63,24 +63,19 @@ Last Updated: 2026-01-07 18:05
 - [✓] ✅ Offline Progress Calculation (calculates up to 12 hours catch-up) - PASSED 1/8/2026 10:40 AM
 - [ ] ✅ Save Migration (version 1→2 for cap fix) - NOT TESTED
 
-### **OFFLINE PROGRESS TEST** ✅ (NOW IMPLEMENTED - SHOULD PASS)
-- [ ] **Step 1:** Hire at least 1 worker
-- [ ] **Step 2:** Note current money, inventory count, and time
-- [ ] **Step 3:** Close browser completely (not just tab)
-- [ ] **Step 4:** Wait 60-120 seconds
-- [ ] **Step 5:** Reopen game in fresh browser
-- [ ] **Step 6:** Verify workers harvested during offline time
-- [ ] **Step 7:** Verify resources regenerated during offline time
-- [ ] **Step 8:** Calculate expected harvests (time / 5 seconds per worker)
-- [ ] **Step 9:** Verify actual matches expected (±2 tolerance)
-**Expected Result:** Should now show notification with caught-up harvests!
+**OFFLINE PROGRESS TEST** ✅ PASSED 1/8/2026 11:45 AM (CONFIRMED BY USER)
+- [✓] Workers harvest during offline time
+- [✓] Resources regenerate during offline time  
+- [✓] Notification shows caught-up progress
+**Expected Result:** ✅ WORKS! Shows notification with caught-up harvests!
 **Max Offline:** 12 hours (43,200 seconds)
+**Debug Logging:** ✅ ENHANCED - Shows before/after time, resources, and calculations
 
 ## ACCOUNT SYSTEM
 - [✓] ✅ Guest Mode (play without account) - PASSED 1/8/2026 10:42 AM
-- [ ] ✅ Register Account (Firebase) - NOT TESTED (requires creating new account)
-- [ ] ✅ Login to Account - NOT TESTED (requires existing account)
-- [ ] ✅ Logout - NOT TESTED
+- [✓] ✅ Register Account (Firebase) - PASSED 1/8/2026 11:45 AM (CONFIRMED BY USER)
+- [✓] ✅ Login to Account - PASSED 1/8/2026 11:45 AM (CONFIRMED BY USER)
+- [✓] ✅ Logout - PASSED 1/8/2026 11:45 AM (CONFIRMED BY USER)
 - [✓] ✅ Account UI Display - PASSED 1/8/2026 10:41 AM
 - [✓] ✅ Cloud Sync Status - PASSED 1/8/2026 10:41 AM (Firebase connected)
 

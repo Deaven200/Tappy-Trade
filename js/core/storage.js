@@ -140,12 +140,30 @@ export async function loadFromCloud() {
             const offlineHours = Math.min(offlineMs / (1000 * 60 * 60), CONFIG.MAX_OFFLINE_HOURS);
 
             if (offlineHours > 0.016) { // More than ~1 minute
-                console.log(`⏰ Cloud save is ${(offlineMs / 60000).toFixed(1)} minutes old, applying offline progress...`);
-
-                // Apply offline worker harvests
                 const offlineSeconds = offlineHours * 3600;
                 const harvestCycles = Math.floor(offlineSeconds / 5);
 
+                // === DEBUG LOGGING START ===
+                console.log('\n🕐 OFFLINE PROGRESS CALCULATION 🕐');
+                console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+                const oldTime = new Date(cloudTime);
+                const newTime = new Date();
+                console.log(`⏰ Last Save: ${oldTime.toLocaleString()}`);
+                console.log(`⏰ Current:   ${newTime.toLocaleString()}`);
+                console.log(`⏱️  Offline:   ${(offlineMs / 60000).toFixed(1)} minutes (${offlineSeconds.toFixed(0)} seconds)`);
+                console.log(`👷 Workers:   ${migrated.workers?.length || 0}`);
+                console.log(`🔄 Harvest Cycles: ${harvestCycles} (capped at ${Math.min(harvestCycles, 8640)})`);
+
+                // Before state
+                const invBefore = {};
+                for (const [k, v] of Object.entries(migrated.inv || {})) {
+                    invBefore[k] = v;
+                }
+                const totalBefore = Object.values(invBefore).reduce((a, b) => a + b, 0);
+                console.log(`\n📦 Inventory Before: ${totalBefore} items`);
+                // === DEBUG LOGGING END ===
+
+                // Apply offline worker harvests
                 if (migrated.workers && migrated.workers.length > 0 && harvestCycles > 0) {
                     for (let i = 0; i < Math.min(harvestCycles, 8640); i++) { // Cap at 12 hours of cycles
                         for (const worker of migrated.workers) {
@@ -174,6 +192,21 @@ export async function loadFromCloud() {
                         }
                     }
                 }
+
+                // === DEBUG LOGGING START ===
+                const totalAfter = Object.values(migrated.inv || {}).reduce((a, b) => a + b, 0);
+                const gained = totalAfter - totalBefore;
+                console.log(`📦 Inventory After:  ${totalAfter} items (+${gained})`);
+                console.log(`\n📊 Items Gained:`);
+                for (const [k, v] of Object.entries(migrated.inv || {})) {
+                    const before = invBefore[k] || 0;
+                    const delta = v - before;
+                    if (delta > 0) {
+                        console.log(`  +${delta} ${k} (${before} → ${v})`);
+                    }
+                }
+                console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+                // === DEBUG LOGGING END ===
             }
 
             // Load the cloud state into S

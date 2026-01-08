@@ -81,6 +81,9 @@ export async function sendChat() {
 
     // Access globals from index.html
     const db = window.db;
+    const firebase = window.firebase;
+    const auth = firebase?.auth?.();
+    const currentUser = auth?.currentUser;
     const loggedInUser = window.loggedInUser;
 
     if (!db) {
@@ -88,10 +91,15 @@ export async function sendChat() {
         return;
     }
 
-    if (!loggedInUser) {
+    // Check BOTH Firebase auth AND loggedInUser
+    if (!currentUser && !loggedInUser) {
         toast('Log in to chat!', 'err');
         return;
     }
+
+    // Use loggedInUser if available, otherwise fall back to Firebase user
+    const username = loggedInUser?.username || currentUser?.displayName || 'Anonymous';
+    const userId = loggedInUser?.id || currentUser?.uid;
 
     // Sanitize and validate input
     const sanitizedText = sanitizeInput(text, 200); // Max 200 chars
@@ -103,8 +111,8 @@ export async function sendChat() {
     try {
         await db.collection('chat').add({
             text: sanitizedText,
-            userName: loggedInUser.username,
-            userId: loggedInUser.id,
+            userName: username,
+            userId: userId,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
         input.value = '';
