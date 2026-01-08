@@ -91,15 +91,25 @@ export async function sendChat() {
         return;
     }
 
-    // Check BOTH Firebase auth AND loggedInUser
-    if (!currentUser && !loggedInUser) {
-        toast('Log in to chat!', 'err');
-        return;
-    }
+    // Allow both logged-in and guest users to chat
+    let username, userId;
 
-    // Use loggedInUser if available, otherwise fall back to Firebase user
-    const username = loggedInUser?.username || currentUser?.displayName || 'Anonymous';
-    const userId = loggedInUser?.id || currentUser?.uid;
+    if (loggedInUser) {
+        // Logged in user
+        username = loggedInUser.username;
+        userId = loggedInUser.id;
+    } else if (currentUser) {
+        // Firebase authenticated user
+        username = currentUser.displayName || 'Anonymous';
+        userId = currentUser.uid;
+    } else {
+        // Guest user - create temporary ID
+        if (!window._guestChatId) {
+            window._guestChatId = 'guest_' + Math.random().toString(36).substr(2, 9);
+        }
+        username = 'Guest';
+        userId = window._guestChatId;
+    }
 
     // Sanitize and validate input
     const sanitizedText = sanitizeInput(text, 200); // Max 200 chars
