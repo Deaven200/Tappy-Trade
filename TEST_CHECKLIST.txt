@@ -32,7 +32,7 @@ Last Updated: 2026-01-07 18:05
 - [✓] ✅ Upgrade Buildings (to Lv5) - PASSED 1/8/2026 10:03 AM (Lv1→Lv2)
 - [✓] ✅ Building Cost Display - PASSED 1/8/2026 10:03 AM
 - [✓] ✅ Demolish Buildings (50% refund) - PASSED 1/8/2026 10:07 AM (reverts to 'wild')
-- [❌] ⚠️ Storage Buildings - FAILED 1/8/2026 11:15 AM (S.cap doesn't increase by +250)
+- [✓] ✅ Storage Buildings (increase capacity) - PASSED 1/8/2026 12:00 PM (S.cap +250 confirmed!)
 
 ## MARKET SYSTEMS
 
@@ -83,8 +83,8 @@ Last Updated: 2026-01-07 18:05
 
 ### Chat (Firebase)
 - [✓] ✅ Open Chat - PASSED 1/8/2026 11:05 AM
-- [✓] ✅ Send Messages - PASSED 1/8/2026 11:05 AM (requires login)
-- [ ] ⚠️ Receive Messages (real-time) - Can't test alone (needs 2nd player)
+- [✓] ✅ Send Messages - PASSED 1/8/2026 11:55 AM (NO LOGIN REQUIRED - works as Guest!)
+- [✓] ✅ Receive Messages (real-time) - PASSED 1/8/2026 11:56 AM (tested with 2 windows)
 - [✓] ✅ Chat History - PASSED 1/8/2026 11:05 AM
 - [✓] ✅ Close Chat - PASSED 1/8/2026 11:05 AM
 - [✓] ✅ Connection Status - PASSED 1/8/2026 11:05 AM

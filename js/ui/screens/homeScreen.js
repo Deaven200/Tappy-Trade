@@ -83,6 +83,9 @@ function updateSubplotDisplay(plotIndex, subIndex, subplot) {
     const config = T[subplot.t];
     if (!config) return;
 
+    // Storage buildings don't have progress, skip updates
+    if (subplot.t === 'storage') return;
+
     const level = subplot.lv || 1;
     const storageBonus = (level - 1) * 10;
     const maxStorage = (config.m || 999) + storageBonus;
@@ -169,16 +172,20 @@ function renderSubplot(subplot, plotIndex, subIndex) {
     const isFull = config.m && count >= maxStorage;
     const ready = isFull;
 
+    // Hide progress for storage buildings (they're passive)
+    const isStorage = subplot.t === 'storage';
+
     return `<div class="sub ${ready ? 'ready' : ''} ${config.b ? 'building' : ''}" 
                  data-action="tap"
                  data-p="${plotIndex}" data-s="${subIndex}" 
                  style="opacity:0.85;backdrop-filter:blur(2px)">
         <div class="icon">${config.i}</div>
+        ${!isStorage ? `
         <div class="progress-ring ${isFull ? 'full' : ''}" style="--progress: ${isFull ? 100 : nextPct}%">
             <div class="progress-ring-inner" style="background: linear-gradient(to top, var(--green) ${fillPct}%, var(--card) ${fillPct}%)">
                 <span style="text-shadow: 0 1px 2px rgba(0,0,0,0.5)">${count}/${maxStorage}</span>
             </div>
-        </div>
+        </div>` : ''}
         ${subplot.lv > 1 ? `<span class="lvl">Lv${subplot.lv}</span>` : ''}
     </div>`;
 }
