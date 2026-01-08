@@ -10,6 +10,8 @@ import { getInvTotal } from '../../utils/inventory.js';
 // View and sort state (could be moved to state.js later)
 let invView = 'list'; // 'list' or 'grid'
 let invSort = 'name'; // 'name', 'qty', or 'value'
+let lastInvState = null; // Track last render state to prevent unnecessary re-renders
+let isInventoryInitialized = false;
 
 /**
  * Get current inventory view mode
@@ -23,6 +25,7 @@ export function getInventoryView() {
  */
 export function setInventoryView(view) {
     invView = view;
+    isInventoryInitialized = false; // Force re-render on view change
 }
 
 /**
@@ -37,6 +40,7 @@ export function getInventorySort() {
  */
 export function setInventorySort(sort) {
     invSort = sort;
+    isInventoryInitialized = false; // Force re-render on sort change
 }
 
 /**
@@ -53,32 +57,42 @@ function getPrice(itemId) {
  * @param {HTMLElement} container - Container element to render into
  */
 export function renderInventoryScreen(container) {
-    const totalItems = getInvTotal(S.inv);
-    let html = `<div class="panel"><h3>📦 Inventory (${totalItems}/${S.cap})</h3>`;
+    // Check if inventory changed
+    const currentInvState = JSON.stringify(S.inv);
+    const invChanged = currentInvState !== lastInvState;
 
-    // Controls: View toggle and Sort
-    html += `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-        <div class="view-toggle">
-            <button class="${invView === 'list' ? 'active' : ''}" data-action="set-view" data-view="list">📋</button>
-            <button class="${invView === 'grid' ? 'active' : ''}" data-action="set-view" data-view="grid">📱</button>
-        </div>
-        <select data-action="set-sort" style="padding:4px 8px;border-radius:4px;background:var(--bg2);color:var(--text);border:none;font-size:0.75rem">
-            <option value="name" ${invSort === 'name' ? 'selected' : ''}>By Name</option>
-            <option value="qty" ${invSort === 'qty' ? 'selected' : ''}>By Quantity</option>
-            <option value="value" ${invSort === 'value' ? 'selected' : ''}>By Value</option>
-        </select>
-    </div>`;
+    // Only re-render if inventory changed or first render
+    if (!isInventoryInitialized || invChanged) {
+        const totalItems = getInvTotal(S.inv);
+        let html = `<div class="panel"><h3>📦 Inventory (${totalItems}/${S.cap})</h3>`;
 
-    let items = Object.entries(S.inv).filter(([_, qty]) => qty > 0);
+        // Controls: View toggle and Sort
+        html += `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <div class="view-toggle">
+                <button class="${invView === 'list' ? 'active' : ''}" data-action="set-view" data-view="list">📋</button>
+                <button class="${invView === 'grid' ? 'active' : ''}" data-action="set-view" data-view="grid">📱</button>
+            </div>
+            <select data-action="set-sort" style="padding:4px 8px;border-radius:4px;background:var(--bg2);color:var(--text);border:none;font-size:0.75rem">
+                <option value="name" ${invSort === 'name' ? 'selected' : ''}>By Name</option>
+                <option value="qty" ${invSort === 'qty' ? 'selected' : ''}>By Quantity</option>
+                <option value="value" ${invSort === 'value' ? 'selected' : ''}>By Value</option>
+            </select>
+        </div>`;
 
-    if (items.length === 0) {
-        html += renderEmptyInventory();
-    } else {
-        html += renderInventoryItems(items);
+        let items = Object.entries(S.inv).filter(([_, qty]) => qty > 0);
+
+        if (items.length === 0) {
+            html += renderEmptyInventory();
+        } else {
+            html += renderInventoryItems(items);
+        }
+
+        html += `</div>`;
+        container.innerHTML = html;
+
+        lastInvState = currentInvState;
+        isInventoryInitialized = true;
     }
-
-    html += `</div>`;
-    container.innerHTML = html;
 }
 
 /**

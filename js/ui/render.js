@@ -19,6 +19,11 @@ export function getScreen() {
     return currentScreen;
 }
 
+// Make available globally for game loop
+if (typeof window !== 'undefined') {
+    window.getScreen = getScreen;
+}
+
 /**
  * Switch to a different screen
  */

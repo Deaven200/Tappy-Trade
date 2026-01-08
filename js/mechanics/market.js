@@ -50,8 +50,6 @@ export function sell(itemId, quantity) {
  * Sell all items in inventory
  */
 export function sellAll() {
-    if (!confirm('Sell all items in inventory?')) return;
-
     let totalMoney = 0;
     let totalItems = 0;
 

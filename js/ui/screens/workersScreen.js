@@ -6,34 +6,47 @@
 import { S } from '../../core/state.js';
 import { T } from '../../config/data.js';
 
+let lastWorkersState = null;
+let isWorkersInitialized = false;
+
 /**
  * Render the workers screen
  * @param {HTMLElement} container - Container element to render into
  */
 export function renderWorkersScreen(container) {
-    let html = `<div class="panel">
-        <h3>👷 Workers (${S.workers.length}/10)</h3>
-        <p style="color:var(--muted);font-size:0.8rem;margin-bottom:12px">
-            Workers auto-harvest every 5 seconds. Tap a plot on Home screen, then "Hire Worker" below.
-        </p>`;
+    // Check if workers changed
+    const currentWorkersState = JSON.stringify(S.workers);
+    const workersChanged = currentWorkersState !== lastWorkersState;
 
-    // Current workers list
-    if (S.workers.length === 0) {
-        html += `<div class="empty">No workers yet</div>`;
-    } else {
-        html += `<div class="list">`;
-        S.workers.forEach((worker, index) => {
-            html += renderWorker(worker, index);
-        });
+    // Only re-render if workers changed or first render
+    if (!isWorkersInitialized || workersChanged) {
+        let html = `<div class="panel">
+            <h3>👷 Workers (${S.workers.length}/10)</h3>
+            <p style="color:var(--muted);font-size:0.8rem;margin-bottom:12px">
+                Workers auto-harvest every 5 seconds. Tap a plot on Home screen, then "Hire Worker" below.
+            </p>`;
+
+        // Current workers list
+        if (S.workers.length === 0) {
+            html += `<div class="empty">No workers yet</div>`;
+        } else {
+            html += `<div class="list">`;
+            S.workers.forEach((worker, index) => {
+                html += renderWorker(worker, index);
+            });
+            html += `</div>`;
+        }
+
         html += `</div>`;
+
+        // Hiring panel
+        html += renderHiringPanel();
+
+        container.innerHTML = html;
+
+        lastWorkersState = currentWorkersState;
+        isWorkersInitialized = true;
     }
-
-    html += `</div>`;
-
-    // Hiring panel
-    html += renderHiringPanel();
-
-    container.innerHTML = html;
 }
 
 /**
