@@ -141,7 +141,7 @@ export function doBuild(t) {
     if (t === '__upgrade') {
         const s = S.plots[buildP]?.subs[buildS];
         if (!s || s.lv >= 5) return;
-        const cost = getUpgradeCost(s.t, s.lv);
+        const cost = getUpgradeCost(s.lv);
         if (!canAfford(cost)) {
             toast('Cannot afford upgrade!', 'err');
             return;
@@ -153,6 +153,10 @@ export function doBuild(t) {
         notif(`⬆️ ${T[s.t]?.n} upgraded to Level ${s.lv}!`);
         closeBuild();
         save();
+
+        // Force home screen to rebuild structure
+        if (window.resetHomeInit) window.resetHomeInit();
+
         window.render();
         return;
     }
@@ -187,6 +191,10 @@ export function doBuild(t) {
         toast('Building demolished', 'ok');
         closeBuild();
         save();
+
+        // Force home screen to rebuild structure
+        if (window.resetHomeInit) window.resetHomeInit();
+
         window.render();
         return;
     }
@@ -207,5 +215,9 @@ export function doBuild(t) {
     notif(`🏗️ New building: ${T[t]?.n}`);
     closeBuild();
     save();
+
+    // Force home screen to rebuild structure
+    if (window.resetHomeInit) window.resetHomeInit();
+
     window.render();
 }
