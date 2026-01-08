@@ -2027,6 +2027,19 @@
         */
         console.log('⚠️ Service Worker DISABLED - Fresh files will load');
 
+        // Debug: Check close button CSS
+        setTimeout(() => {
+            const closeBtn = document.querySelector('.modal-close');
+            if (closeBtn) {
+                const styles = window.getComputedStyle(closeBtn);
+                console.log('🔵 [DEBUG] Close button CSS:');
+                console.log('  - Background:', styles.backgroundColor);
+                console.log('  - Color:', styles.color);
+                console.log('  - Border:', styles.border);
+                console.log('  - Expected: RGB(239, 68, 68) bright red');
+            }
+        }, 1000);
+
         // Helper functions that were deleted as duplicates
         function floatTextAt(text, el) {
             if (!el) return;
