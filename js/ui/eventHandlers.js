@@ -19,11 +19,14 @@ export function initializeEventHandlers() {
         return;
     }
 
-    // Single click listener for all interactions
+    // Single click listener for all interactions in main container
     mainContainer.addEventListener('click', handleClick);
 
-    // Handle select/dropdown changes
+    // Handle select/dropdown changes in main container
     mainContainer.addEventListener('change', handleChange);
+
+    // Also listen on document.body for modals/menus outside #main
+    document.body.addEventListener('click', handleClick);
 
     console.log('✅ Event delegation initialized');
 }
@@ -62,6 +65,9 @@ function handleClick(event) {
             break;
         case 'hire-worker':
             handleHireWorker(target);
+            break;
+        case 'reset-game':
+            handleResetGame();
             break;
         default:
             console.warn('Unknown action:', action);
@@ -180,4 +186,17 @@ function handleHireWorker(element) {
     }
 
     hireWorker(plotIndex, subIndex);
+}
+
+/**
+ * Handle reset game action
+ */
+function handleResetGame() {
+    console.log('🔴 Reset button clicked!');
+    if (typeof window.resetGame === 'function') {
+        console.log('✅ Calling window.resetGame()');
+        window.resetGame();
+    } else {
+        console.error('❌ resetGame function not found on window');
+    }
 }

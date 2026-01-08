@@ -25,7 +25,7 @@ export function getInventoryView() {
  */
 export function setInventoryView(view) {
     invView = view;
-    isInventoryInitialized = false; // Force re-render on view change
+    lastInvState = null; // Force re-render on view change
 }
 
 /**
@@ -40,7 +40,15 @@ export function getInventorySort() {
  */
 export function setInventorySort(sort) {
     invSort = sort;
-    isInventoryInitialized = false; // Force re-render on sort change
+    lastInvState = null; // Force re-render on sort change
+}
+
+/**
+ * Reset initialization flag (called on screen switch)
+ */
+export function resetInventoryInit() {
+    isInventoryInitialized = false;
+    lastInvState = null;
 }
 
 /**

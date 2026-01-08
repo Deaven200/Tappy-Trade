@@ -4,13 +4,23 @@
  */
 
 import { S } from '../core/state.js';
-import { renderHomeScreen } from './screens/homeScreen.js';
-import { renderInventoryScreen, setInventoryView, setInventorySort } from './screens/inventoryScreen.js';
-import { renderWorkersScreen } from './screens/workersScreen.js';
+import { renderHomeScreen, resetHomeInit } from './screens/homeScreen.js';
+import { renderInventoryScreen, setInventoryView, setInventorySort, resetInventoryInit } from './screens/inventoryScreen.js';
+import { renderWorkersScreen, resetWorkersInit } from './screens/workersScreen.js';
 import { renderStatsScreen } from './screens/statsScreen.js';
 
 // Current screen state
 let currentScreen = 'home';
+
+/**
+ * Reset all screen initialization flags
+ */
+function resetScreenInitFlags() {
+    if (resetHomeInit) resetHomeInit();
+    if (resetInventoryInit) resetInventoryInit();
+    if (resetWorkersInit) resetWorkersInit();
+    if (window.resetMarketInit) window.resetMarketInit();
+}
 
 /**
  * Get current screen
@@ -29,6 +39,12 @@ if (typeof window !== 'undefined') {
  */
 export function switchScreen(screenName) {
     currentScreen = screenName;
+
+    // Reset screen initialization flags to force re-render on switch
+    if (typeof resetScreenInitFlags === 'function') {
+        resetScreenInitFlags();
+    }
+
     render();
 }
 
@@ -85,7 +101,6 @@ export function render() {
             renderHomeScreen(container);
     }
 
-    // Update nav button active states
     document.querySelectorAll('.nav button').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.s === currentScreen);
     });

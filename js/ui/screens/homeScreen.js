@@ -7,16 +7,34 @@ import { S } from '../../core/state.js';
 import { T, R, PLOTS } from '../../config/data.js';
 
 let isInitialized = false;
+let lastPlotCount = 0;
+let lastBuildingLevels = '';
+
+/**
+ * Reset initialization flag (called on screen switch)
+ */
+export function resetHomeInit() {
+    isInitialized = false;
+    lastPlotCount = 0;
+    lastBuildingLevels = '';
+}
 
 /**
  * Render the home screen with plot grid
  * @param {HTMLElement} container - Container element to render into
  */
 export function renderHomeScreen(container) {
+    // Check if structural changes occurred (plots added/removed, buildings upgraded)
+    const currentPlotCount = S.plots.length;
+    const currentBuildingLevels = S.plots.map(p => p.subs.map(s => s.lv || 1).join(',')).join(';');
+    const structureChanged = currentPlotCount !== lastPlotCount || currentBuildingLevels !== lastBuildingLevels;
+
     // First render: create DOM structure
-    if (!isInitialized || container.children.length === 0) {
+    if (!isInitialized || container.children.length === 0 || structureChanged) {
         buildInitialDOM(container);
         isInitialized = true;
+        lastPlotCount = currentPlotCount;
+        lastBuildingLevels = currentBuildingLevels;
     }
 
     // Subsequent renders: only update changing values

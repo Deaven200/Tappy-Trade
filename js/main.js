@@ -51,7 +51,7 @@ import { renderStats } from './ui/stats.js';
 import { renameFarm } from './ui/farmNaming.js';
 import { resetGame } from './ui/gameReset.js';
 import { showTip } from './ui/tooltip.js';
-import { renderMarket, renderPlayerMarket, setSellQty } from './ui/markets.js';
+import { renderMarket, renderPlayerMarket, setSellQty, resetMarketInit } from './ui/markets.js';
 
 // Additional Mechanics (Phase 2H)
 import { claimDaily, canClaimDaily, getDailyRewardInfo, showDaily, closeDaily } from './mechanics/dailyRewards.js';
@@ -186,6 +186,7 @@ window.resetGame = resetGame;
 window.showTip = showTip;
 window.renderMarket = renderMarket;
 window.renderPlayerMarket = renderPlayerMarket;
+window.resetMarketInit = resetMarketInit;
 window.setSellQty = setSellQty;
 
 // Additional Mechanics (Phase 2H)
@@ -214,6 +215,10 @@ window.init = init;
 if (CONFIG.DEBUG_MODE || true) {  // Always log for now
     console.log('%c🎮 TAPPY TRADE - MODULAR VERSION', 'font-size:20px; font-weight:bold; color:#ffd700');
     console.log('%cVersion: ' + GAME_VERSION, 'font-size:14px; color:#4ade80');
+    console.log('✅ Modularization: 43 modules active');
+
+    // Detailed logs commented out - enable if debugging:
+    /*
     console.log('%cSave Version: ' + SAVE_VERSION, 'font-size:12px; color:#60a5fa');
     console.log('');
     console.log('✅ Phase 2A: Config modules loaded');
@@ -266,6 +271,7 @@ if (CONFIG.DEBUG_MODE || true) {  // Always log for now
     console.log('');
     console.log('✅ Modularization progress: 43 modules active!');
     console.log('📝 Remaining in index.html: Firebase init, account functions, music, utilities');
+    */
 }
 
 // Save on page close/exit

@@ -13,6 +13,9 @@ export function resetGame() {
         return;
     }
 
+    // Prevent beforeunload from saving over our reset
+    window.isResetting = true;
+
     // Clear ALL local storage
     localStorage.clear();
 

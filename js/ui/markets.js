@@ -69,6 +69,18 @@ export function renderMarket(container) {
     container.innerHTML = h;
 }
 
+// Track last render state
+let lastMarketState = null;
+let isMarketInitialized = false;
+
+/**
+ * Reset market initialization flag (called on screen switch)
+ */
+export function resetMarketInit() {
+    isMarketInitialized = false;
+    lastMarketState = null;
+}
+
 /**
  * Render Player Market (peer-to-peer trading)
  * @param {HTMLElement} container - Container element
@@ -77,16 +89,23 @@ export function renderPlayerMarket(container) {
     const connected = !!getUserId();
     const orders = getOrders();
 
-    let h = `<div class="panel"><h3>🏪 Player Market ${connected ? '<span style="color:var(--green)">●</span>' : '<span style="color:var(--red)">○</span>'}</h3>`;
+    // Create state snapshot for comparison
+    const currentState = JSON.stringify({ connected, orders, postType, postRes, postQty, postPrice, limitOrders: S.limitOrders });
+    const stateChanged = currentState !== lastMarketState;
 
-    if (!connected) {
-        h += `<div class="empty">Connecting to market...</div></div>`;
-        container.innerHTML = h;
-        return;
-    }
+    // Only re-render if state changed or first render
+    if (!isMarketInitialized || stateChanged) {
 
-    // Post order form
-    h += `<div style="margin-bottom:16px;padding:12px;background:var(--bg2);border-radius:8px">
+        let h = `<div class="panel"><h3>🏪 Player Market ${connected ? '<span style="color:var(--green)">●</span>' : '<span style="color:var(--red)">○</span>'}</h3>`;
+
+        if (!connected) {
+            h += `<div class="empty">Connecting to market...</div></div>`;
+            container.innerHTML = h;
+            return;
+        }
+
+        // Post order form
+        h += `<div style="margin-bottom:16px;padding:12px;background:var(--bg2);border-radius:8px">
         <div style="display:flex;gap:8px;margin-bottom:8px">
             <button class="btn ${postType === 'sell' ? 'green' : ''}" id="type-sell" style="flex:1">Sell</button>
             <button class="btn ${postType === 'buy' ? 'purple' : ''}" id="type-buy" style="flex:1">Buy</button>
@@ -108,48 +127,48 @@ export function renderPlayerMarket(container) {
         </div>
     </div>`;
 
-    // Orders
-    const sellOrders = orders.filter(o => o.type === 'sell');
-    const buyOrders = orders.filter(o => o.type === 'buy');
+        // Orders
+        const sellOrders = orders.filter(o => o.type === 'sell');
+        const buyOrders = orders.filter(o => o.type === 'buy');
 
-    h += `<h4 style="margin:12px 0 8px;font-size:0.9rem">📤 Selling (${sellOrders.length})</h4>`;
-    if (sellOrders.length === 0) h += `<div class="empty" style="padding:10px">No sell orders</div>`;
-    else {
-        h += `<div class="list">`;
-        for (const o of sellOrders.slice(0, 10)) {
-            const r = R[o.resource];
-            const mine = o.userId === getUserId();
-            h += `<div class="item"><span class="ic">${r?.i || '?'}</span><span class="nm">${o.qty}× ${r?.n || o.resource}</span><span class="pr">$${o.price}/ea</span>`;
-            if (mine) h += `<button class="btn red" data-cancel="${o.id}">Cancel</button>`;
-            else h += `<button class="btn green" data-fill="${o.id}">Buy $${o.qty * o.price}</button>`;
+        h += `<h4 style="margin:12px 0 8px;font-size:0.9rem">📤 Selling (${sellOrders.length})</h4>`;
+        if (sellOrders.length === 0) h += `<div class="empty" style="padding:10px">No sell orders</div>`;
+        else {
+            h += `<div class="list">`;
+            for (const o of sellOrders.slice(0, 10)) {
+                const r = R[o.resource];
+                const mine = o.userId === getUserId();
+                h += `<div class="item"><span class="ic">${r?.i || '?'}</span><span class="nm">${o.qty}× ${r?.n || o.resource}</span><span class="pr">$${o.price}/ea</span>`;
+                if (mine) h += `<button class="btn red" data-cancel="${o.id}">Cancel</button>`;
+                else h += `<button class="btn green" data-fill="${o.id}">Buy $${o.qty * o.price}</button>`;
+                h += `</div>`;
+            }
             h += `</div>`;
         }
-        h += `</div>`;
-    }
 
-    h += `<h4 style="margin:12px 0 8px;font-size:0.9rem">📥 Buying (${buyOrders.length})</h4>`;
-    if (buyOrders.length === 0) h += `<div class="empty" style="padding:10px">No buy orders</div>`;
-    else {
-        h += `<div class="list">`;
-        for (const o of buyOrders.slice(0, 10)) {
-            const r = R[o.resource];
-            const mine = o.userId === getUserId();
-            h += `<div class="item"><span class="ic">${r?.i || '?'}</span><span class="nm">${o.qty}× ${r?.n || o.resource}</span><span class="pr">$${o.price}/ea</span>`;
-            if (mine) h += `<button class="btn red" data-cancel="${o.id}">Cancel</button>`;
-            else h += `<button class="btn purple" data-fill="${o.id}">Sell +$${o.qty * o.price}</button>`;
+        h += `<h4 style="margin:12px 0 8px;font-size:0.9rem">📥 Buying (${buyOrders.length})</h4>`;
+        if (buyOrders.length === 0) h += `<div class="empty" style="padding:10px">No buy orders</div>`;
+        else {
+            h += `<div class="list">`;
+            for (const o of buyOrders.slice(0, 10)) {
+                const r = R[o.resource];
+                const mine = o.userId === getUserId();
+                h += `<div class="item"><span class="ic">${r?.i || '?'}</span><span class="nm">${o.qty}× ${r?.n || o.resource}</span><span class="pr">$${o.price}/ea</span>`;
+                if (mine) h += `<button class="btn red" data-cancel="${o.id}">Cancel</button>`;
+                else h += `<button class="btn purple" data-fill="${o.id}">Sell +$${o.qty * o.price}</button>`;
+                h += `</div>`;
+            }
             h += `</div>`;
         }
+
         h += `</div>`;
-    }
 
-    h += `</div>`;
-
-    // Limit Orders Section (Auto-trade with Gov market)
-    h += `<div class="panel"><h3>📈 Limit Orders</h3>
+        // Limit Orders Section (Auto-trade with Gov market)
+        h += `<div class="panel"><h3>📈 Limit Orders</h3>
         <p style="color:var(--muted);font-size:0.7rem;margin-bottom:8px">Auto-trade with Gov market when price hits target</p>`;
 
-    // Create new order form
-    h += `<div style="background:var(--bg2);padding:10px;border-radius:8px;margin-bottom:10px">
+        // Create new order form
+        h += `<div style="background:var(--bg2);padding:10px;border-radius:8px;margin-bottom:10px">
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
             <select id="order-resource" style="flex:1;min-width:80px;padding:6px;border-radius:4px;background:var(--bg);color:var(--text);border:1px solid rgba(255,255,255,0.1)">
                 ${Object.entries(R).map(([id, r]) => `<option value="${id}">${r.i} ${r.n}</option>`).join('')}
@@ -171,48 +190,52 @@ export function renderPlayerMarket(container) {
         </p>
     </div>`;
 
-    // Active orders
-    if (S.limitOrders && S.limitOrders.length > 0) {
-        h += `<div class="list">`;
-        S.limitOrders.forEach((order, i) => {
-            const r = R[order.resourceId];
-            const currentPrice = getPrice(order.resourceId);
-            const willExecute = order.type === 'sell' ? currentPrice >= order.targetPrice : currentPrice <= order.targetPrice;
-            h += `<div class="item" style="${willExecute ? 'border:1px solid var(--green)' : ''}">
+        // Active orders
+        if (S.limitOrders && S.limitOrders.length > 0) {
+            h += `<div class="list">`;
+            S.limitOrders.forEach((order, i) => {
+                const r = R[order.resourceId];
+                const currentPrice = getPrice(order.resourceId);
+                const willExecute = order.type === 'sell' ? currentPrice >= order.targetPrice : currentPrice <= order.targetPrice;
+                h += `<div class="item" style="${willExecute ? 'border:1px solid var(--green)' : ''}">
                 <span class="ic">${r?.i || '?'}</span>
                 <span class="nm" style="font-size:0.8rem">${order.type.toUpperCase()} ${order.qty}x @ $${order.targetPrice}</span>
                 <span class="pr" style="font-size:0.7rem">Now: $${currentPrice}</span>
                 <button class="btn red" onclick="cancelLimitOrder(${i})" style="font-size:0.7rem">✕</button>
             </div>`;
-        });
+            });
+            h += `</div>`;
+        } else {
+            h += `<div class="empty" style="font-size:0.8rem">No limit orders</div>`;
+        }
         h += `</div>`;
-    } else {
-        h += `<div class="empty" style="font-size:0.8rem">No limit orders</div>`;
+
+        container.innerHTML = h;
+
+        // Event listeners
+        $('type-sell')?.addEventListener('click', () => { postType = 'sell'; window.render(); });
+        $('type-buy')?.addEventListener('click', () => { postType = 'buy'; window.render(); });
+        $('post-res')?.addEventListener('change', e => { postRes = e.target.value; postPrice = R[postRes]?.p || 5; window.render(); });
+        $('post-qty')?.addEventListener('change', e => { postQty = Math.max(1, parseInt(e.target.value) || 1); window.render(); });
+        $('post-price')?.addEventListener('change', e => { postPrice = Math.max(1, parseInt(e.target.value) || 1); window.render(); });
+        $('post-order')?.addEventListener('click', () => window.postOrder(postType, postRes, postQty, postPrice));
+
+        container.querySelectorAll('[data-fill]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const order = orders.find(o => o.id === btn.dataset.fill);
+                if (order) window.fillOrder(order);
+            });
+        });
+        container.querySelectorAll('[data-cancel]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const order = orders.find(o => o.id === btn.dataset.cancel);
+                if (order) window.cancelOrder(order);
+            });
+        });
+
+        lastMarketState = currentState;
+        isMarketInitialized = true;
     }
-    h += `</div>`;
-
-    container.innerHTML = h;
-
-    // Event listeners
-    $('type-sell')?.addEventListener('click', () => { postType = 'sell'; window.render(); });
-    $('type-buy')?.addEventListener('click', () => { postType = 'buy'; window.render(); });
-    $('post-res')?.addEventListener('change', e => { postRes = e.target.value; postPrice = R[postRes]?.p || 5; window.render(); });
-    $('post-qty')?.addEventListener('change', e => { postQty = Math.max(1, parseInt(e.target.value) || 1); window.render(); });
-    $('post-price')?.addEventListener('change', e => { postPrice = Math.max(1, parseInt(e.target.value) || 1); window.render(); });
-    $('post-order')?.addEventListener('click', () => window.postOrder(postType, postRes, postQty, postPrice));
-
-    container.querySelectorAll('[data-fill]').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const order = orders.find(o => o.id === btn.dataset.fill);
-            if (order) window.fillOrder(order);
-        });
-    });
-    container.querySelectorAll('[data-cancel]').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const order = orders.find(o => o.id === btn.dataset.cancel);
-            if (order) window.cancelOrder(order);
-        });
-    });
 }
 
 // Export module state setters for window access

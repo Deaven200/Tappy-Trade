@@ -10,6 +10,14 @@ let lastWorkersState = null;
 let isWorkersInitialized = false;
 
 /**
+ * Reset initialization flag (called on screen switch)
+ */
+export function resetWorkersInit() {
+    isWorkersInitialized = false;
+    lastWorkersState = null;
+}
+
+/**
  * Render the workers screen
  * @param {HTMLElement} container - Container element to render into
  */
