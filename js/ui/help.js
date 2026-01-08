@@ -1,35 +1,16 @@
-// Menu System for Tappy Trade
-let menuOpen = false;
+/**
+ * Help Screen Module
+ * Shows game tutorial and how to play
+ */
 
-function toggleMenu() {
-    menuOpen = !menuOpen;
-    const menu = document.getElementById('menu-modal');
-    const overlay = document.getElementById('menu-overlay');
+/**
+ * Render help/tutorial screen
+ * @param {HTMLElement} container - Container element to render into
+ */
+export function renderHelp(container) {
+    if (!container) return;
 
-    if (menuOpen) {
-        menu.classList.add('active');
-        overlay.classList.add('active');
-    } else {
-        menu.classList.remove('active');
-        overlay.classList.remove('active');
-    }
-}
-
-function closeMenu() {
-    menuOpen = false;
-    document.getElementById('menu-modal').classList.remove('active');
-    document.getElementById('menu-overlay').classList.remove('active');
-}
-
-function showStats() {
-    closeMenu();
-    screen = 'stats';
-    render();
-}
-
-function showHelp() {
-    closeMenu();
-    const helpText = `
+    container.innerHTML = `
         <div class="panel">
             <h3>📖 How to Play Tappy Trade</h3>
             
@@ -59,5 +40,4 @@ function showHelp() {
             <button class="btn" onclick="screen='home';render()" style="margin-top:20px;width:100%">Back to Game</button>
         </div>
     `;
-    document.getElementById('main').innerHTML = helpText;
 }

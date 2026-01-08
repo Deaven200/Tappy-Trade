@@ -1038,16 +1038,21 @@
         <header class="stats">
             <div class="stat">💰 <b id="money">$0</b></div>
             <div class="stat inv">📦 <b id="inv">0</b></div>
+            <div class="stat" style="font-size:0.65rem;color:var(--muted)" id="save-indicator">💾 Saved</div>
             <button style="background:var(--card);border:none;padding:6px 10px;border-radius:6px;cursor:pointer"
                 id="menu-btn" onclick="toggleMenu()">☰</button>
         </header>
         <div class="main" id="main"></div>
         <nav class="nav">
-            <button data-s="home" id="nav-1"><span class="num">1</span><span class="lbl">Home</span></button>
-            <button data-s="inventory" id="nav-2"><span class="num">2</span><span class="lbl">Inventory</span></button>
-            <button data-s="workers"><span class="num">3</span><span class="lbl">Workers</span></button>
-            <button data-s="player"><span class="num">4</span><span class="lbl">Market</span></button>
-            <button data-s="chat"><span class="num">5</span><span class="lbl">Chat</span></button>
+            <button data-s="home" id="nav-1" onclick="showHome()"><span class="num">1</span><span
+                    class="lbl">Home</span></button>
+            <button data-s="inventory" id="nav-2" onclick="showInventory()"><span class="num">2</span><span
+                    class="lbl">Inventory</span></button>
+            <button data-s="workers" onclick="showWorkers()"><span class="num">3</span><span
+                    class="lbl">Workers</span></button>
+            <button data-s="player" onclick="showPlayerMarket()"><span class="num">4</span><span
+                    class="lbl">Market</span></button>
+            <button data-s="chat" onclick="showChat()"><span class="num">5</span><span class="lbl">Chat</span></button>
         </nav>
     </div>
 
@@ -1134,8 +1139,9 @@
             <div class="modal-head" style="flex-shrink:0">
                 <h3>💬 Chat</h3><button class="modal-close" onclick="closeChat()">×</button>
             </div>
-            <div class="modal-body" style="flex:1;overflow-y:auto;padding:10px" id="chat-messages">
-                <div class="empty">Connecting to chat...</div>
+            <div id="chat-messages"
+                style="flex:1;overflow-y:auto;padding:10px;background:var(--bg);border-radius:8px;margin:10px">
+                <div class="empty">Connecting...</div>
             </div>
             <div style="padding:10px;border-top:1px solid rgba(255,255,255,0.1);display:flex;gap:8px">
                 <input type="text" id="chat-input" placeholder="Type a message..."
@@ -1183,9 +1189,17 @@
             <button onclick="closeTutorial()">Start Playing!</button>
         </div>
     </div>
-    <script>
-        const R = { wood: { n: 'Wood', i: '🌲', p: 5 }, berries: { n: 'Berries', i: '🍇', p: 8 }, herbs: { n: 'Herbs', i: '🌿', p: 10 }, stone: { n: 'Stone', i: '�ite', p: 4 }, wheat: { n: 'Wheat', i: '🌾', p: 6 }, potato: { n: 'Potatoes', i: '🥔', p: 7 }, carrot: { n: 'Carrots', i: '🥕', p: 7 }, corn: { n: 'Corn', i: '🌽', p: 8 }, soy: { n: 'Soybeans', i: '🌱', p: 9 }, egg: { n: 'Eggs', i: '🥚', p: 12 }, chicken: { n: 'Chicken', i: '🍗', p: 25 }, milk: { n: 'Milk', i: '🥛', p: 15 }, beef: { n: 'Beef', i: '🥩', p: 40 }, leather: { n: 'Leather', i: '👜', p: 30 }, wool: { n: 'Wool', i: '🧶', p: 20 }, mutton: { n: 'Mutton', i: '🍖', p: 35 }, planks: { n: 'Planks', i: '🪜', p: 15 }, flour: { n: 'Flour', i: '🌾', p: 18 }, cloth: { n: 'Cloth', i: '🧵', p: 50 }, bread: { n: 'Bread', i: '🍞', p: 25 }, fertilizer: { n: 'Fertilizer', i: '💩', p: 50 } };
-        // Inventory UI state
+    <script type="module">
+        // Import main module which loads all config, utilities, and core systems
+        import './js/main.js';
+
+        console.log('✅ Module script executing - import completed');
+
+        // Note: R, T, B, PLOTS, ACH, CONFIG, etc. are now imported via main.js
+        // and exported to window for backwards compatibility
+
+        // UI state (still in index.html for now - will be extracted in Phase 2D)
+        let screen = 'home'; // Current active screen
         let invView = 'list'; // 'list' or 'grid'
         let invSort = 'name'; // 'name', 'qty', 'value'
 
@@ -1194,139 +1208,18 @@
         let sellQty = {}; // Tracks selected qty per item
         let priceHistory = {}; // { resourceId: [prices...] } for sparklines
 
-        // Item categories
-        const ITEM_CATS = {
-            raw: { n: 'Raw Materials', items: ['wood', 'stone', 'berries', 'herbs'] },
-            crops: { n: 'Crops', items: ['wheat', 'potato', 'carrot', 'corn', 'soy'] },
-            livestock: { n: 'Livestock', items: ['egg', 'chicken', 'milk', 'beef', 'leather', 'wool', 'mutton'] },
-            processed: { n: 'Processed Goods', items: ['planks', 'flour', 'cloth', 'bread'] }
-        };
+        // Variables that were in modules are now available globally via window
+        // Examples: window.R, window.T, window.B, window.S, window.save, window.ACH, etc.
 
-        const T = { wild: { n: 'Wilderness', i: '🌿', m: 10, r: 0.05, tap: 1, pool: ['wood', 'berries', 'herbs', 'stone'] }, forest: { n: 'Forest', i: '🌲', o: 'wood', r: 0.08, m: 10 }, berryBush: { n: 'Berries', i: '🍇', o: 'berries', r: 0.1, m: 10 }, herbPatch: { n: 'Herbs', i: '🌿', o: 'herbs', r: 0.06, m: 10 }, quarry: { n: 'Quarry', i: '⛰️', o: 'stone', r: 0.04, m: 10 }, wheatFarm: { n: 'Wheat', i: '🌾', o: 'wheat', r: 0.12, m: 10, b: 1 }, potatoFarm: { n: 'Potato', i: '🥔', o: 'potato', r: 0.1, m: 10, b: 1 }, carrotFarm: { n: 'Carrot', i: '🥕', o: 'carrot', r: 0.1, m: 10, b: 1 }, cornFarm: { n: 'Corn', i: '🌽', o: 'corn', r: 0.08, m: 10, b: 1 }, soyFarm: { n: 'Soy', i: '🌱', o: 'soy', r: 0.07, m: 10, b: 1 }, chickenCoop: { n: 'Chickens', i: '🐔', o: 'egg', r: 0.05, m: 10, b: 1, x: { chicken: 0.01 } }, cowPasture: { n: 'Cows', i: '🐄', o: 'milk', r: 0.03, m: 10, b: 1, x: { beef: 0.005, leather: 0.008 } }, sheepPen: { n: 'Sheep', i: '🐑', o: 'wool', r: 0.04, m: 10, b: 1, x: { mutton: 0.007 } }, sawmill: { n: 'Sawmill', i: '🏭', o: 'planks', m: 10, b: 1, req: 'wood', use: 2, tap: 1 }, mill: { n: 'Mill', i: '🏭', o: 'flour', m: 10, b: 1, req: 'wheat', use: 3, tap: 1 }, loom: { n: 'Loom', i: '🧵', o: 'cloth', m: 10, b: 1, req: 'wool', use: 3, tap: 1 }, bakery: { n: 'Bakery', i: '🥖', o: 'bread', m: 10, b: 1, req: 'flour', use: 2, tap: 1 }, storage: { n: 'Storage', i: '📦', b: 1, cap: 250 } };
-        const B = { gathering: [{ t: 'forest', c: { m: 200 } }, { t: 'berryBush', c: { m: 200 } }, { t: 'herbPatch', c: { m: 200 } }, { t: 'quarry', c: { m: 200 } }], farms: [{ t: 'wheatFarm', c: { m: 500, wood: 20 } }, { t: 'potatoFarm', c: { m: 600, wood: 25 } }, { t: 'carrotFarm', c: { m: 600, wood: 25 } }, { t: 'cornFarm', c: { m: 700, wood: 30 } }, { t: 'soyFarm', c: { m: 800, wood: 35 } }], livestock: [{ t: 'chickenCoop', c: { m: 1000, wood: 40, wheat: 20 } }, { t: 'cowPasture', c: { m: 2500, wood: 60, wheat: 50 } }, { t: 'sheepPen', c: { m: 1500, wood: 50, wheat: 30 } }], manufacturing: [{ t: 'sawmill', c: { m: 2000, stone: 50 } }, { t: 'mill', c: { m: 1500, stone: 30, wood: 40 } }, { t: 'loom', c: { m: 3000, wood: 60, stone: 30 } }, { t: 'bakery', c: { m: 2500, stone: 40, wood: 30 } }], utility: [{ t: 'storage', c: { m: 1000, wood: 50 } }] };
-        const PLOTS = [0, 5000, 15000, 35000, 75000];
-        const ACH = [
-            // Harvest milestones
-            { id: 'h100', n: 'Harvester', d: 'Harvest 100 items', g: 100, r: 100 },
-            { id: 'h1000', n: 'Farmer', d: 'Harvest 1000 items', g: 1000, r: 500 },
-            { id: 'h5000', n: 'Agriculturist', d: 'Harvest 5000 items', g: 5000, r: 2000 },
-            // Money milestones
-            { id: 'm1000', n: 'Trader', d: 'Earn $1000', g: 1000, r: 200 },
-            { id: 'm10000', n: 'Merchant', d: 'Earn $10000', g: 10000, r: 1000 },
-            { id: 'm50000', n: 'Tycoon', d: 'Earn $50000', g: 50000, r: 5000 },
-            { id: 'm100000', n: 'Mogul', d: 'Earn $100000', g: 100000, r: 10000 },
-            // Land ownership
-            { id: 'p2', n: 'Landowner', d: 'Own 2 plots', g: 2, r: 500 },
-            { id: 'p4', n: 'Estate Owner', d: 'Own 4 plots', g: 4, r: 2000 },
-            // Building milestones
-            { id: 'b1', n: 'Builder', d: 'Build 1 building', g: 1, r: 200 },
-            { id: 'b5', n: 'Architect', d: 'Build 5 buildings', g: 5, r: 1000 },
-            { id: 'b10', n: 'Developer', d: 'Build 10 buildings', g: 10, r: 3000 },
-            // Worker milestones
-            { id: 'w1', n: 'Employer', d: 'Hire 1 worker', g: 1, r: 300 },
-            { id: 'w5', n: 'Manager', d: 'Hire 5 workers', g: 5, r: 1500 },
-            { id: 'w10', n: 'CEO', d: 'Hire 10 workers', g: 10, r: 5000 },
-            // Trading achievements
-            { id: 'lo1', n: 'Investor', d: 'Create a limit order', g: 1, r: 250 },
-            { id: 'sell100', n: 'Salesman', d: 'Sell 100 items', g: 100, r: 300 },
-            { id: 'sell1000', n: 'Wholesaler', d: 'Sell 1000 items', g: 1000, r: 1500 },
-        ];
+        // Continue with remaining game code below...
+        // (Note: ACH array is now loaded from achievements module)
+        // (Note: EVENTS and DAILY_REWARDS are now loaded from constants module)
 
-        // Random Events
-        const EVENTS = [
-            { id: 'rain', n: '🌧️ Rain Bonus', d: 'All farms produce 2x!', duration: 180000, effect: 'farmBoost', mult: 2 },
-            { id: 'merchant', n: '💰 Merchant Visit', d: 'Sell prices +50%!', duration: 120000, effect: 'priceBoost', mult: 1.5 },
-            { id: 'gold', n: '🎉 Gold Rush', d: 'Found buried treasure!', duration: 0, effect: 'bonus', amount: 500 },
-            { id: 'bountiful', n: '🌾 Bountiful Harvest', d: 'All resources ready to harvest!', duration: 0, effect: 'fillAll' },
-            { id: 'drought', n: '🏜️ Drought', d: 'Farms produce 50% less!', duration: 120000, effect: 'farmBoost', mult: 0.5 },
-            { id: 'workerBonus', n: '⚡ Worker Bonus', d: 'Workers work 2x faster!', duration: 180000, effect: 'workerBoost', mult: 2 },
-            { id: 'lucky', n: '🍀 Lucky Find', d: 'Found random resources!', duration: 0, effect: 'randomItems' },
-        ];
+        // Game version, save version, CONFIG, and game state (S) all from modules
+        // migrateSave, save, load functions also from modules
 
-        // Daily Rewards (7-day cycle)
-        const DAILY_REWARDS = [
-            { day: 1, reward: 100, desc: '$100' },
-            { day: 2, reward: 150, desc: '$150' },
-            { day: 3, reward: 200, desc: '$200' },
-            { day: 4, reward: 300, desc: '$300' },
-            { day: 5, reward: 500, desc: '$500' },
-            { day: 6, reward: 750, desc: '$750' },
-            { day: 7, reward: 1000, desc: '$1000 🎉' },
-        ];
-
-        // ===== VERSION & CONFIG =====
-        const GAME_VERSION = 'v1.3.3-final';
-        const VERSION_DATE = '2026-01-05 20:42';
-        const SAVE_VERSION = 2; // Increment when save format changes
-
-        const CONFIG = {
-            BASE_INVENTORY_CAP: 1000,
-            STORAGE_CAP_PER_BUILDING: 250,
-            EVENT_CHECK_INTERVAL: 300000, // 5 minutes
-            SAVE_INTERVAL: 10000, // 10 seconds
-            MAX_OFFLINE_HOURS: 8,
-            DEBUG_MODE: false // Set to false for production
-        };
-
-        if (CONFIG.DEBUG_MODE) {
-            console.log('%c🎮 TAPPY TRADE', 'font-size:20px; font-weight:bold; color:#ffd700');
-            console.log('%cVersion: ' + GAME_VERSION, 'font-size:14px; color:#4ade80');
-            console.log('%cSave Version: ' + SAVE_VERSION, 'font-size:12px; color:#60a5fa');
-        }
-
-        const S = { saveVersion: SAVE_VERSION, money: 0, inv: {}, cap: CONFIG.BASE_INVENTORY_CAP, sound: 1, theme: 'dark', fontSize: 'normal', plots: [{ subs: [{ t: 'wild', c: 10, lv: 1 }, { t: 'wild', c: 10, lv: 1 }, { t: 'wild', c: 10, lv: 1 }] }], workers: [], stats: { harvested: 0, sold: 0, earned: 0, built: 0 }, ach: {}, prices: {}, priceDir: {}, tutorial: 0, lastUpdate: Date.now(), activeEvent: null, eventEndsAt: 0, nextEventAt: Date.now() + CONFIG.EVENT_CHECK_INTERVAL, lastDailyReward: 0, dailyStreak: 0, limitOrders: [], farmName: "Untitled Farm", hasRenamedFarm: false };
-
-        // Save migration function
-        function migrateSave(loadedState) {
-            const version = loadedState.saveVersion || 1;
-            if (CONFIG.DEBUG_MODE) console.log('Migrating save from version', version, 'to', SAVE_VERSION);
-
-            // Version 1 → 2: Fix inventory cap
-            if (version < 2) {
-                loadedState.cap = CONFIG.BASE_INVENTORY_CAP;
-                loadedState.saveVersion = 2;
-                if (CONFIG.DEBUG_MODE) console.log('✅ Migrated cap to', CONFIG.BASE_INVENTORY_CAP);
-            }
-
-            // Add missing fields
-            if (!loadedState.farmName) loadedState.farmName = "Untitled Farm";
-            if (loadedState.hasRenamedFarm === undefined) loadedState.hasRenamedFarm = false;
-
-            return loadedState;
-        }
-
-        let screen = 'home', buildP = null, buildS = null, tipTimer = null;
+        // Current UI screen
         const $ = id => document.getElementById(id);
-
-        // Confetti effect for achievements
-        function showConfetti() {
-            const container = document.createElement('div');
-            container.className = 'confetti-container';
-            document.body.appendChild(container);
-
-            const colors = ['#ffd700', '#4ade80', '#60a5fa', '#a78bfa', '#fb923c', '#f87171'];
-            for (let i = 0; i < 50; i++) {
-                const confetti = document.createElement('div');
-                confetti.className = 'confetti';
-                confetti.style.left = Math.random() * 100 + '%';
-                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                confetti.style.animationDelay = Math.random() * 0.5 + 's';
-                confetti.style.animationDuration = (2 + Math.random() * 2) + 's';
-                container.appendChild(confetti);
-            }
-
-            setTimeout(() => container.remove(), 4000);
-        }
-
-        // ===== GAME FEATURES =====
-        // Calculate synergy bonus - +10% regen when all 3 subplots match
-        function calculateSynergyBonus(plot) {
-            if (!plot || !plot.subs || plot.subs.length < 3) return 1.0;
-            const types = plot.subs.map(s => s.t);
-            // Check if all three match (excluding wild subplots)
-            const allMatch = types.every(t => t === types[0]) && types[0] !== 'wild';
-            return allMatch ? 1.1 : 1.0;
-        }
 
         // Get themed background for plot based on subplot types
         function getPlotBackground(plot) {
@@ -1362,168 +1255,8 @@
             document.body.classList.add('font-' + (S.fontSize || 'normal'));
         }
 
-        function save() {
-            S.lastUpdate = Date.now();
-            localStorage.setItem('tt4', JSON.stringify(S));
-            // Auto-save to cloud if logged in (throttled)
-            if (loggedInUser && db && !window._cloudSaving) {
-                window._cloudSaveQueued = true;
-            }
-        }
-        function load() { try { const d = JSON.parse(localStorage.getItem('tt4')); if (d) { const migrated = migrateSave(d); Object.assign(S, migrated); return 1 } } catch (e) { } return 0 }
-
-        // Cloud save functions
-        async function saveToCloud() {
-            if (!loggedInUser || !db) return;
-            window._cloudSaving = true;
-            try {
-                await db.collection('saves').doc(loggedInUser.id).set({
-                    state: JSON.stringify(S),
-                    username: loggedInUser.username,
-                    money: S.money,
-                    lastSave: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                // Removed console.log for production
-            } catch (e) {
-                console.error('Cloud save failed:', e);
-            }
-            window._cloudSaving = false;
-            window._cloudSaveQueued = false;
-        }
-
-        async function loadFromCloud() {
-            if (!loggedInUser || !db) return false;
-            try {
-                const doc = await db.collection('saves').doc(loggedInUser.id).get();
-                if (doc.exists) {
-                    const data = doc.data();
-                    const cloudState = JSON.parse(data.state);
-
-                    // Calculate offline earnings
-                    const now = Date.now();
-                    const offlineTime = now - cloudState.lastUpdate;
-
-                    // Apply migrations and cloud state
-                    const migrated = migrateSave(cloudState);
-                    Object.assign(S, migrated);
-
-                    // Calculate offline progress (max 8 hours)
-                    if (offlineTime > 1000) {
-                        const beforeHarvested = S.stats?.harvested || 0;
-                        const beforeInv = getInvTotal();
-                        update(Math.min(offlineTime, 8 * 3600000));
-                        const harvested = (S.stats?.harvested || 0) - beforeHarvested;
-                        const gained = getInvTotal() - beforeInv;
-                        const hours = Math.floor(offlineTime / 3600000);
-                        const mins = Math.floor((offlineTime % 3600000) / 60000);
-                        if (hours > 0 || mins > 5) {
-                            if (harvested > 0 || gained > 0) {
-                                notif(`⏰ Offline for ${hours}h ${mins}m — workers gathered +${Math.max(0, gained)} items`);
-                            } else {
-                                notif(`⏰ Offline for ${hours}h ${mins}m - resources grew!`);
-                            }
-                        }
-                    }
-
-                    S.lastUpdate = now;
-                    save();
-                    return true;
-                }
-            } catch (e) {
-                console.error('Cloud load failed:', e);
-            }
-            return false;
-        }
-
-        // Cloud sync interval (every 30 seconds if changes pending)
-        setInterval(() => {
-            if (window._cloudSaveQueued && loggedInUser && !window._cloudSaving) {
-                saveToCloud();
-            }
-        }, 30000);
-        function toast(m, t = '') { const e = $('toast'); e.textContent = m; e.className = 'toast show ' + (t || ''); setTimeout(() => e.classList.remove('show'), 2000) }
-        function notif(m) { const e = $('notif'); e.textContent = m; e.classList.add('show'); setTimeout(() => e.classList.remove('show'), 3000) }
-
-        // Floating text animation for harvest/sell feedback
-        function floatText(text, x, y, type = '') {
-            const el = document.createElement('div');
-            el.className = 'float-text ' + type;
-            el.textContent = text;
-            el.style.left = x + 'px';
-            el.style.top = y + 'px';
-            document.body.appendChild(el);
-            setTimeout(() => el.remove(), 1000);
-        }
-
-        // Show floating text at element position
-        function floatTextAt(text, element, type = '') {
-            if (!element) return;
-            const rect = element.getBoundingClientRect();
-            floatText(text, rect.left + rect.width / 2 - 20, rect.top);
-        }
-        function playS(t) {
-            if (!S.sound) return;
-            vibrate(t); // Haptic feedback
-            try {
-                const a = new (window.AudioContext || window.webkitAudioContext)();
-                const o = a.createOscillator();
-                const g = a.createGain();
-                o.connect(g);
-                g.connect(a.destination);
-                g.gain.value = 0.06;
-
-                if (t === 'tap' || t === 'harvest') {
-                    o.frequency.value = 800;
-                    o.start();
-                    g.gain.exponentialRampToValueAtTime(0.01, a.currentTime + 0.06);
-                    o.stop(a.currentTime + 0.06);
-                } else if (t === 'sell') {
-                    o.frequency.value = 600;
-                    o.start();
-                    o.frequency.exponentialRampToValueAtTime(1100, a.currentTime + 0.1);
-                    g.gain.exponentialRampToValueAtTime(0.01, a.currentTime + 0.12);
-                    o.stop(a.currentTime + 0.12);
-                } else if (t === 'buy') {
-                    o.frequency.value = 400;
-                    o.start();
-                    o.frequency.exponentialRampToValueAtTime(600, a.currentTime + 0.1);
-                    g.gain.exponentialRampToValueAtTime(0.01, a.currentTime + 0.12);
-                    o.stop(a.currentTime + 0.12);
-                } else if (t === 'build' || t === 'upgrade') {
-                    o.frequency.value = 300;
-                    o.start();
-                    o.frequency.exponentialRampToValueAtTime(500, a.currentTime + 0.15);
-                    g.gain.exponentialRampToValueAtTime(0.01, a.currentTime + 0.2);
-                    o.stop(a.currentTime + 0.2);
-                } else if (t === 'ach') {
-                    o.frequency.value = 523;
-                    o.start();
-                    setTimeout(() => o.frequency.value = 659, 100);
-                    setTimeout(() => o.frequency.value = 784, 200);
-                    g.gain.exponentialRampToValueAtTime(0.01, a.currentTime + 0.4);
-                    o.stop(a.currentTime + 0.4);
-                } else if (t === 'err') {
-                    o.frequency.value = 200;
-                    o.start();
-                    g.gain.exponentialRampToValueAtTime(0.01, a.currentTime + 0.1);
-                    o.stop(a.currentTime + 0.1);
-                }
-            } catch (e) { }
-        }
-
-        // Haptic feedback for mobile
-        function vibrate(type) {
-            if (!navigator.vibrate) return;
-            if (type === 'tap' || type === 'harvest') navigator.vibrate(10);
-            else if (type === 'sell' || type === 'buy') navigator.vibrate(20);
-            else if (type === 'build' || type === 'upgrade') navigator.vibrate([10, 30, 20]);
-            else if (type === 'ach') navigator.vibrate([20, 50, 20, 50, 30]);
-            else if (type === 'err') navigator.vibrate([50, 20, 50]);
-        }
-        function getInvTotal() { return Object.values(S.inv).reduce((a, b) => a + b, 0) }
-        function hasItem(id, n) { return (S.inv[id] || 0) >= n }
-        function addItem(id, n) { S.inv[id] = (S.inv[id] || 0) + n }
-        function remItem(id, n) { const h = S.inv[id] || 0, r = Math.min(h, n); S.inv[id] = h - r; if (S.inv[id] <= 0) delete S.inv[id]; return r }
+        // (Note: toast, notif, floatText, playS, vibrate are now in feedback module)
+        // (Note: getInvTotal, hasItem, addItem, remItem are now in inventory module)
         function getPrice(id) { if (!S.prices[id]) S.prices[id] = R[id]?.p || 1; return S.prices[id] }
 
         // Game Update Loop
@@ -1635,102 +1368,12 @@
             }
         }
 
-        // Limit Order System
-        function createLimitOrder(type, resourceId, qty, targetPrice) {
-            if (!S.limitOrders) S.limitOrders = [];
-            S.limitOrders.push({
-                type, // 'sell' or 'buy'
-                resourceId,
-                qty,
-                targetPrice,
-                createdAt: Date.now()
-            });
-            if (!S.stats.ordersCreated) S.stats.ordersCreated = 0;
-            S.stats.ordersCreated++;
-            save();
-            notif(`📈 ${type === 'sell' ? 'Sell' : 'Buy'} order placed: ${qty} ${R[resourceId]?.i} at $${targetPrice}`);
-        }
-
-        function cancelLimitOrder(index) {
-            if (!S.limitOrders) return;
-            S.limitOrders.splice(index, 1);
-            save();
-            toast('Order cancelled', 'ok');
-            render();
-        }
-
-        function processLimitOrders() {
-            if (!S.limitOrders || S.limitOrders.length === 0) return;
-
-            const toRemove = [];
-
-            for (let i = 0; i < S.limitOrders.length; i++) {
-                const order = S.limitOrders[i];
-                const currentPrice = getPrice(order.resourceId);
-
-                if (order.type === 'sell' && currentPrice >= order.targetPrice) {
-                    // Execute sell order
-                    const have = S.inv[order.resourceId] || 0;
-                    const toSell = Math.min(order.qty, have);
-                    if (toSell > 0) {
-                        const earn = toSell * order.targetPrice;
-                        remItem(order.resourceId, toSell);
-                        S.money += earn;
-                        S.stats.earned += earn;
-                        S.stats.sold += toSell;
-                        S.stats.earned += earn;
-                        adjustPrice(order.resourceId, 'sell', toSell);
-                        notif(`📈 Auto-sold ${toSell} ${R[order.resourceId]?.i} for $${earn}!`);
-                        playS('sell');
-                    }
-                    toRemove.push(i);
-                } else if (order.type === 'buy' && currentPrice <= order.targetPrice) {
-                    // Execute buy order - buy from gov at current price + markup
-                    const buyPrice = Math.ceil(currentPrice * 1.2); // 20% markup
-                    const totalCost = order.qty * buyPrice;
-                    const space = S.cap - getInvTotal();
-                    const canBuy = Math.min(order.qty, space, Math.floor(S.money / buyPrice));
-
-                    if (canBuy > 0) {
-                        const cost = canBuy * buyPrice;
-                        S.money -= cost;
-                        addItem(order.resourceId, canBuy);
-                        adjustPrice(order.resourceId, 'buy', canBuy);
-                        notif(`📈 Auto-bought ${canBuy} ${R[order.resourceId]?.i} for $${cost}!`);
-                        playS('sell');
-                    }
-                    toRemove.push(i);
-                }
-            }
-
-            // Remove executed orders (in reverse to maintain indices)
-            for (let i = toRemove.length - 1; i >= 0; i--) {
-                S.limitOrders.splice(toRemove[i], 1);
-            }
-        }
         function canAfford(c) { if (c.m && S.money < c.m) return 0; for (const k in c) if (k !== 'm' && !hasItem(k, c[k])) return 0; return 1 }
         function pay(c) { if (c.m) S.money -= c.m; for (const k in c) if (k !== 'm') remItem(k, c[k]) }
 
         // OLD UPDATE FUNCTION REMOVED - Using new simplified one above
 
         // Event System
-        function checkEvents() {
-            const now = Date.now();
-
-            // Check if active event has ended
-            if (S.activeEvent && S.eventEndsAt && now >= S.eventEndsAt) {
-                notif(`${S.activeEvent.n} has ended!`);
-                S.activeEvent = null;
-                S.eventEndsAt = 0;
-            }
-
-            // Check if it's time for a new event
-            if (!S.activeEvent && S.nextEventAt && now >= S.nextEventAt) {
-                triggerRandomEvent();
-                // Schedule next event in 5-15 minutes
-                S.nextEventAt = now + 300000 + Math.random() * 600000;
-            }
-        }
 
         function triggerRandomEvent() {
             const event = EVENTS[Math.floor(Math.random() * EVENTS.length)];
@@ -1779,157 +1422,9 @@
             playS('ach');
         }
 
-        function getEventMultiplier(type) {
-            if (!S.activeEvent) return 1;
-            if (type === 'farm' && S.activeEvent.effect === 'farmBoost') return S.activeEvent.mult;
-            if (type === 'price' && S.activeEvent.effect === 'priceBoost') return S.activeEvent.mult;
-            if (type === 'worker' && S.activeEvent.effect === 'workerBoost') return S.activeEvent.mult;
-            return 1;
-        }
 
-        function tap(pi, si) {
-            const s = S.plots[pi]?.subs[si]; if (!s) return;
-            const cfg = T[s.t]; if (!cfg) return;
-            const el = document.querySelector(`[data-p="${pi}"][data-s="${si}"]`);
-            if (getInvTotal() >= S.cap) {
-                toast('Inventory full!', 'err');
-                playS('err');
-                if (el) { el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); }
-                return;
-            }
+        // Building system moved to js/mechanics/building.js (Phase 2G)
 
-            // Wild subplot gives random resources
-            if (cfg.pool) {
-                if (s.c < 1) return; // Check if resources available
-                s.c--; // Decrement resource count
-                const randomItem = cfg.pool[Math.floor(Math.random() * cfg.pool.length)];
-                addItem(randomItem, 1);
-                S.stats.harvested++;
-                playS('tap');
-                floatTextAt(`+1 ${R[randomItem]?.i}`, el);
-                const iconEl = el?.querySelector('.icon');
-                if (iconEl) { iconEl.classList.remove('pop'); void iconEl.offsetWidth; iconEl.classList.add('pop'); }
-                save(); render();
-                return;
-            }
-
-            // Manufacturing/crafting buildings
-            if (cfg.req) {
-                if (!hasItem(cfg.req, cfg.use)) {
-                    toast(`Need ${cfg.use} ${R[cfg.req]?.i || cfg.req}`, 'err');
-                    playS('err');
-                    if (el) { el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); }
-                    return;
-                }
-                remItem(cfg.req, cfg.use); addItem(cfg.o, 1); S.stats.harvested++; playS('tap');
-                floatTextAt(`+1 ${R[cfg.o]?.i}`, el);
-            } else {
-                if (s.c < 1) return;
-                s.c--; addItem(cfg.o, 1); S.stats.harvested++; playS('tap');
-                floatTextAt(`+1 ${R[cfg.o]?.i}`, el);
-                const iconEl = el?.querySelector('.icon');
-                if (iconEl) { iconEl.classList.remove('pop'); void iconEl.offsetWidth; iconEl.classList.add('pop'); }
-            }
-            save(); render();
-        }
-
-        function openBuild(pi, si) {
-            buildP = pi; buildS = si;
-            let h = '';
-            const cur = S.plots[pi]?.subs[si];
-            const curCfg = cur ? T[cur.t] : null;
-
-            // If there's an existing subplot (including wild), show upgrade option first
-            if (cur && cur.lv < 5) {
-                const upgradeCost = getUpgradeCost(cur.t, cur.lv);
-                const canUpgrade = canAfford(upgradeCost);
-                const costStr = Object.entries(upgradeCost).map(([k, v]) => k === 'm' ? `<span class="m">$${v}</span>` : `<span class="r">${v}${R[k]?.i || k}</span>`).join(' ');
-                const regenBonus = Math.round(((1 + (cur.lv) * 0.1) - 1) * 100);
-                const storageBonus = cur.lv * 10;
-                h += `<div class="cat"><div class="cat-title">⬆️ Upgrade ${curCfg?.n}</div>`;
-                h += `<div class="bld ${canUpgrade ? '' : 'off'}" data-t="__upgrade" style="border:1px solid var(--purple)">`;
-                h += `<div class="ic">${curCfg.i}</div>`;
-                h += `<div class="info"><div class="nm" style="color:var(--purple)">${curCfg.n} Lv${cur.lv} → Lv${cur.lv + 1}</div>`;
-                h += `<div class="prod">Regen: ${regenBonus}% → ${regenBonus + 10}% | Storage: +${storageBonus} → +${storageBonus + 10}</div>`;
-                h += `<div class="cost">${costStr}</div></div></div></div>`;
-            } else if (cur && cur.lv >= 5) {
-                h += `<div class="cat"><div class="cat-title">⬆️ Upgrade</div>`;
-                h += `<div class="bld off"><div class="ic">⭐</div><div class="info"><div class="nm">${curCfg.n} MAX LEVEL</div><div class="prod">This subplot is fully upgraded!</div></div></div></div>`;
-            }
-
-            // Build new options (only show if no building or it's a wild plot)
-            if (!curCfg?.b) {
-                const cats = [{ k: 'gathering', t: '🌿 Gathering' }, { k: 'farms', t: '🌾 Farms' }, { k: 'livestock', t: '🐄 Livestock' }, { k: 'manufacturing', t: '🏭 Manufacturing' }, { k: 'utility', t: '📦 Utility' }];
-                for (const cat of cats) {
-                    h += `<div class="cat"><div class="cat-title">${cat.t}</div>`;
-                    for (const b of B[cat.k]) {
-                        const cfg = T[b.t]; if (!cfg) continue;
-                        const can = canAfford(b.c);
-                        const cst = Object.entries(b.c).map(([k, v]) => k === 'm' ? `<span class="m">$${v}</span>` : `<span class="r">${v}${R[k]?.i || k}</span>`).join(' ');
-                        h += `<div class="bld ${can ? '' : 'off'}" data-t="${b.t}"><div class="ic">${cfg.i}</div><div class="info"><div class="nm">${cfg.n}</div><div class="prod">${cfg.o ? `→ ${R[cfg.o]?.i || ''} ${R[cfg.o]?.n || ''}` : (cfg.cap ? `+${cfg.cap} storage` : '')}</div><div class="cost">${cst}</div></div></div>`;
-                    }
-                    h += `</div>`;
-                }
-            }
-
-            // Demolish option for buildings
-            if (cur && curCfg?.b) {
-                h += `<div class="cat"><div class="cat-title">⚠️ Demolish</div><div class="bld" data-t="__demolish" style="border:1px solid var(--red)"><div class="ic">🗑️</div><div class="info"><div class="nm" style="color:var(--red)">Remove Building</div><div class="prod">Returns 50% resources</div></div></div></div>`;
-            }
-            $('build-list').innerHTML = h;
-            $('build-list').querySelectorAll('.bld:not(.off)').forEach(el => el.onclick = () => doBuild(el.dataset.t));
-            $('build-modal').classList.add('show'); playS('tap');
-        }
-
-        // Calculate upgrade cost based on subplot type and current level
-        function getUpgradeCost(subplotType, currentLevel) {
-            // Find the base cost from buildings
-            const base = Object.values(B).flat().find(b => b.t === subplotType);
-            const multiplier = currentLevel + 1;
-
-            if (base) {
-                // Has a building definition, use it
-                const cost = {};
-                for (const k in base.c) {
-                    cost[k] = Math.floor(base.c[k] * multiplier * 0.75);
-                }
-                return cost;
-            } else {
-                // No building definition (e.g., wild), use simple cost
-                return { m: 100 * multiplier };
-            }
-        }
-
-        function closeBuild() { $('build-modal').classList.remove('show') }
-
-        function doBuild(t) {
-            if (t === '__upgrade') {
-                const s = S.plots[buildP]?.subs[buildS]; if (!s || s.lv >= 5) return;
-                const cost = getUpgradeCost(s.t, s.lv);
-                if (!canAfford(cost)) { toast('Cannot afford upgrade!', 'err'); return; }
-                pay(cost);
-                s.lv++;
-                playS('ach');
-                toast(`Upgraded to Lv${s.lv}!`, 'ok');
-                notif(`⬆️ ${T[s.t]?.n} upgraded to Level ${s.lv}!`);
-                closeBuild(); save(); render();
-                return;
-            }
-            if (t === '__demolish') {
-                const s = S.plots[buildP]?.subs[buildS]; if (!s) return;
-                const orig = Object.values(B).flat().find(b => b.t === s.t);
-                if (orig) { for (const k in orig.c) { if (k === 'm') S.money += Math.floor(orig.c.m * 0.5); else addItem(k, Math.floor(orig.c[k] * 0.5)) } }
-                s.t = 'forest'; s.c = 0; s.lv = 1;
-                toast('Building demolished', 'ok'); closeBuild(); save(); render(); return;
-            }
-            const b = Object.values(B).flat().find(x => x.t === t); if (!b || !canAfford(b.c)) return;
-            pay(b.c);
-            S.plots[buildP].subs[buildS] = { t, c: 0, lv: 1 };
-            S.stats.built++;
-            if (T[t]?.cap) S.cap += T[t].cap;
-            playS('sell'); toast(`Built ${T[t]?.n}!`, 'ok'); notif(`🏗️ New building: ${T[t]?.n}`);
-            closeBuild(); save(); render();
-        }
 
         function buyPlot() {
             const cost = PLOTS[S.plots.length] || 999999;
@@ -2006,397 +1501,27 @@
             save(); render();
         }
 
-        function checkAchievements() {
-            for (const a of ACH) {
-                if (S.ach[a.id]) continue;
-                let done = false;
 
-                // Harvest milestones (h100, h1000, h5000)
-                if (a.id.startsWith('h')) done = S.stats.harvested >= a.g;
-                // Money earned milestones (m1000, m10000, m50000, m100000)
-                else if (a.id.startsWith('m')) done = S.stats.earned >= a.g;
-                // Plot ownership (p2, p4)
-                else if (a.id.startsWith('p')) done = S.plots.length >= a.g;
-                // Buildings built (b1, b5, b10)
-                else if (a.id.startsWith('b') && !a.id.startsWith('bu')) done = S.stats.built >= a.g;
-                // Workers hired (w1, w5, w10)
-                else if (a.id.startsWith('w')) done = S.workers.length >= a.g;
-                // Limit orders (lo1)
-                else if (a.id === 'lo1') done = (S.stats.ordersCreated || 0) >= a.g;
-                // Items sold (sell100, sell1000)
-                else if (a.id.startsWith('sell')) done = S.stats.sold >= a.g;
-                // Prestige (prestige1) - handled separately
-                else if (a.id === 'prestige1') done = (S.prestige || 0) >= a.g;
+        // Settings & theme system moved to js/ui/settings.js (Phase 2H)
+        // Menu system moved to js/ui/menu.js (Phase 2H)
+        // Daily rewards system moved to js/mechanics/dailyRewards.js (Phase 2H)
 
-                if (done) {
-                    S.ach[a.id] = 1;
-                    if (a.r > 0) S.money += a.r;
-                    playS('ach');
-                    notif(`🏆 ${a.n}${a.r > 0 ? ` (+$${a.r})` : ''}`);
-                }
-            }
-        }
-        function showAchievements() {
-            let h = '';
-            for (const a of ACH) {
-                const done = S.ach[a.id];
-                h += `<div class="achieve ${done ? 'done' : ''}"><div class="ic">${done ? '✅' : '🔒'}</div><div class="info"><div class="nm">${a.n}</div><div class="desc">${a.d}</div><div class="reward">Reward: $${a.r}</div></div></div>`;
-            }
-            $('achieve-list').innerHTML = h;
-            $('achieve-modal').classList.add('show'); closeMenu();
-        }
-        function closeAchieve() { $('achieve-modal').classList.remove('show') }
 
-        // Daily Rewards System
-        // Theme and Font Size controls
-        function toggleTheme() {
-            S.theme = S.theme === 'dark' ? 'light' : 'dark';
-            applySettings();
-            updateThemeButton();
-            save();
-        }
 
-        function setFontSize(size) {
-            S.fontSize = size;
-            applySettings();
-            save();
-            toast(`Font size: ${size}`, 'ok');
-        }
+        // ===== LEADERBOARD SYSTEM MOVED TO js/multiplayer/leaderboard.js (Phase 2J) =====
 
-        function updateThemeButton() {
-            const btn = $('theme-btn');
-            if (btn) btn.textContent = S.theme === 'dark' ? '🌙 Dark Mode' : '☀️ Light Mode';
-        }
 
-        function showDaily() {
-            const cal = $('daily-calendar');
-            const streakEl = $('daily-streak');
-            const btn = $('claim-daily-btn');
-
-            // Render 7-day calendar
-            let h = '';
-            for (let i = 0; i < 7; i++) {
-                const day = i + 1;
-                const reward = DAILY_REWARDS[i];
-                const claimed = (S.dailyStreak || 0) >= day && !canClaimDaily();
-                const current = ((S.dailyStreak || 0) % 7) + 1 === day && canClaimDaily();
-                const dayClass = claimed ? 'claimed' : (current ? 'current' : '');
-                h += `<div class="daily-day ${dayClass}" style="text-align:center;padding:8px 4px;background:var(--bg2);border-radius:6px;border:2px solid ${current ? 'var(--gold)' : 'transparent'}">
-                    <div style="font-size:0.75rem;color:var(--muted)">Day ${day}</div>
-                    <div style="font-size:1.2rem">${claimed ? '✅' : '💰'}</div>
-                    <div style="font-size:0.7rem;color:var(--gold)">${reward.desc}</div>
-                </div>`;
-            }
-            cal.innerHTML = h;
-
-            // Update streak display
-            streakEl.innerHTML = `🔥 Current Streak: <b>${S.dailyStreak || 0}</b> days`;
-
-            // Update button
-            if (canClaimDaily()) {
-                const nextDay = ((S.dailyStreak || 0) % 7);
-                const reward = DAILY_REWARDS[nextDay];
-                btn.disabled = false;
-                btn.textContent = `🎁 Claim ${reward.desc}!`;
-                btn.classList.remove('off');
-            } else {
-                btn.disabled = true;
-                btn.textContent = '⏰ Come back tomorrow!';
-                btn.classList.add('off');
-            }
-
-            $('daily-modal').classList.add('show'); closeMenu();
-        }
-
-        function closeDaily() { $('daily-modal').classList.remove('show') }
-
-        function canClaimDaily() {
-            if (!S.lastDailyReward) return true;
-            const lastDate = new Date(S.lastDailyReward);
-            const today = new Date();
-            // Reset to start of day for comparison
-            lastDate.setHours(0, 0, 0, 0);
-            today.setHours(0, 0, 0, 0);
-            return today.getTime() > lastDate.getTime();
-        }
-
-        function claimDaily() {
-            if (!canClaimDaily()) return;
-
-            const lastDate = S.lastDailyReward ? new Date(S.lastDailyReward) : null;
-            const today = new Date();
-
-            // Check if streak should reset (more than 1 day gap)
-            if (lastDate) {
-                lastDate.setHours(0, 0, 0, 0);
-                today.setHours(0, 0, 0, 0);
-                const daysDiff = Math.floor((today - lastDate) / (1000 * 60 * 60 * 24));
-                if (daysDiff > 1) {
-                    S.dailyStreak = 0; // Reset streak
-                }
-            }
-
-            // Get current day reward (cycling 0-6)
-            const dayIndex = (S.dailyStreak || 0) % 7;
-            const reward = DAILY_REWARDS[dayIndex];
-
-            // Give reward
-            S.money += reward.reward;
-            S.dailyStreak = (S.dailyStreak || 0) + 1;
-            S.lastDailyReward = Date.now();
-
-            playS('ach');
-            floatText(`+$${reward.reward}`, window.innerWidth / 2 - 30, 100, 'sell');
-            notif(`🎁 Day ${dayIndex + 1} reward: ${reward.desc}!`);
-            toast(`Claimed ${reward.desc}!`, 'ok');
-
-            save();
-            closeDaily();
-            render();
-        }
-
-        function checkDailyReward() {
-            // Auto-show daily reward popup if available (after a short delay)
-            if (canClaimDaily()) {
-                setTimeout(() => {
-                    notif('🎁 Daily reward available!');
-                }, 2000);
-            }
-        }
-
-        function showMenu() { $('menu-modal').classList.add('show') }
-        function closeMenu() { $('menu-modal').classList.remove('show') }
-
-        // Leaderboard System
-        async function showLeaderboard() {
-            closeMenu();
-            $('leaderboard-modal').classList.add('show');
-            $('leaderboard-body').innerHTML = '<div class="empty">Loading leaderboard...</div>';
-
-            if (!db) {
-                $('leaderboard-body').innerHTML = '<div class="empty">⚠️ Connect to play online to view leaderboard</div>';
-                return;
-            }
-
-            try {
-                // Fetch top 20 players by money from cloud saves
-                const snap = await db.collection('saves')
-                    .orderBy('money', 'desc')
-                    .limit(20)
-                    .get();
-
-                if (snap.empty) {
-                    $('leaderboard-body').innerHTML = '<div class="empty">No players yet!</div>';
-                    return;
-                }
-
-                let h = '';
-                let rank = 1;
-                snap.docs.forEach(doc => {
-                    const data = doc.data();
-                    const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
-                    const isMe = loggedInUser && loggedInUser.id === doc.id;
-                    h += `<div style="display:flex;align-items:center;padding:12px;background:var(--bg2);border-radius:8px;margin-bottom:6px;${isMe ? 'border:2px solid var(--gold)' : ''}">
-                        <span style="width:40px;font-weight:700;font-size:1.2rem">${medal}</span>
-                        <span style="flex:1;font-weight:${rank <= 3 ? '600' : '400'}">${data.username || 'Anonymous'}</span>
-                        <span style="color:var(--gold);font-weight:700">$${(data.money || 0).toLocaleString()}</span>
-                    </div>`;
-                    rank++;
-                });
-
-                $('leaderboard-body').innerHTML = h;
-            } catch (e) {
-                console.error('Leaderboard error:', e);
-                $('leaderboard-body').innerHTML = '<div class="empty">Failed to load leaderboard</div>';
-            }
-        }
-
-        function closeLeaderboard() { $('leaderboard-modal').classList.remove('show') }
-
-        function showTip(e, id) {
-            clearTimeout(tipTimer);
-            const r = R[id]; if (!r) return;
-            const tip = $('tip');
-            tip.innerHTML = `<h4>${r.i} ${r.n}</h4><p>Price: $${getPrice(id)}</p>`;
-            const rect = e.target.getBoundingClientRect();
-            tip.style.left = Math.min(rect.left, window.innerWidth - 210) + 'px';
-            tip.style.top = (rect.bottom + 5) + 'px';
-            tip.classList.add('show');
-            tipTimer = setTimeout(() => tip.classList.remove('show'), 2000);
-        }
+        // ===== TOOLTIP MOVED TO js/ui/tooltip.js (Phase 2L) =====
 
         function closeTutorial() { $('tutorial').style.display = 'none'; S.tutorial = 1; save() }
+        window.closeTutorial = closeTutorial; // Export for onclick
 
-        function resetGame() {
-            if (!confirm('Are you sure you want to reset ALL progress? This cannot be undone!')) return;
 
-            // Clear ALL local storage
-            localStorage.clear();
+        // ===== GAME RESET MOVED TO js/ui/gameReset.js (Phase 2L) =====
 
-            // Clear cloud save if logged in
-            if (loggedInUser && db) {
-                db.collection('saves').doc(loggedInUser.id).delete()
-                    .then(() => {
-                        toast('Game reset!', 'ok');
-                        setTimeout(() => location.reload(), 500);
-                    })
-                    .catch(e => {
-                        console.log('Cloud delete failed:', e);
-                        location.reload();
-                    });
-            } else {
-                toast('Game reset!', 'ok');
-                setTimeout(() => location.reload(), 500);
-            }
-        }
+        // render() function moved to js/ui/render.js (Phase 2D)
 
-        function render() {
-            // Don't re-render if user is typing in an input or textarea
-            const focused = document.activeElement;
-            if (focused && (focused.tagName === 'INPUT' || focused.tagName === 'TEXTAREA' || focused.tagName === 'SELECT')) {
-                // Skip re-render to preserve focus
-                return;
-            }
-
-            $('money').textContent = '$' + S.money.toLocaleString();
-            $('inv').textContent = getInvTotal();
-            const m = $('main');
-            if (screen === 'home') renderHome(m);
-            else if (screen === 'inventory') renderInventory(m);
-            else if (screen === 'workers') renderWorkers(m);
-            else if (screen === 'player') {
-                renderPlayerMarket(m);
-            }
-            else if (screen === 'stats') renderStats(m);
-            else if (screen === 'help') renderHelp(m);
-            // Update nav button active states
-            document.querySelectorAll('.nav button').forEach(b => {
-                b.classList.toggle('active', b.dataset.s === screen);
-            });
-        }
-
-        function renderInventory(m) {
-            let h = `<div class="panel"><h3>📦 Inventory (${getInvTotal()}/${S.cap})</h3>`;
-
-            // Controls: View toggle and Sort
-            h += `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-                <div class="view-toggle">
-                    <button class="${invView === 'list' ? 'active' : ''}" onclick="invView='list';render()">📋</button>
-                    <button class="${invView === 'grid' ? 'active' : ''}" onclick="invView='grid';render()">📱</button>
-                </div>
-                <select onchange="invSort=this.value;render()" style="padding:4px 8px;border-radius:4px;background:var(--bg2);color:var(--text);border:none;font-size:0.75rem">
-                    <option value="name" ${invSort === 'name' ? 'selected' : ''}>By Name</option>
-                    <option value="qty" ${invSort === 'qty' ? 'selected' : ''}>By Quantity</option>
-                    <option value="value" ${invSort === 'value' ? 'selected' : ''}>By Value</option>
-                </select>
-            </div>`;
-
-            let items = Object.entries(S.inv).filter(([_, q]) => q > 0);
-
-            if (items.length === 0) {
-                h += `<div class="empty" style="padding:40px 20px;text-align:center">
-                    <div style="font-size:3rem;margin-bottom:12px;opacity:0.5">📦</div>
-                    <p style="color:var(--muted)">Your inventory is empty!<br>Tap resources on plots to harvest.</p>
-                </div>`;
-            } else {
-                // Sort items
-                items.sort((a, b) => {
-                    if (invSort === 'qty') return b[1] - a[1];
-                    if (invSort === 'value') return (b[1] * (R[b[0]]?.p || 0)) - (a[1] * (R[a[0]]?.p || 0));
-                    return (R[a[0]]?.n || '').localeCompare(R[b[0]]?.n || '');
-                });
-
-                // Calculate total value
-                const totalValue = items.reduce((sum, [id, qty]) => sum + qty * (R[id]?.p || 0), 0);
-                h += `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-                    <div style="font-size:0.75rem;color:var(--muted)">Total Value: <span style="color:var(--gold)">$${totalValue.toLocaleString()}</span></div>
-                    <button class="btn green" onclick="sellAll()" style="padding:6px 12px">💰 Sell All</button>
-                </div>`;
-
-                if (invView === 'grid') {
-                    h += `<div class="inv-grid">`;
-                    for (const [id, qty] of items) {
-                        const r = R[id];
-                        if (!r) continue;
-                        const value = qty * r.p;
-                        h += `<div class="inv-item" onclick="sell('${id}',1)">
-                            <span class="ic">${r.i}</span>
-                            <span class="qty">×${qty}</span>
-                            <span class="val">$${value}</span>
-                        </div>`;
-                    }
-                    h += `</div>`;
-                } else {
-                    // Group by category
-                    for (const catKey in ITEM_CATS) {
-                        const cat = ITEM_CATS[catKey];
-                        const catItems = items.filter(([id]) => cat.items.includes(id));
-                        if (catItems.length === 0) continue;
-
-                        h += `<div class="category-header">${cat.n}</div>`;
-                        h += `<div class="list">`;
-                        for (const [id, qty] of catItems) {
-                            const r = R[id];
-                            if (!r) continue;
-                            const price = getPrice(id);
-                            h += `<div class="item">
-                                <span class="ic">${r.i}</span>
-                                <span class="nm">${r.n}</span>
-                                <span class="pr">$${price}</span>
-                                <span class="qt">×${qty}</span>
-                                <button class="btn green" onclick="sell('${id}',${qty})" style="font-size:0.7rem">Sell</button>
-                            </div>`;
-                        }
-                        h += `</div>`;
-                    }
-                }
-            }
-            h += `</div>`;
-            m.innerHTML = h;
-        }
-
-        function renderHome(m) {
-            let h = '';
-            S.plots.forEach((p, pi) => {
-                h += `<div class="plot"><div class="subs">`;
-                p.subs.forEach((s, si) => {
-                    const cfg = T[s.t]; if (!cfg) return;
-                    const level = s.lv || 1;
-                    const storageBonus = (level - 1) * 10;
-                    const maxStorage = (cfg.m || 999) + storageBonus;
-                    const cnt = Math.floor(s.c);
-                    // Outer ring: progress to NEXT resource (0-100%)
-                    const nextPct = cfg.m ? Math.round((s.c % 1) * 100) : 0;
-                    // Inner fill: how full is capacity (count/max)
-                    const fillPct = cfg.m ? Math.round((cnt / maxStorage) * 100) : 0;
-                    const isFull = cfg.m && cnt >= maxStorage;
-                    const ready = isFull; // Only glow when at full capacity
-                    h += `<div class="sub ${ready ? 'ready' : ''} ${cfg.b ? 'building' : ''}" data-p="${pi}" data-s="${si}" style="opacity:0.85;backdrop-filter:blur(2px)">
-                        <div class="icon">${cfg.i}</div>
-                        <div class="progress-ring ${isFull ? 'full' : ''}" style="--progress: ${isFull ? 100 : nextPct}%">
-                            <div class="progress-ring-inner" style="background: linear-gradient(to top, var(--green) ${fillPct}%, var(--card) ${fillPct}%)">
-                                <span style="text-shadow: 0 1px 2px rgba(0,0,0,0.5)">${cnt}/${maxStorage}</span>
-                            </div>
-                        </div>
-                        ${s.lv > 1 ? `<span class="lvl">Lv${s.lv}</span>` : ''}
-                    </div>`;
-                });
-                h += `</div></div>`;
-            });
-            const nc = PLOTS[S.plots.length] || 999999;
-            h += `<div class="plot locked ${S.money >= nc ? 'can' : ''}"><div style="font-size:1.8rem;opacity:0.5">🔒</div><h4>$${nc.toLocaleString()}</h4><button ${S.money >= nc ? '' : 'disabled'} onclick="buyPlot()">${S.money >= nc ? 'Buy Plot' : 'Need $' + (nc - S.money).toLocaleString()}</button></div>`;
-            m.innerHTML = h;
-            // Attach click handlers - use simple onclick with global hold state
-            m.querySelectorAll('.sub').forEach(el => {
-                el.onclick = (e) => {
-                    e.preventDefault();
-                    // Simple click = harvest
-                    tap(+el.dataset.p, +el.dataset.s);
-                };
-            });
-        }
-
-        // Global hold detection - separate from render cycle
+        // Global hold detection for building modal
         let holdTarget = null;
         let holdTimer = null;
         let holdStart = 0;
@@ -2411,13 +1536,15 @@
                     openBuild(+sub.dataset.p, +sub.dataset.s);
                     holdTarget = null;
                 }
-            }, 3000); // 3 seconds
+            }, 500); // Hold for 500ms to open build modal
         });
 
         document.addEventListener('mouseup', () => {
             clearTimeout(holdTimer);
             holdTarget = null;
         });
+
+
 
         document.addEventListener('touchstart', (e) => {
             const sub = e.target.closest('.sub');
@@ -2437,245 +1564,16 @@
             holdTarget = null;
         });
 
-        function renderWorkers(m) {
-            let h = `< div class="panel" ><h3>👷 Workers (${S.workers.length}/10)</h3><p style="color:var(--muted);font-size:0.8rem;margin-bottom:12px">Workers auto-harvest every 5 seconds. Tap a plot on Home screen, then "Hire Worker" below.</p>`;
-            if (S.workers.length === 0) h += `< div class="empty" > No workers yet</div > `;
-            else {
-                h += `< div class="list" > `;
-                S.workers.forEach((w, i) => {
-                    const s = S.plots[w.plot]?.subs[w.sub];
-                    const cfg = s ? T[s.t] : null;
-                    h += `< div class="npc" ><div class="ic">👷</div><div class="info"><div class="nm">Worker #${i + 1}</div><div class="rate">On: ${cfg?.n || '?'} (Plot ${w.plot + 1})</div></div><button class="btn red" onclick="fireWorker(${i})">Fire</button></div > `;
-                });
-                h += `</div > `;
-            }
-            h += `</div > <div class="panel"><h3>➕ Hire for Plot</h3><div class="list">`;
-            S.plots.forEach((p, pi) => {
-                p.subs.forEach((s, si) => {
-                    const cfg = T[s.t]; if (!cfg) return;
-                    const cost = 500 + S.workers.length * 200;
-                    h += `<div class="item"><span class="ic">${cfg.i}</span><span class="nm">Plot ${pi + 1} - ${cfg.n}</span><button class="btn green" onclick="hireWorker(${pi},${si})">$${cost}</button></div>`;
-                });
-            });
-            h += `</div></div>`;
-            m.innerHTML = h;
-        }
 
-        function renderMarket(m) {
-            let h = `< div class="panel" >
-                <h3>🏛️ Government Market</h3>
-                <div class="view-toggle" style="margin-bottom:12px">
-                    <button class="${marketTab === 'sell' ? 'active' : ''}" onclick="marketTab='sell';render()">💰 Sell</button>
-                    <button class="${marketTab === 'buy' ? 'active' : ''}" onclick="marketTab='buy';render()">🛒 Buy</button>
-                    <button class="${marketTab === 'prices' ? 'active' : ''}" onclick="marketTab='prices';render()">📊 Prices</button>
-                </div>`;
+        // ===== GOVERNMENT MARKET MOVED TO js/ui/markets.js (Phase 2M) =====
 
-            if (marketTab === 'sell') {
-                // Sell Tab
-                const items = Object.entries(S.inv).filter(([_, q]) => q > 0);
-                if (items.length === 0) {
-                    h += `< div class="empty" style = "padding:30px;text-align:center" >
-                        <div style="font-size:2rem;margin-bottom:8px;opacity:0.5">📭</div>
-                        <p style="color:var(--muted)">Nothing to sell!<br>Harvest some resources first.</p>
-                    </div > `;
-                } else {
-                    h += `< div class="list" > `;
-                    for (const [id, qty] of items) {
-                        const r = R[id]; if (!r) continue;
-                        const price = getPrice(id);
-                        const base = r.p;
-                        const pctDiff = ((price - base) / base * 100).toFixed(0);
-                        const isHigh = price > base * 1.1;
-                        const isLow = price < base * 0.9;
-                        const selectedQty = sellQty[id] || qty;
 
-                        h += `< div class="item" style = "${isHigh ? 'border-left:3px solid var(--green)' : isLow ? 'border-left:3px solid var(--red)' : ''}" >
-                            <span class="ic">${r.i}</span>
-                            <div style="flex:1;min-width:0">
-                                <div class="nm">${r.n}</div>
-                                <div style="font-size:0.7rem;color:${isHigh ? 'var(--green)' : isLow ? 'var(--red)' : 'var(--muted)'}">
-                                    $${price} ${isHigh ? '↑ High!' : isLow ? '↓ Low' : ''}
-                                </div>
-                            </div>
-                            <div style="display:flex;align-items:center;gap:4px">
-                                <input type="range" min="1" max="${qty}" value="${selectedQty}" 
-                                    oninput="sellQty['${id}']=+this.value;this.nextElementSibling.textContent=this.value"
-                                    style="width:50px;accent-color:var(--gold)">
-                                <span style="font-size:0.75rem;min-width:24px">${selectedQty}</span>
-                                <button class="btn green" onclick="sell('${id}',sellQty['${id}']||${qty})" style="font-size:0.7rem">
-                                    $${(selectedQty * price).toLocaleString()}
-                                </button>
-                            </div>
-                        </div > `;
-                    }
-                    h += `</div > `;
-                    h += `< button class="btn" style = "width:100%;margin-top:10px" onclick = "for(let id in S.inv){if(S.inv[id]>0)sell(id,S.inv[id])}" > Sell Everything</button > `;
-                }
-            } else if (marketTab === 'buy') {
-                // Buy Tab
-                h += `< p style = "color:var(--muted);font-size:0.7rem;margin-bottom:10px" > 20 % markup on all purchases</p > `;
-                h += `< div class="list" style = "max-height:calc(100vh - 280px);overflow-y:auto" > `;
-                for (const id in R) {
-                    const r = R[id];
-                    const price = getPrice(id);
-                    const buyPrice = Math.ceil(price * 1.2);
-                    const canAfford1 = S.money >= buyPrice;
-                    const canAfford10 = S.money >= buyPrice * 10;
 
-                    h += `< div class="item" >
-                        <span class="ic">${r.i}</span>
-                        <span class="nm">${r.n}</span>
-                        <span class="pr">$${buyPrice}/ea</span>
-                        <button class="btn ${canAfford1 ? '' : 'disabled'}" onclick="buyFromGov('${id}',1)" ${canAfford1 ? '' : 'disabled'}>+1</button>
-                        <button class="btn ${canAfford10 ? '' : 'disabled'}" onclick="buyFromGov('${id}',10)" ${canAfford10 ? '' : 'disabled'}>+10</button>
-                    </div > `;
-                }
-                h += `</div > `;
-            } else {
-                // Price List Tab
-                h += `< div class="list" style = "max-height:calc(100vh - 220px);overflow-y:auto" > `;
-                const priceData = Object.entries(R).map(([id, r]) => {
-                    const price = getPrice(id);
-                    const diff = price - r.p;
-                    const pct = ((price - r.p) / r.p * 100).toFixed(0);
-                    return { id, r, price, diff, pct };
-                }).sort((a, b) => b.pct - a.pct);
+        // ===== CHAT SYSTEM MOVED TO js/multiplayer/chat.js (Phase 2I) =====
+        // All chat functions (showChat, sendChat, renderChat) now in module
 
-                for (const { id, r, price, diff, pct } of priceData) {
-                    h += `< div class="item" >
-                        <span class="ic">${r.i}</span>
-                        <span class="nm">${r.n}</span>
-                        <span style="font-size:0.7rem;color:var(--muted)">Base: $${r.p}</span>
-                        <span class="pr" style="color:${diff > 0 ? 'var(--green)' : diff < 0 ? 'var(--red)' : 'var(--muted)'}">
-                            $${price} <span style="font-size:0.65rem">${diff > 0 ? '+' : ''}${pct}%</span>
-                        </span>
-                    </div > `;
-                }
-                h += `</div > `;
-            }
 
-            h += `</div > `;
-            m.innerHTML = h;
-        }
-
-        function submitLimitOrder() {
-            const resourceId = $('order-resource')?.value;
-            const type = $('order-type')?.value;
-            const qty = parseInt($('order-qty')?.value) || 0;
-            const targetPrice = parseInt($('order-price')?.value) || 0;
-
-            if (!resourceId || qty <= 0 || targetPrice <= 0) {
-                toast('Invalid order', 'err');
-                return;
-            }
-
-            // Check if player has items to sell (for sell orders)
-            if (type === 'sell') {
-                const have = S.inv[resourceId] || 0;
-                if (have < qty) {
-                    toast(`Need ${qty} ${R[resourceId]?.i} to place sell order`, 'err');
-                    return;
-                }
-            }
-
-            createLimitOrder(type, resourceId, qty, targetPrice);
-            render();
-        }
-
-        // Chat System - uses chatMessages and unsubChat from ACCOUNT SYSTEM section
-        function initChat() {
-            if (!db) return;
-            if (unsubChat) unsubChat();
-            unsubChat = db.collection('chat')
-                .orderBy('createdAt', 'desc')
-                .limit(50)
-                .onSnapshot(snap => {
-                    chatMessages = snap.docs.map(d => ({ id: d.id, ...d.data() })).reverse();
-                    if (screen === 'chat') render();
-                });
-        }
-
-        async function sendChatMessage() {
-            if (!db || !loggedInUser) {
-                toast('Login to chat!', 'err');
-                return;
-            }
-            const input = $('chat-input');
-            const msg = input?.value?.trim();
-            if (!msg) return;
-
-            try {
-                await db.collection('chat').add({
-                    text: msg,
-                    username: loggedInUser.username,
-                    userId: loggedInUser.id,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                input.value = '';
-            } catch (e) {
-                console.error('Chat send error:', e);
-                toast('Send failed: ' + (e.message || 'Unknown error'), 'err');
-            }
-        }
-
-        function renderChat(m) {
-            // Debug log removed for production
-            let h = `< div class="panel" style = "display:flex;flex-direction:column;height:calc(100vh - 140px)" >
-                        <h3>💬 Global Chat</h3>`;
-
-            if (!userId) {
-                h += `< div class="empty" > Connecting...</div > `;
-            } else if (!loggedInUser) {
-                h += `< div class= "empty" style = "flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column" >
-                    <p style="margin-bottom:12px">Login to chat with other players!</p>
-                    <button class="btn" onclick="showAccount()">Login / Register</button>
-                </div > `;
-            } else {
-                h += `< div id = "chat-messages" style = "flex:1;overflow-y:auto;padding:10px;background:var(--bg);border-radius:8px;margin:10px 0" > `;
-                if (chatMessages.length === 0) {
-                    h += `< div class= "empty" > No messages yet.Say hi!</div > `;
-                } else {
-                    for (const msg of chatMessages) {
-                        const isMe = msg.oderId === loggedInUser.id;
-                        const time = msg.createdAt?.toDate?.() || new Date();
-                        const timeStr = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                        h += `< div style = "margin-bottom:8px;${isMe ? 'text-align:right' : ''}" >
-                <div style="display:inline-block;max-width:80%;padding:8px 12px;border-radius:12px;background:${isMe ? 'var(--blue)' : 'var(--card)'}">
-                    <div style="font-size:0.7rem;color:${isMe ? 'rgba(255,255,255,0.7)' : 'var(--muted)'};margin-bottom:2px">${msg.username || 'Anonymous'} · ${timeStr}</div>
-                    <div>${msg.text}</div>
-                </div>
-                        </div > `;
-                    }
-                }
-                h += `</div > `;
-                h += `< div style = "display:flex;gap:8px" >
-                <input type="text" id="chat-input" placeholder="Type a message..."
-                    style="flex:1;padding:10px;border-radius:8px;background:var(--card);color:var(--text);border:none"
-                    onkeypress="if(event.key==='Enter')sendChatMessage()">
-                    <button class="btn green" onclick="sendChatMessage()">Send</button>
-                </div>`;
-            }
-
-            h += `</div > `;
-            m.innerHTML = h;
-            // Debug log removed for production
-
-            // Auto-scroll to bottom
-            const msgContainer = $('chat-messages');
-            if (msgContainer) msgContainer.scrollTop = msgContainer.scrollHeight;
-        }
-
-        function renderStats(m) {
-            let h = `< div class= "panel" ><h3>📈 Statistics</h3><div class="list">`;
-            h += `<div class="item"><span class="ic">🌾</span><span class="nm">Total Harvested</span><span class="qt">${S.stats.harvested}</span></div>`;
-            h += `<div class="item"><span class="ic">💰</span><span class="nm">Total Earned</span><span class="qt">$${S.stats.earned.toLocaleString()}</span></div>`;
-            h += `<div class="item"><span class="ic">📦</span><span class="nm">Items Sold</span><span class="qt">${S.stats.sold}</span></div>`;
-            h += `<div class="item"><span class="ic">🏗️</span><span class="nm">Buildings Built</span><span class="qt">${S.stats.built}</span></div>`;
-            h += `<div class="item"><span class="ic">👷</span><span class="nm">Workers</span><span class="qt">${S.workers.length}</span></div>`;
-            h += `<div class="item"><span class="ic">🏞️</span><span class="nm">Plots Owned</span><span class="qt">${S.plots.length}</span></div>`;
-            h += `</div></div > `;
-            m.innerHTML = h;
-        }
+        // ===== STATS SCREEN MOVED TO js/ui/stats.js (Phase 2L) =====
 
         // ===== FIREBASE CONFIG =====
         const firebaseConfig = {
@@ -2688,19 +1586,23 @@
         };
 
 
-        let db = null, auth = null, userId = null, unsubOrders = null;
-        let orders = [];
+        let db = null, auth = null, unsubOrders = null;
+
+        // Expose to window for markets.js module
+        window.userId = null;
+        window.orders = [];
 
         async function initFirebase() {
             try {
                 firebase.initializeApp(firebaseConfig);
                 db = firebase.firestore();
+                window.db = db; // Expose for chat module
                 auth = firebase.auth();
 
                 // Anonymous sign in
                 const result = await auth.signInAnonymously();
-                userId = result.user.uid;
-                console.log('Firebase connected, user:', userId);
+                window.userId = result.user.uid;
+                console.log('Firebase connected, user:', window.userId);
                 notif('🌐 Connected to market!');
 
                 // Listen for orders
@@ -2709,7 +1611,7 @@
                     .orderBy('createdAt', 'desc')
                     .limit(50)
                     .onSnapshot(snap => {
-                        orders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                        window.orders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                         if (screen === 'player') render();
                     });
 
@@ -2726,220 +1628,8 @@
                 toast('Market offline', 'err');
             }
         }
+        initFirebase(); // Initialize Firebase and connect to market
 
-        async function postOrder(type, resource, qty, price) {
-            if (!db || !userId) { toast('Not connected!', 'err'); return; }
-            if (type === 'sell' && !hasItem(resource, qty)) { toast('Not enough items!', 'err'); return; }
-            if (type === 'buy' && S.money < qty * price) { toast('Not enough money!', 'err'); return; }
-
-            // Reserve items/money
-            if (type === 'sell') remItem(resource, qty);
-            if (type === 'buy') S.money -= qty * price;
-
-            try {
-                await db.collection('orders').add({
-                    type, resource, qty, price,
-                    userId, status: 'open',
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                playS('sell');
-                toast(`Order posted!`, 'ok');
-                save();
-            } catch (e) {
-                // Refund on error
-                if (type === 'sell') addItem(resource, qty);
-                if (type === 'buy') S.money += qty * price;
-                toast('Failed to post', 'err');
-            }
-        }
-
-        async function fillOrder(order) {
-            if (!db || !userId) return;
-            if (order.userId === userId) { toast("Can't fill own order", 'err'); return; }
-
-            const total = order.qty * order.price;
-
-            if (order.type === 'sell') {
-                // Buyer pays money, gets items
-                if (S.money < total) { toast('Not enough $!', 'err'); return; }
-                S.money -= total;
-                addItem(order.resource, order.qty);
-            } else {
-                // Seller gives items, gets money
-                if (!hasItem(order.resource, order.qty)) { toast('Not enough items!', 'err'); return; }
-                remItem(order.resource, order.qty);
-                S.money += total;
-            }
-
-            try {
-                await db.collection('orders').doc(order.id).update({
-                    status: 'filled', filledBy: userId,
-                    filledAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                playS('sell');
-                toast(`Trade complete! ${order.type === 'sell' ? '+' + order.qty + ' ' + R[order.resource]?.i : '+$' + total}`, 'ok');
-                save();
-            } catch (e) {
-                // Refund
-                if (order.type === 'sell') { S.money += total; remItem(order.resource, order.qty); }
-                else { addItem(order.resource, order.qty); S.money -= total; }
-                toast('Trade failed', 'err');
-            }
-        }
-
-        async function cancelOrder(order) {
-            if (!db || order.userId !== userId) return;
-            try {
-                await db.collection('orders').doc(order.id).delete();
-                // Refund
-                if (order.type === 'sell') addItem(order.resource, order.qty);
-                if (order.type === 'buy') S.money += order.qty * order.price;
-                toast('Order cancelled', 'ok');
-                save();
-            } catch (e) { toast('Cancel failed', 'err'); }
-        }
-
-        let postRes = 'wood', postQty = 10, postPrice = 5, postType = 'sell';
-
-        function renderPlayerMarket(m) {
-            const connected = !!userId;
-            let h = `< div class= "panel" > <h3>🏪 Player Market ${connected ? '<span style="color:var(--green)">●</span>' : '<span style="color:var(--red)">○</span>'}</h3>`;
-
-            if (!connected) {
-                h += `< div class= "empty" > Connecting to market...</div ></div > `;
-                m.innerHTML = h;
-                return;
-            }
-
-            // Post order form
-            h += `< div style = "margin-bottom:16px;padding:12px;background:var(--bg2);border-radius:8px" >
-                <div style="display:flex;gap:8px;margin-bottom:8px">
-                    <button class="btn ${postType === 'sell' ? 'green' : ''}" id="type-sell" style="flex:1">Sell</button>
-                    <button class="btn ${postType === 'buy' ? 'purple' : ''}" id="type-buy" style="flex:1">Buy</button>
-                </div>
-                <div style="display:flex;gap:8px;margin-bottom:8px">
-                    <select id="post-res" style="flex:2;padding:8px;border-radius:6px;background:var(--card);color:var(--text);border:none">
-                        ${Object.entries(R).map(([k, v]) => `<option value="${k}" ${k === postRes ? 'selected' : ''}>${v.i} ${v.n}</option>`).join('')}
-                    </select>
-                    <input type="number" id="post-qty" value="${postQty}" min="1" style="flex:1;padding:8px;border-radius:6px;background:var(--card);color:var(--text);border:none">
-                </div>
-                <div style="display:flex;gap:8px;align-items:center">
-                    <span>$</span>
-                    <input type="number" id="post-price" value="${postPrice}" min="1" style="flex:1;padding:8px;border-radius:6px;background:var(--card);color:var(--text);border:none">
-                    <span>each</span>
-                    <button class="btn green" id="post-order">Post</button>
-                </div>
-                <div style="margin-top:8px;font-size:0.75rem;color:var(--muted)">
-                    Total: $${postQty * postPrice} ${postType === 'sell' ? `(You have: ${S.inv[postRes] || 0})` : ''}
-                </div>
-            </div > `;
-
-            // Orders
-            const sellOrders = orders.filter(o => o.type === 'sell');
-            const buyOrders = orders.filter(o => o.type === 'buy');
-
-            h += `< h4 style = "margin:12px 0 8px;font-size:0.9rem" >📤 Selling(${sellOrders.length})</h4 > `;
-            if (sellOrders.length === 0) h += `< div class= "empty" style = "padding:10px" > No sell orders</div > `;
-            else {
-                h += `< div class= "list" > `;
-                for (const o of sellOrders.slice(0, 10)) {
-                    const r = R[o.resource];
-                    const mine = o.userId === userId;
-                    h += `< div class= "item" ><span class="ic">${r?.i || '?'}</span><span class="nm">${o.qty}× ${r?.n || o.resource}</span><span class="pr">$${o.price}/ea</span>`;
-                    if (mine) h += `< button class= "btn red" data - cancel="${o.id}" > Cancel</button > `;
-                    else h += `< button class= "btn green" data - fill="${o.id}" > Buy $${o.qty * o.price}</button > `;
-                    h += `</div > `;
-                }
-                h += `</div > `;
-            }
-
-            h += `< h4 style = "margin:12px 0 8px;font-size:0.9rem" >📥 Buying(${buyOrders.length})</h4 > `;
-            if (buyOrders.length === 0) h += `< div class= "empty" style = "padding:10px" > No buy orders</div > `;
-            else {
-                h += `< div class= "list" > `;
-                for (const o of buyOrders.slice(0, 10)) {
-                    const r = R[o.resource];
-                    const mine = o.userId === userId;
-                    h += `< div class= "item" ><span class="ic">${r?.i || '?'}</span><span class="nm">${o.qty}× ${r?.n || o.resource}</span><span class="pr">$${o.price}/ea</span>`;
-                    if (mine) h += `< button class= "btn red" data - cancel="${o.id}" > Cancel</button > `;
-                    else h += `< button class= "btn purple" data - fill="${o.id}" > Sell + $${o.qty * o.price}</button > `;
-                    h += `</div > `;
-                }
-                h += `</div > `;
-            }
-
-            h += `</div > `;
-
-            // Limit Orders Section (Auto-trade with Gov market)
-            h += `< div class= "panel" ><h3>📈 Limit Orders</h3>
-                <p style="color:var(--muted);font-size:0.7rem;margin-bottom:8px">Auto-trade with Gov market when price hits target</p>`;
-
-            // Create new order form
-            h += `< div style = "background:var(--bg2);padding:10px;border-radius:8px;margin-bottom:10px" >
-                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
-                    <select id="order-resource" style="flex:1;min-width:80px;padding:6px;border-radius:4px;background:var(--bg);color:var(--text);border:1px solid rgba(255,255,255,0.1)">
-                        ${Object.entries(R).map(([id, r]) => `<option value="${id}">${r.i} ${r.n}</option>`).join('')}
-                    </select>
-                    <select id="order-type" style="width:70px;padding:6px;border-radius:4px;background:var(--bg);color:var(--text);border:1px solid rgba(255,255,255,0.1)">
-                        <option value="sell">Sell</option>
-                        <option value="buy">Buy</option>
-                    </select>
-                </div>
-                <div style="display:flex;gap:6px;margin-bottom:8px">
-                    <input type="number" id="order-qty" placeholder="Qty" value="10" min="1" style="width:60px;padding:6px;border-radius:4px;background:var(--bg);color:var(--text);border:1px solid rgba(255,255,255,0.1)">
-                    <span style="line-height:32px">@</span>
-                    <input type="number" id="order-price" placeholder="Price" value="10" min="1" style="width:60px;padding:6px;border-radius:4px;background:var(--bg);color:var(--text);border:1px solid rgba(255,255,255,0.1)">
-                    <button class="btn green" onclick="submitLimitOrder()" style="flex:1">Create</button>
-                </div>
-                <p style="color:var(--muted);font-size:0.65rem">
-                    <b>Sell Limit:</b> Auto-sell when price rises to target or higher<br>
-                    <b>Buy Limit:</b> Auto-buy when price drops to target or lower
-                </p>
-            </div>`;
-
-            // Active orders
-            if (S.limitOrders && S.limitOrders.length > 0) {
-                h += `< div class= "list" > `;
-                S.limitOrders.forEach((order, i) => {
-                    const r = R[order.resourceId];
-                    const currentPrice = getPrice(order.resourceId);
-                    const willExecute = order.type === 'sell' ? currentPrice >= order.targetPrice : currentPrice <= order.targetPrice;
-                    h += `< div class= "item" style = "${willExecute ? 'border:1px solid var(--green)' : ''}" >
-                        <span class="ic">${r?.i || '?'}</span>
-                        <span class="nm" style="font-size:0.8rem">${order.type.toUpperCase()} ${order.qty}x @ $${order.targetPrice}</span>
-                        <span class="pr" style="font-size:0.7rem">Now: $${currentPrice}</span>
-                        <button class="btn red" onclick="cancelLimitOrder(${i})" style="font-size:0.7rem">✕</button>
-                    </div > `;
-                });
-                h += `</div > `;
-            } else {
-                h += `< div class= "empty" style = "font-size:0.8rem" > No limit orders</div > `;
-            }
-            h += `</div > `;
-
-            m.innerHTML = h;
-
-            // Event listeners
-            $('type-sell')?.addEventListener('click', () => { postType = 'sell'; render(); });
-            $('type-buy')?.addEventListener('click', () => { postType = 'buy'; render(); });
-            $('post-res')?.addEventListener('change', e => { postRes = e.target.value; postPrice = R[postRes]?.p || 5; render(); });
-            $('post-qty')?.addEventListener('change', e => { postQty = Math.max(1, parseInt(e.target.value) || 1); render(); });
-            $('post-price')?.addEventListener('change', e => { postPrice = Math.max(1, parseInt(e.target.value) || 1); render(); });
-            $('post-order')?.addEventListener('click', () => postOrder(postType, postRes, postQty, postPrice));
-
-            m.querySelectorAll('[data-fill]').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const order = orders.find(o => o.id === btn.dataset.fill);
-                    if (order) fillOrder(order);
-                });
-            });
-            m.querySelectorAll('[data-cancel]').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const order = orders.find(o => o.id === btn.dataset.cancel);
-                    if (order) cancelOrder(order);
-                });
-            });
-        }
 
         // ===== ACCOUNT SYSTEM (Firestore-based) =====
         let userName = 'Guest';
@@ -3038,6 +1728,7 @@
 
                 const user = snap.docs[0];
                 loggedInUser = { id: user.id, username: user.data().displayName };
+                window.loggedInUser = loggedInUser; // Expose for chat module
                 localStorage.setItem('tt4_user', JSON.stringify(loggedInUser));
 
                 toast('Logged in!', 'ok');
@@ -3062,6 +1753,7 @@
 
         function logoutAccount() {
             loggedInUser = null;
+            window.loggedInUser = null; // Clear for chat module
             localStorage.removeItem('tt4_user');
             toast('Logged out', 'ok');
             updateAccountUI();
@@ -3074,6 +1766,7 @@
                 const saved = localStorage.getItem('tt4_user');
                 if (saved) {
                     loggedInUser = JSON.parse(saved);
+                    window.loggedInUser = loggedInUser; // Expose for chat module
                     userName = loggedInUser.username;
                 }
             } catch (e) { }
@@ -3082,116 +1775,12 @@
         function showAccount() { closeMenu(); $('account-modal').classList.add('show'); updateAccountUI(); }
         function closeAccount() { $('account-modal').classList.remove('show'); }
 
-        // ===== CHAT SYSTEM =====
-        function showChat() {
-            closeMenu();
-            $('chat-modal').classList.add('show');
-            loadChat();
-        }
-        function closeChat() {
-            $('chat-modal').classList.remove('show');
-            if (unsubChat) { unsubChat(); unsubChat = null; }
-        }
 
-        function loadChat() {
-            if (!db) { $('chat-messages').innerHTML = '<div class="empty">Chat offline</div>'; return; }
-
-            if (unsubChat) unsubChat();
-
-            unsubChat = db.collection('chat')
-                .orderBy('createdAt', 'desc')
-                .limit(50)
-                .onSnapshot(snap => {
-                    chatMessages = snap.docs.map(d => ({ id: d.id, ...d.data() })).reverse();
-                    renderChat();
-                });
-        }
-
-        function renderChat() {
-            const container = $('chat-messages');
-            if (!container) return;
-
-            if (!chatMessages || chatMessages.length === 0) {
-                container.innerHTML = '<div class="empty">No messages yet. Log in to start chatting!</div>';
-                return;
-            }
-
-            let h = '';
-
-            chatMessages.forEach(msg => {
-                const isOwn = loggedInUser && msg.userId === loggedInUser.id;
-                h += `< div style = "padding:10px;margin-bottom:8px;background:var(--bg2);border-radius:8px;${isOwn ? 'border-left:3px solid var(--gold)' : ''}" >
-                    <div style="font-weight:600;color:${isOwn ? 'var(--gold)' : 'var(--text)'};margin-bottom:4px">${msg.userName || 'Anonymous'}</div>
-                    <div style="color:var(--text);font-size:0.9rem">${msg.text}</div>
-                </div > `;
-            });
+        // ===== CHAT SYSTEM MOVED TO js/multiplayer/chat.js (Phase 2I) =====
 
 
-            container.innerHTML = h;
-            container.scrollTop = container.scrollHeight;
-        }
+        // ===== FARM NAMING MOVED TO js/ui/farmNaming.js (Phase 2L) =====
 
-        async function sendChat() {
-            const input = $('chat-input');
-            const text = input.value.trim();
-            if (!text || !db) return;
-
-            if (!loggedInUser) {
-                toast('Log in to chat!', 'err');
-                return;
-            }
-
-            try {
-                await db.collection('chat').add({
-                    text,
-                    userName: loggedInUser.username,
-                    userId: loggedInUser.id,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                input.value = '';
-            } catch (e) {
-                toast('Failed to send', 'err');
-            }
-        }
-
-        // Handle Enter key in chat
-        document.addEventListener('keydown', e => {
-            if (e.key === 'Enter' && document.activeElement?.id === 'chat-input') {
-                sendChat();
-            }
-        });
-
-        // ===== FARM NAMING =====
-        function renameFarm() {
-            const currentName = S.farmName || "Untitled Farm";
-            const name = prompt(`Enter farm name(max 20 chars): `, currentName);
-            if (!name || name.trim() === '') return;
-            if (name.length > 20) {
-                toast('Name too long! Max 20 characters', 'err');
-                return;
-            }
-
-            const trimmedName = name.trim();
-            if (S.hasRenamedFarm && S.money < 1000) {
-                toast('Renaming costs $1000!', 'err');
-                return;
-            }
-
-            if (S.hasRenamedFarm) S.money -= 1000;
-            S.farmName = trimmedName;
-            S.hasRenamedFarm = true;
-            save();
-            toast(`Farm renamed to "${trimmedName}"!`, 'ok');
-            closeMenu();
-        }
-
-        // ===== RESET GAME =====
-        function resetGame() {
-            if (confirm('Are you sure you want to reset ALL your progress? This cannot be undone!')) {
-                localStorage.removeItem('tt4');
-                location.reload();
-            }
-        }
 
         // ===== MENU SYSTEM =====
         let menuOpen = false;
@@ -3209,35 +1798,6 @@
             }
         }
 
-        function closeMenu() {
-            $('menu-modal').classList.remove('show');
-        }
-
-        function renderStats(m) {
-            const stats = S.stats || {};
-            let h = '<div class="panel"><h3>📊 Statistics</h3>';
-
-            h += '<div class="list">';
-            h += `< div class= "item" ><span class="ic">🌾</span><span class="nm">Total Harvested</span><span class="qt">${(stats.harvested || 0).toLocaleString()}</span></div > `;
-            h += `< div class= "item" ><span class="ic">💰</span><span class="nm">Total Earned</span><span class="qt">$${(stats.earned || 0).toLocaleString()}</span></div > `;
-            h += `< div class= "item" ><span class="ic">📤</span><span class="nm">Items Sold</span><span class="qt">${(stats.sold || 0).toLocaleString()}</span></div > `;
-            h += `< div class= "item" ><span class="ic">🏗️</span><span class="nm">Buildings Built</span><span class="qt">${(stats.built || 0).toLocaleString()}</span></div > `;
-            h += `< div class= "item" ><span class="ic">👷</span><span class="nm">Workers Hired</span><span class="qt">${S.workers.length}</span></div > `;
-            h += `< div class= "item" ><span class="ic">📊</span><span class="nm">Plots Owned</span><span class="qt">${S.plots.length}</span></div > `;
-            h += '</div>';
-
-            h += '<div style="margin-top:16px;padding:12px;background:var(--bg2);border-radius:8px;text-align:center">';
-            h += `< div style = "font-size:0.7rem;color:var(--muted);margin-bottom:4px" > Game Version</div > `;
-            h += `< div style = "font-weight:600" > ${GAME_VERSION}</div > `;
-            h += `< div style = "font-size:0.65rem;color:var(--muted);margin-top:4px" > ${VERSION_DATE}</div > `;
-            h += '</div>';
-
-            h += '<button class="btn" onclick="screen=\'home\';render()" style="width:100%;margin-top:12px">Back to Home</button>';
-            h += '</div>';
-
-            m.innerHTML = h;
-        }
-
         function showStats() {
             closeMenu();
             screen = 'stats';
@@ -3250,139 +1810,9 @@
             render();
         }
 
-        function renderHelp(m) {
-            m.innerHTML = `
-                < div class= "panel" >
-                    <h3>📖 How to Play Tappy Trade</h3>
-                    
-                    <h4>🌾 Harvesting</h4>
-                    <p>Tap resource nodes (trees, berries, herbs) to collect items. Watch the progress bars refill!</p>
-                    
-                    <h4>💰 Selling</h4>
-                    <p>Go to <strong>Inventory</strong> → Switch to <strong>List View</strong> → Click <strong>Sell</strong> buttons or <strong>Sell All</strong> to earn money from the government at fixed prices.</p>
-                    
-                    <h4>🏪 Player Market</h4>
-                    <p>Trade with other players for better prices! Create buy/sell orders or match existing orders. This is where you make real profits!</p>
-                    
-                    <h4>👷 Workers</h4>
-                    <p>Hire workers to automate resource gathering. They work even when you're offline!</p>
-                    
-                    <h4>🏗️ Building</h4>
-                    <p>Expand your plots with farms, livestock, and manufacturing buildings. Each building produces different resources.</p>
-                    
-                    <h4>💬 Chat</h4>
-                    <p>Talk to other players in global chat. Share tips and make deals!</p>
-                    
-                    <h4>☁️ Cloud Save</h4>
-                    <p>Create an account to save your progress online. Your game syncs automatically!</p>
-                    
-                    <p style="margin-top:20px;text-align:center;color:var(--muted)">Have fun farming! 🌾</p>
-                    
-                    <button class="btn" onclick="screen='home';render()" style="margin-top:20px;width:100%">Back to Game</button>
-                </div >
-                    `;
-        }
 
-        // ===== INIT =====
-        function init() {
-            loadSavedUser(); // Restore logged-in account
-            if (load()) {
-                applySettings(); // Apply saved theme/font
-                updateThemeButton();
-                const off = Date.now() - S.lastUpdate;
-                if (off > 1000) {
-                    const beforeHarvested = S.stats?.harvested || 0;
-                    const beforeInv = getInvTotal();
-                    update(Math.min(off, 8 * 3600000));
-                    const harvested = (S.stats?.harvested || 0) - beforeHarvested;
-                    const gained = getInvTotal() - beforeInv;
-                    const hours = Math.floor(off / 3600000);
-                    const mins = Math.floor((off % 3600000) / 60000);
-                    if (hours > 0 || mins > 5) {
-                        if (harvested > 0 || gained > 0) {
-                            notif(`⏰ Offline for ${hours}h ${mins} m — workers gathered + ${Math.max(0, gained)} items`);
-                        }
-                    }
-                }
-                toast('Welcome back!');
-            } else {
-                $('tutorial').style.display = 'flex';
-            }
+        // ===== HELP SCREEN MOVED TO js/ui/help.js (Phase 2K) =====
 
-            // Nav button handlers
-            document.querySelectorAll('.nav button').forEach(b => {
-                b.onclick = () => {
-                    // Button 1 toggles between home and inventory
-                    if (b.id === 'nav-1') {
-                        screen = screen === 'inventory' ? 'home' : 'inventory';
-                        render();
-                    } else if (b.dataset.s === 'chat') {
-                        // Chat opens a modal instead of rendering inline
-                        showChat();
-                    } else {
-                        screen = b.dataset.s;
-                        render();
-                    }
-                };
-            });
-
-
-            $('sound-btn').onclick = () => {
-                S.sound = S.sound ? 0 : 1;
-                $('sound-btn').textContent = S.sound ? '🔊 Sound ON' : '🔇 Sound OFF';
-                // Also control music
-                if (bgMusic) {
-                    bgMusic.muted = !S.sound;
-                }
-                // If turning sound on, attempt to start music (requires gesture; this click counts)
-                if (S.sound && window.__ttStartMusic) {
-                    window.__ttStartMusic();
-                }
-                save();
-            };
-            $('sound-btn').textContent = S.sound ? '🔊 Sound ON' : '🔇 Sound OFF';
-            render();
-            initFirebase();
-            setInterval(() => { update(1000); save(); render() }, 1000);
-
-            // Check for daily reward
-            checkDailyReward();
-
-            // Day/night cycle updates
-            updateDayNight();
-            setInterval(updateDayNight, 60000); // Update every minute
-
-            // Background music
-            initMusic();
-        }
-
-        // Day/Night Cycle
-        function updateDayNight() {
-            const hour = new Date().getHours();
-            const root = document.documentElement;
-
-            if (hour >= 6 && hour < 12) {
-                // Morning (6am-12pm)
-                root.style.setProperty('--bg', '#1a1a2e');
-                root.style.setProperty('--bg2', '#16213e');
-                document.body.style.background = 'linear-gradient(180deg, #1a1a2e 0%, #16213e 100%)';
-            } else if (hour >= 12 && hour < 18) {
-                // Afternoon (12pm-6pm)
-                root.style.setProperty('--bg', '#1e1e3f');
-                root.style.setProperty('--bg2', '#252552');
-                document.body.style.background = 'linear-gradient(180deg, #1e1e3f 0%, #252552 100%)';
-            } else if (hour >= 18 && hour < 21) {
-                // Evening (6pm-9pm) - sunset colors
-                root.style.setProperty('--bg', '#1a1025');
-                root.style.setProperty('--bg2', '#251a35');
-                document.body.style.background = 'linear-gradient(180deg, #1a1025 0%, #251a35 100%)';
-            } else {
-                // Night (9pm-6am)
-                root.style.setProperty('--bg', '#0d0d1a');
-                root.style.setProperty('--bg2', '#12121f');
-                document.body.style.background = 'linear-gradient(180deg, #0d0d1a 0%, #12121f 100%)';
-            }
-        }
 
         // Background music
         let bgMusic = null;
@@ -3525,8 +1955,51 @@
             });
         }
 
-        init();
+        // Helper functions that were deleted as duplicates
+        function floatTextAt(text, el) {
+            if (!el) return;
+            const rect = el.getBoundingClientRect();
+            floatText(text, rect.left + rect.width / 2 - 15, rect.top);
+        }
+
+        // Export functions for HTML onclick handlers
+        window.tap = tap;
+        window.openBuild = openBuild;
+        window.closeBuild = closeBuild;
+        window.doBuild = doBuild;
+        window.buyPlot = buyPlot;
+        window.hireWorker = hireWorker;
+        window.fireWorker = fireWorker;
+        window.sell = sell;
+        window.sellAll = sellAll;
+        window.buyFromGov = buyFromGov;
+        window.toggleTheme = toggleTheme;
+        window.setFontSize = setFontSize;
+        window.showMenu = showMenu;
+        window.closeMenu = closeMenu; // Export closeMenu
+        window.toggleMenu = showMenu; // toggleMenu is an alias for showMenu
+        window.showLeaderboard = showLeaderboard;
+        window.closeLeaderboard = closeLeaderboard;
+        window.showTip = showTip;
+        window.resetGame = resetGame;
+        window.showAccount = showAccount; // Export for account button
+        window.registerAccount = registerAccount; // Export for login/register
+        window.loginAccount = loginAccount;
+        window.logoutAccount = logoutAccount;
+        window.closeAccount = closeAccount; // Export for closing account modal
+        window.sendChat = sendChat;
+        window.closeChat = closeChat;
+        window.showChat = showChat;
+        window.submitLimitOrder = submitLimitOrder;
+        window.cancelOrder = cancelOrder;
+        window.postOrder = postOrder;
+        window.fillOrder = fillOrder;
+        window.processLimitOrders = processLimitOrders;
+        window.render = render; // Export render for HTML onclick handlers
+        window.renameFarm = renameFarm; // Export existing function
+
+        window.init();
     </script>
 </body>
 
-</html>
+</html>```
