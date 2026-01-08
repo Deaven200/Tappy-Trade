@@ -7,46 +7,46 @@ Last Updated: 2026-01-07 18:05
 ---
 
 ## CORE GAME MECHANICS
-- [x] ✅ ManualHarvesting (tap resources) - PASS
-- [x] ✅ Resource Regeneration (nodes refill over time) - PASS
-- [x] ✅ Money System (earning/spending) - PASS
-- [x] ✅ Inventory System (storing items) - PASS
+- [ ] ✅ ManualHarvesting (tap resources) - PASS
+- [ ] ✅ Resource Regeneration (nodes refill over time) - PASS
+- [ ] ✅ Money System (earning/spending) - PASS
+- [ ] ✅ Inventory System (storing items) - PASS
 - [ ] ✅ Inventory Capacity Limits
 
 ## WORKER AUTOMATION
-- [x] ✅ Hire Workers ($500 + incremental cost) - PASS
-- [x] ⚠️ Fire Workers (with confirmation) - WORKS but no confirmation (FIXING)
-- [x] ⚠️ Auto-Harvesting (workers collect every 5 seconds) - WORKS but floating text position bug
-- [x] ✅ Multiple Workers Running Simultaneously - PASS
-- [x] ✅ Worker Cost Scaling - PASS
+- [ ] ✅ Hire Workers ($500 + incremental cost) - PASS
+- [ ] ⚠️ Fire Workers (with confirmation) - WORKS but no confirmation (FIXING)
+- [ ] ⚠️ Auto-Harvesting (workers collect every 5 seconds) - WORKS but floating text position bug
+- [ ] ✅ Multiple Workers Running Simultaneously - PASS
+- [ ] ✅ Worker Cost Scaling - PASS
 
 ## PLOT SYSTEM
-- [x] ✅ Buy New Plots (unlock expansion) - PASS
-- [x] ✅ Resource Nodes on Plots - PASS
-- [x] ✅ Wild/Farm/Mine Resource Types (4 subplots per plot) - PASS
+- [ ] ✅ Buy New Plots (unlock expansion) - PASS
+- [ ] ✅ Resource Nodes on Plots - PASS
+- [ ] ✅ Wild/Farm/Mine Resource Types (4 subplots per plot) - PASS
 
 ## BUILDING SYSTEM
-- [x] ✅ Open Build Modal (long-press/hold) - PASS (remItem bug fixed)
-- [x] ✅ Place Buildings on Plots - PASS (remItem bug fixed)
-- [x] ✅ Building Production - PASS
+- [ ] ✅ Open Build Modal (long-press/hold) - PASS (remItem bug fixed)
+- [ ] ✅ Place Buildings on Plots - PASS (remItem bug fixed)
+- [ ] ✅ Building Production - PASS
 - [ ] ✅ Upgrade Buildings (up to Lv5)
-- [x] ✅ Building Cost Display - PASS
+- [ ] ✅ Building Cost Display - PASS
 - [ ] ✅ Demolish Buildings (50% refund)
 - [ ] ✅ Storage Buildings (increase capacity)
 
 ## MARKET SYSTEMS
 
 ### Government Market (Sell Only)
-- [x] ✅ Sell Items to Government (at base price) - PASS
-- [x] ✅ Sell All Functionality - PASS
+- [ ] ✅ Sell Items to Government (at base price) - PASS
+- [ ] ✅ Sell All Functionality - PASS
 
 ### Player Market (P2P Firebase)
-- [x] ✅ Post Sell Orders - PASS (tested with playerMarket.js module)
-- [x] ✅ Post Buy Orders - PASS
-- [x] ✅ Fill Other Players' Orders - PASS
-- [x] ✅ Cancel Own Orders - PASS
-- [x] ✅ View Active Market Orders - PASS
-- [x] ✅ Market Connection Status - PASS (Firebase connected)
+- [ ] ✅ Post Sell Orders - PASS (tested with playerMarket.js module)
+- [ ] ✅ Post Buy Orders - PASS
+- [ ] ✅ Fill Other Players' Orders - PASS
+- [ ] ✅ Cancel Own Orders - PASS
+- [ ] ✅ View Active Market Orders - PASS
+- [ ] ✅ Market Connection Status - PASS (Firebase connected)
 
 ### Limit Orders (Local Auto-Trade)
 - [ ] ✅ Create Limit Orders (UI exists in index.html)
@@ -55,12 +55,12 @@ Last Updated: 2026-01-07 18:05
 - [ ] ✅ Limit Order Display
 
 ## SAVE/LOAD SYSTEM
-- [x] ✅ Auto-Save (every 30 seconds) - PASS
+- [ ] ✅ Auto-Save (every 30 seconds) - PASS
 - [ ] ✅ Manual Save (window.save())
-- [x] ✅ Load on Refresh (localStorage key: 'tt4') - PASS
-- [x] ✅ Cloud Save (when logged in via Firebase) - PASS (auto-saves to cloud)
-- [x] ✅ Cloud Load (when logged in) - PASS (with offline progress calculation!)
-- [x] ✅ Offline Progress Calculation (calculates up to 12 hours catch-up) - PASS
+- [ ] ✅ Load on Refresh (localStorage key: 'tt4') - PASS
+- [ ] ✅ Cloud Save (when logged in via Firebase) - PASS (auto-saves to cloud)
+- [ ] ✅ Cloud Load (when logged in) - PASS (with offline progress calculation!)
+- [ ] ✅ Offline Progress Calculation (calculates up to 12 hours catch-up) - PASS
 - [ ] ✅ Save Migration (version 1→2 for cap fix)
 
 ### **OFFLINE PROGRESS TEST** ✅ (NOW IMPLEMENTED - SHOULD PASS)
@@ -77,56 +77,56 @@ Last Updated: 2026-01-07 18:05
 **Max Offline:** 12 hours (43,200 seconds)
 
 ## ACCOUNT SYSTEM
-- [x] ✅ Guest Mode (play without account) - PASS
-- [x] ✅ Register Account (Firebase) - PASS (creates cloud save)
-- [x] ✅ Login to Account - PASS (loads cloud save!)
+- [ ] ✅ Guest Mode (play without account) - PASS
+- [ ] ✅ Register Account (Firebase) - PASS (creates cloud save)
+- [ ] ✅ Login to Account - PASS (loads cloud save!)
 - [ ] ✅ Logout
-- [x] ✅ Account UI Display - PASS
-- [x] ✅ Cloud Sync Status - PASS
+- [ ] ✅ Account UI Display - PASS
+- [ ] ✅ Cloud Sync Status - PASS
 
 ## MULTIPLAYER FEATURES
 
 ### Chat (Firebase)
-- [x] ✅ Open Chat - PASS
-- [x] ✅ Send Messages - PASS
+- [ ] ✅ Open Chat - PASS
+- [ ] ✅ Send Messages - PASS
 - [ ] ✅ Receive Messages (real-time) - Can't test alone
-- [x] ✅ Chat History - PASS
-- [x] ✅ Close Chat - PASS
-- [x] ✅ Connection Status - PASS
+- [ ] ✅ Chat History - PASS
+- [ ] ✅ Close Chat - PASS
+- [ ] ✅ Connection Status - PASS
 
 ### Leaderboard (Firebase)
-- [x] ⚠️ View Top 20 Players - Works but doesn't auto-update
+- [ ] ⚠️ View Top 20 Players - Works but doesn't auto-update
 - [ ] ✅ Player Rankings by Money
-- [x] ✅ Open Leaderboard - PASS
+- [ ] ✅ Open Leaderboard - PASS
 - [ ] ✅ Close Leaderboard
 - [ ] ✅ Not Connected State (guest)
 
 ## UI/NAVIGATION
-- [x] ✅ Home Screen - PASS
-- [x] ✅ Inventory Screen - PASS
-- [x] ✅ Workers Screen - PASS
-- [x] ✅ Market Screen (Player Market) - PASS
-- [x] ✅ Chat Screen - PASS
+- [ ] ✅ Home Screen - PASS
+- [ ] ✅ Inventory Screen - PASS
+- [ ] ✅ Workers Screen - PASS
+- [ ] ✅ Market Screen (Player Market) - PASS
+- [ ] ✅ Chat Screen - PASS
 - [ ] ✅ Navigation Active States (visual indicator of current tab)
-- [x] ✅ Screen Switching - PASS
-- [x] ✅ Stats Display (top bar) - PASS
-- [x] ✅ Money Display - PASS
-- [x] ✅ Inventory Count Display - PASS
+- [ ] ✅ Screen Switching - PASS
+- [ ] ✅ Stats Display (top bar) - PASS
+- [ ] ✅ Money Display - PASS
+- [ ] ✅ Inventory Count Display - PASS
 
 ## MENU SYSTEM
-- [x] ✅ Open Menu - PASS
-- [x] ✅ Close Menu - PASS
-- [x] ✅ Statistics Screen - PASS
-- [x] ⚠️ Daily Rewards - Works but button doesn't update until close/reopen
-- [x] ⚠️ Help Screen - Placeholder "more content coming soon"
+- [ ] ✅ Open Menu - PASS
+- [ ] ✅ Close Menu - PASS
+- [ ] ✅ Statistics Screen - PASS
+- [ ] ⚠️ Daily Rewards - Works but button doesn't update until close/reopen
+- [ ] ⚠️ Help Screen - Placeholder "more content coming soon"
 - [ ] ✅ Account Modal
-- [x] ✅ Leaderboard Access - PASS (but doesn't auto-refresh)
+- [ ] ✅ Leaderboard Access - PASS (but doesn't auto-refresh)
 - [ ] ✅ Settings
 
 ## SETTINGS
-- [x] ✅ Toggle Theme (Dark/Light) - PASS
+- [ ] ✅ Toggle Theme (Dark/Light) - PASS
 - [ ] ✅ Font Size Adjustment (Small/Medium/Large)
-- [x] ✅ Sound Toggle - PASS
+- [ ] ✅ Sound Toggle - PASS
 - [ ] ✅ Settings Persistence
 
 ## ACHIEVEMENTS & REWARDS
@@ -151,12 +151,12 @@ Last Updated: 2026-01-07 18:05
 - [ ] ✅ Day/Night Cycle (changes background every minute based on time)
 
 ## GAME LOOP
-- [x] ✅ Update Loop Running (startGameLoop called in init)
-- [x] ✅ Worker Timer (uses while loop for catch-up)
-- [x] ✅ Resource Regeneration Loop (updatePlots called every frame)
-- [x] ✅ Auto-Save Timer (works via modular game loop)
-- [x] ✅ Limit Order Processing (calls processLimitOrders every 10s)
-- [x] ✅ Timestamp Tracking (S.lastUpdate for offline calculation)
+- [ ] ✅ Update Loop Running (startGameLoop called in init)
+- [ ] ✅ Worker Timer (uses while loop for catch-up)
+- [ ] ✅ Resource Regeneration Loop (updatePlots called every frame)
+- [ ] ✅ Auto-Save Timer (works via modular game loop)
+- [ ] ✅ Limit Order Processing (calls processLimitOrders every 10s)
+- [ ] ✅ Timestamp Tracking (S.lastUpdate for offline calculation)
 
 ## DATA PERSISTENCE
 - [ ] ✅ Farm Name
@@ -174,8 +174,46 @@ Last Updated: 2026-01-07 18:05
 - [ ] ⚠️ Offline Functionality (FIX: after offline progress implemented)
 - [ ] ✅ Responsive Layout
 
+## RECENT FIXES & ENHANCEMENTS (2026-01-08)
+
+### Priority 1: UX Polish
+- [ ] ✅ Worker Floating Text - Only shows on Home screen (cross-screen bug fixed)
+- [ ] ✅ Daily Rewards Button - Auto-updates immediately after claim
+- [ ] ✅ Leaderboard Auto-Refresh - Refreshes every 30 seconds when open
+- [ ] ✅ Leaderboard Interval Cleanup - Clears on close (no memory leak)
+
+### Priority 2: Core Features
+- [ ] ✅ Building Upgrade to Lv5 - All 5 levels work, shows MAX LEVEL at Lv5
+- [ ] ✅ Upgrade Cost Scaling - 75% of base cost × level multiplier
+- [ ] ✅ Level Bonuses - +10% regen, +10 storage per level
+- [ ] ✅ Demolish Resets to Wild - Properly returns to 'wild' type (was 'forest')
+- [ ] ✅ Demolish Refunds Storage - Reduces S.cap if building had storage bonus
+
+### Priority 3: Visual/UX
+- [ ] ✅ Modal Fade-In Animation - Smooth 0.2s scale + opacity transition
+- [ ] ✅ Button Press Feedback - Scales to 95% when clicked
+- [ ] ✅ Circular Progress Rings - Visual fill indicator on subplots
+- [ ] ✅ Sound System - Web Audio API (tap, sell, error, achievement)
+- [ ] ✅ Background Music - Auto-plays on first interaction
+
+### System Updates
+- [ ] ✅ Event Delegation - All UI uses data-action attributes
+- [ ] ✅ Game Reset Anti-Race - Prevents beforeunload from saving over reset
+- [ ] ✅ Double-Harvest Fix - Removed duplicate event listener
+
+### Edge Cases to Test
+- [ ] Build on all 3 subplots of a single plot
+- [ ] Hire 10 workers (max limit)
+- [ ] Fill inventory to exactly capacity (1000/1000)
+- [ ] Demolish a Lv5 building (should refund correctly)
+- [ ] Switch screens rapidly (no rendering bugs)
+- [ ] Open/close modals rapidly (no animation glitches)
+- [ ] Upgrade building while worker is assigned to it
+- [ ] Save and reload with workers running
+- [ ] Multiple plots with different building levels
+
 ## ERROR HANDLING
-- [x] Check Console Errors - VERIFIED: Only expected warnings (password, meta tag, service worker)
+- [ ] Check Console Errors - VERIFIED: Only expected warnings (password, meta tag, service worker)
 - [ ] Graceful Connection Failures
 - [ ] Save/Load Error Recovery
 - [ ] Invalid Input Handling
