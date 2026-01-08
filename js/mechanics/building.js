@@ -161,6 +161,8 @@ export function doBuild(t) {
         const s = S.plots[buildP]?.subs[buildS];
         if (!s) return;
         const orig = Object.values(B).flat().find(b => b.t === s.t);
+
+        // Refund 50% of resources
         if (orig) {
             for (const k in orig.c) {
                 if (k === 'm') {
@@ -170,9 +172,18 @@ export function doBuild(t) {
                 }
             }
         }
-        s.t = 'forest';
-        s.c = 0;
+
+        // Deduct storage capacity if building provided it
+        const buildingCfg = T[s.t];
+        if (buildingCfg?.cap) {
+            S.cap -= buildingCfg.cap;
+        }
+
+        // Reset subplot to wilderness
+        s.t = 'wild';
+        s.c = 10;
         s.lv = 1;
+
         toast('Building demolished', 'ok');
         closeBuild();
         save();

@@ -277,7 +277,10 @@ if (CONFIG.DEBUG_MODE || true) {  // Always log for now
 // Save on page close/exit
 window.addEventListener('beforeunload', () => {
     console.log('💾 Saving before page unload...');
-    save();
+    // Don't save if we're resetting
+    if (!window.isResetting) {
+        save();
+    }
 });
 
 // NOTE: The game init() function and remaining game logic is still in index.html

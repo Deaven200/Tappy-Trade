@@ -61,8 +61,9 @@ export function claimDaily() {
     toast(`Day ${S.dailyStreak} reward claimed!`, 'ok');
     notif(`🎁 Daily Reward: +$${reward.m || 0}!`);
 
-    // Update UI to reflect new money
+    // Update UI to reflect new money and refresh modal
     if (window.render) window.render();
+    if (window.showDaily) window.showDaily(); // Refresh modal to update button state
 }
 
 /**

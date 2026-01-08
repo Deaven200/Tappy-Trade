@@ -837,7 +837,42 @@
             margin-bottom: 8px;
         }
 
+        /* Modal transitions */
+        .modal {
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+        }
+
+        .modal.show {
+            animation: fadeInScale 0.2s ease;
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Button press animation */
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Smooth hover transition */
+        .btn {
+            transition: all 0.15s ease;
+        }
+
         /* Smooth progress bar */
+        .progress-ring-inner {
+            transition: background 0.3s ease;
+        }
+
         .sub .bar div {
             transition: width 0.3s ease-out;
         }

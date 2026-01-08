@@ -5,21 +5,39 @@
 
 import { $ } from '../utils/dom.js';
 
+// Track auto-refresh interval
+let leaderboardRefreshInterval = null;
+
 /**
  * Show leaderboard modal and load top players
  */
 export async function showLeaderboard() {
     const modal = $('leaderboard-modal');
-    const body = $('leaderboard-body');
 
     // Close menu if open
     const menuModal = $('menu-modal');
     if (menuModal) menuModal.classList.remove('show');
 
-    if (!modal || !body) return;
+    if (!modal) return;
 
     modal.classList.add('show');
-    body.innerHTML = '<div class="empty">Loading leaderboard...</div>';
+
+    // Load initial data
+    await refreshLeaderboard();
+
+    // Set up auto-refresh every 30 seconds
+    if (leaderboardRefreshInterval) {
+        clearInterval(leaderboardRefreshInterval);
+    }
+    leaderboardRefreshInterval = setInterval(refreshLeaderboard, 30000);
+}
+
+/**
+ * Refresh leaderboard data (shared between initial load and auto-refresh)
+ */
+async function refreshLeaderboard() {
+    const body = $('leaderboard-body');
+    if (!body) return;
 
     const db = window.db;
 
@@ -75,5 +93,11 @@ export function closeLeaderboard() {
     const modal = $('leaderboard-modal');
     if (modal) {
         modal.classList.remove('show');
+    }
+
+    // Clear auto-refresh interval
+    if (leaderboardRefreshInterval) {
+        clearInterval(leaderboardRefreshInterval);
+        leaderboardRefreshInterval = null;
     }
 }

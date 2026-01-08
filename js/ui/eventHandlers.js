@@ -20,7 +20,7 @@ export function initializeEventHandlers() {
     }
 
     // Single click listener for all interactions in main container
-    mainContainer.addEventListener('click', handleClick);
+    // mainContainer.addEventListener('click', handleClick); // REMOVED: Was causing double-clicks
 
     // Handle select/dropdown changes in main container
     mainContainer.addEventListener('change', handleChange);

@@ -45,7 +45,10 @@ export function tap(plotIndex, subplotIndex) {
         window.addItem(randomItem, 1);
         S.stats.harvested++;
         playS('tap');
-        window.floatTextAt(`+1 ${R[randomItem]?.i}`, element);
+        // Only show floating text when on Home screen (element visible)
+        if (window.getScreen && window.getScreen() === 'home') {
+            window.floatTextAt(`+1 ${R[randomItem]?.i}`, element);
+        }
 
         const iconEl = element?.querySelector('.icon');
         if (iconEl) {
@@ -76,7 +79,10 @@ export function tap(plotIndex, subplotIndex) {
         window.addItem(config.o, 1);
         S.stats.harvested++;
         playS('tap');
-        window.floatTextAt(`+1 ${R[config.o]?.i}`, element);
+        // Only show floating text when on Home screen
+        if (window.getScreen && window.getScreen() === 'home') {
+            window.floatTextAt(`+1 ${R[config.o]?.i}`, element);
+        }
     } else {
         // Regular resource buildings
         if (subplot.c < 1) return;
@@ -84,7 +90,10 @@ export function tap(plotIndex, subplotIndex) {
         window.addItem(config.o, 1);
         S.stats.harvested++;
         playS('tap');
-        window.floatTextAt(`+1 ${R[config.o]?.i}`, element);
+        // Only show floating text when on Home screen
+        if (window.getScreen && window.getScreen() === 'home') {
+            window.floatTextAt(`+1 ${R[config.o]?.i}`, element);
+        }
 
         const iconEl = element?.querySelector('.icon');
         if (iconEl) {
