@@ -26,6 +26,7 @@ import {
     render, switchScreen, updateStats, setInvView, setInvSort,
     showHome, showInventory, showWorkers, showPlayerMarket, showStats, showHelp, showAchievements
 } from './ui/render.js';
+import { initializeEventHandlers } from './ui/eventHandlers.js';
 
 // Mechanics modules (Phase 2E)
 import { tap } from './mechanics/harvesting.js';
@@ -123,6 +124,7 @@ window.showPlayerMarket = showPlayerMarket;
 window.showStats = showStats;
 window.showHelp = showHelp;
 window.showAchievements = showAchievements;
+window.initializeEventHandlers = initializeEventHandlers;
 
 // Mechanics (Phase 2E)
 window.tap = tap;

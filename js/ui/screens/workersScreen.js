@@ -52,7 +52,7 @@ function renderWorker(worker, index) {
             <div class="nm">Worker #${index + 1}</div>
             <div class="rate">On: ${config?.n || '?'} (Plot ${worker.plot + 1})</div>
         </div>
-        <button class="btn red" onclick="fireWorker(${index})">Fire</button>
+        <button class="btn red" data-action="fire-worker" data-index="${index}">Fire</button>
     </div>`;
 }
 
@@ -74,7 +74,7 @@ function renderHiringPanel() {
             html += `<div class="item">
                 <span class="ic">${config.i}</span>
                 <span class="nm">Plot ${plotIndex + 1} - ${config.n}</span>
-                <button class="btn green" onclick="hireWorker(${plotIndex},${subIndex})">$${cost}</button>
+                <button class="btn green" data-action="hire-worker" data-plot="${plotIndex}" data-sub="${subIndex}">$${cost}</button>
             </div>`;
         });
     });

@@ -70,6 +70,11 @@ export function init() {
     // Initial render
     window.render();
 
+    // Initialize event delegation (must be after render since it needs #main to exist)
+    if (window.initializeEventHandlers) {
+        window.initializeEventHandlers();
+    }
+
     // NOTE: initFirebase() is called from index.html after it's defined
     // (can't call it here because it's not defined yet when module loads)
 

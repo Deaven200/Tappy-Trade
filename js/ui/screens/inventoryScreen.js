@@ -59,10 +59,10 @@ export function renderInventoryScreen(container) {
     // Controls: View toggle and Sort
     html += `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
         <div class="view-toggle">
-            <button class="${invView === 'list' ? 'active' : ''}" onclick="window.setInvView('list')">📋</button>
-            <button class="${invView === 'grid' ? 'active' : ''}" onclick="window.setInvView('grid')">📱</button>
+            <button class="${invView === 'list' ? 'active' : ''}" data-action="set-view" data-view="list">📋</button>
+            <button class="${invView === 'grid' ? 'active' : ''}" data-action="set-view" data-view="grid">📱</button>
         </div>
-        <select onchange="window.setInvSort(this.value)" style="padding:4px 8px;border-radius:4px;background:var(--bg2);color:var(--text);border:none;font-size:0.75rem">
+        <select data-action="set-sort" style="padding:4px 8px;border-radius:4px;background:var(--bg2);color:var(--text);border:none;font-size:0.75rem">
             <option value="name" ${invSort === 'name' ? 'selected' : ''}>By Name</option>
             <option value="qty" ${invSort === 'qty' ? 'selected' : ''}>By Quantity</option>
             <option value="value" ${invSort === 'value' ? 'selected' : ''}>By Value</option>
@@ -107,7 +107,7 @@ function renderInventoryItems(items) {
 
     let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
         <div style="font-size:0.75rem;color:var(--muted)">Total Value: <span style="color:var(--gold)">$${totalValue.toLocaleString()}</span></div>
-        <button class="btn green" onclick="sellAll()" style="padding:6px 12px">💰 Sell All</button>
+        <button class="btn green" data-action="sell-all" style="padding:6px 12px">💰 Sell All</button>
     </div>`;
 
     if (invView === 'grid') {
@@ -128,7 +128,7 @@ function renderGridView(items) {
         const resource = R[id];
         if (!resource) continue;
         const value = qty * resource.p;
-        html += `<div class="inv-item" onclick="sell('${id}',1)">
+        html += `<div class="inv-item" data-action="sell" data-item="${id}" data-qty="1">
             <span class="ic">${resource.i}</span>
             <span class="qty">×${qty}</span>
             <span class="val">$${value}</span>
@@ -161,7 +161,7 @@ function renderListView(items) {
                 <span class="nm">${resource.n}</span>
                 <span class="pr">$${price}</span>
                 <span class="qt">×${qty}</span>
-                <button class="btn green" onclick="sell('${id}',${qty})" style="font-size:0.7rem">Sell</button>
+                <button class="btn green" data-action="sell" data-item="${id}" data-qty="${qty}" style="font-size:0.7rem">Sell</button>
             </div>`;
         }
         html += `</div>`;

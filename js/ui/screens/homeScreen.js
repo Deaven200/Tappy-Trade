@@ -24,15 +24,12 @@ export function renderHomeScreen(container) {
     html += `<div class="plot locked ${canAfford ? 'can' : ''}">
         <div style="font-size:1.8rem;opacity:0.5">🔒</div>
         <h4>$${nextPlotCost.toLocaleString()}</h4>
-        <button ${canAfford ? '' : 'disabled'} onclick="buyPlot()">
+        <button ${canAfford ? '' : 'disabled'} data-action="buy-plot">
             ${canAfford ? 'Buy Plot' : 'Need $' + (nextPlotCost - S.money).toLocaleString()}
         </button>
     </div>`;
 
     container.innerHTML = html;
-
-    // Attach click handlers for harvesting
-    attachSubplotHandlers(container);
 }
 
 /**
@@ -75,6 +72,7 @@ function renderSubplot(subplot, plotIndex, subIndex) {
     const ready = isFull; // Only glow when at full capacity
 
     return `<div class="sub ${ready ? 'ready' : ''} ${config.b ? 'building' : ''}" 
+                 data-action="tap"
                  data-p="${plotIndex}" data-s="${subIndex}" 
                  style="opacity:0.85;backdrop-filter:blur(2px)">
         <div class="icon">${config.i}</div>
@@ -85,20 +83,4 @@ function renderSubplot(subplot, plotIndex, subIndex) {
         </div>
         ${subplot.lv > 1 ? `<span class="lvl">Lv${subplot.lv}</span>` : ''}
     </div>`;
-}
-
-/**
- * Attach click handlers to subplots for harvesting
- * @param {HTMLElement} container - Container with subplot elements
- */
-function attachSubplotHandlers(container) {
-    container.querySelectorAll('.sub').forEach(el => {
-        el.onclick = (e) => {
-            e.preventDefault();
-            const plotIndex = +el.dataset.p;
-            const subIndex = +el.dataset.s;
-            // Call tap function (will be available on window)
-            window.tap(plotIndex, subIndex);
-        };
-    });
 }

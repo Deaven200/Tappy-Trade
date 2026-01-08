@@ -58,9 +58,9 @@ export function update(delta) {
     // Update lastUpdate timestamp
     S.lastUpdate = Date.now();
 
-    // Update UI every 200ms (5 times per second) to avoid destroying click handlers
+    // Update UI at 60fps (~16.67ms) - event delegation prevents click handler loss
     renderTimer += delta;
-    if (renderTimer >= 1) {
+    if (renderTimer >= 0.0167) {  // ~60fps
         if (window.render) window.render();
         renderTimer = 0;
     }
