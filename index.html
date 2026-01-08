@@ -1117,7 +1117,9 @@
     </div>
     <div class="modal" id="menu-modal">
         <div class="modal-box" style="padding:16px">
-            <h3 style="margin-bottom:12px">☰ Menu</h3>
+            <div class="modal-head">
+                <h3>☰ Menu</h3><button class="modal-close" onclick="closeMenu()">×</button>
+            </div>
             <div id="account-status"
                 style="margin-bottom:12px;padding:10px;background:var(--bg2);border-radius:8px;font-size:0.85rem"></div>
             <div
@@ -1130,8 +1132,7 @@
             </div>
             <button class="btn" style="width:100%;margin-bottom:8px" onclick="showStats()">📊 Statistics</button>
             <button class="btn" style="width:100%;margin-bottom:8px" onclick="showHelp()">❓ Help</button>
-            <button class="btn" style="width:100%;margin-bottom:8px"
-                onclick="window.location.href='mailto:tappy0trade@gmail.com?subject=Tappy Trade Suggestion&body=Hi! I have a suggestion for Tappy Trade:%0D%0A%0D%0A'">💡
+            <button class="btn" style="width:100%;margin-bottom:8px" onclick="showSuggestions()">💡
                 Send Suggestion</button>
             <button class="btn" style="width:100%;margin-bottom:8px" onclick="showAchievements()">🏆
                 Achievements</button>
@@ -1149,8 +1150,6 @@
                 Account</button>
             <button class="btn" style="width:100%;margin-bottom:8px" onclick="showLeaderboard()">🏅 Leaderboard</button>
             <button class="btn red" style="width:100%" data-action="reset-game">🗑️ Reset Game</button>
-            <button class="btn" style="width:100%;margin-top:8px;background:var(--bg2)"
-                onclick="closeMenu()">Close</button>
         </div>
     </div>
 
