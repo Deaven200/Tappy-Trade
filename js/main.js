@@ -52,6 +52,7 @@ import { renameFarm } from './ui/farmNaming.js';
 import { resetGame } from './ui/gameReset.js';
 import { showTip } from './ui/tooltip.js';
 import { renderMarket, renderPlayerMarket, setSellQty, resetMarketInit } from './ui/markets.js';
+import { showSuggestions, closeSuggestions, sendSuggestion } from './ui/suggestions.js';
 
 // Additional Mechanics (Phase 2H)
 import { claimDaily, canClaimDaily, getDailyRewardInfo, showDaily, closeDaily } from './mechanics/dailyRewards.js';
@@ -188,6 +189,9 @@ window.renderMarket = renderMarket;
 window.renderPlayerMarket = renderPlayerMarket;
 window.resetMarketInit = resetMarketInit;
 window.setSellQty = setSellQty;
+window.showSuggestions = showSuggestions;
+window.closeSuggestions = closeSuggestions;
+window.sendSuggestion = sendSuggestion;
 
 // Additional Mechanics (Phase 2H)
 window.claimDaily = claimDaily;

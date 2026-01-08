@@ -1150,6 +1150,23 @@
                 onclick="closeMenu()">Close</button>
         </div>
     </div>
+
+    <!-- Suggestions Modal -->
+    <div class="modal" id="suggestions-modal">
+        <div class="modal-box">
+            <div class="modal-head">
+                <h3>💡 Send Suggestion</h3><button class="modal-close" onclick="closeSuggestions()">×</button>
+            </div>
+            <div class="modal-body">
+                <p style="color:var(--muted);font-size:0.85rem;margin-bottom:12px">Got an idea to make Tappy Trade
+                    better? Let us know!</p>
+                <textarea id="suggestion-text" placeholder="Type your suggestion here..."
+                    style="width:100%;min-height:120px;padding:12px;background:var(--bg2);color:var(--text);border:1px solid rgba(255,255,255,0.1);border-radius:8px;font-family:inherit;font-size:0.9rem;resize:vertical"></textarea>
+                <button class="btn green" style="width:100%;margin-top:12px" data-action="send-suggestion">📤 Send
+                    Suggestion</button>
+            </div>
+        </div>
+    </div>
     <div class="modal" id="achieve-modal">
         <div class="modal-box">
             <div class="modal-head">

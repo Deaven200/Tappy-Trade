@@ -69,6 +69,9 @@ function handleClick(event) {
         case 'reset-game':
             handleResetGame();
             break;
+        case 'send-suggestion':
+            if (window.sendSuggestion) window.sendSuggestion();
+            break;
         default:
             console.warn('Unknown action:', action);
     }
