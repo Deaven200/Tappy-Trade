@@ -126,6 +126,12 @@ export async function sendChat() {
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
         input.value = '';
+
+        // Send to Discord webhook (async, don't wait)
+        sendToDiscordWebhook(username, sanitizedText).catch(err => {
+            console.log('Discord webhook failed (non-critical):', err);
+        });
+
     } catch (e) {
         console.error('Chat send error:', e);
         toast('Failed to send', 'err');
@@ -163,6 +169,33 @@ function renderChat() {
 
     // Auto-scroll to bottom
     messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+/**
+ * Send chat message to Discord webhook
+ */
+async function sendToDiscordWebhook(username, message) {
+    const DISCORD_WEBHOOK_URL = 'YOUR_CHAT_WEBHOOK_URL_HERE';
+
+    // Don't send if webhook not configured
+    if (DISCORD_WEBHOOK_URL === 'YOUR_CHAT_WEBHOOK_URL_HERE') {
+        return;
+    }
+
+    try {
+        await fetch(DISCORD_WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                username: `${username} (Tappy Trade)`,
+                avatar_url: 'https://em-content.zobj.net/thumbs/120/google/350/video-game_1f3ae.png',
+                content: message
+            })
+        });
+    } catch (error) {
+        // Silently fail - chat webhook is optional
+        throw error;
+    }
 }
 
 /**

@@ -1,0 +1,74 @@
+# Tappy Trade - TODO List
+
+## Discord Integration
+- [ ] Set up Discord bot for two-way chat sync (Discord ↔ Game)
+  - Create Discord bot application
+  - Set up Node.js server (Replit/Glitch/Railway)
+  - Bot listens to Discord channel
+  - Posts messages to Firebase
+  - Game displays Discord messages in chat
+  - Estimated time: 30-60 minutes
+
+## Future Features & Polish
+
+### UI/UX Improvements
+- [ ] Add smooth CSS transitions to modals (fade in/out)
+- [ ] Add hover effects to building cards
+- [ ] Improve mobile responsiveness
+- [ ] Add sound effects toggle in settings
+- [ ] Dark mode toggle
+
+### Gameplay Features
+- [ ] Implement seasons system (Spring/Summer/Fall/Winter)
+  - Different crop growth rates per season
+  - Seasonal events
+  - Visual changes (snow in winter, etc.)
+- [ ] Add random events (storms, festivals, bonuses)
+- [ ] Supply & demand market system (dynamic pricing)
+- [ ] Worker specialization system
+- [ ] Prestige/reset system for endgame
+- [ ] Daily quests system
+- [ ] Achievement notifications (pop-up on unlock)
+
+### New Buildings (Already in catalog)
+- [ ] Add 4 specialty buildings (Apiary, Orchard, Vineyard, Fishpond) - CONFIGS DONE
+- [ ] Add 4 advanced manufacturing (Brewery, Cheese Factory, Tailor, Woodshop)
+- [ ] Test new buildings in-game
+- [ ] Balance production rates
+
+### Multiplayer
+- [ ] Add friend system
+- [ ] Farm visiting (view friend farms)
+- [ ] Trading with other players
+- [ ] Co-op farms (2-4 players share one farm)
+- [ ] Guilds/clans
+- [ ] Global events/competitions
+
+### Performance & Quality
+- [ ] Add loading screen for initial load
+- [ ] Optimize Firebase queries
+- [ ] Add error boundaries for crashes
+- [ ] Better offline mode handling
+- [ ] Add analytics (track popular buildings, etc.)
+
+### Content
+- [ ] More achievements (currently have basic ones)
+- [ ] Tutorials for new players
+- [ ] Building upgrade visual tiers (Lv1/3/5 look different)
+- [ ] Plot decoration system (fences, flowers, paths)
+- [ ] Seasonal decorations
+
+## Bug Fixes
+- [x] Discord suggestions webhook (FIXED)
+- [x] Close button bright red (FIXED)
+- [x] Account system polish (FIXED)
+- [x] Building render bug (FIXED)
+- [ ] Service worker re-enable after testing
+
+## Waiting On
+- Discord webhook URLs from user (suggestions + chat)
+- User testing/feedback on new features
+
+---
+
+Last Updated: 2026-01-08
