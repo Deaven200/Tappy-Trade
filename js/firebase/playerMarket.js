@@ -57,7 +57,7 @@ export async function postOrder(type, resource, qty, price) {
     } catch (e) {
         console.error('Post order error:', e);
         // Refund on error
-        if (type === 'sell') addItem(resource, qty);
+        if (type === 'sell') addItem(S.inv, resource, qty);
         if (type === 'buy') S.money += qty * price;
         toast('Failed to post order', 'err');
     }
@@ -114,7 +114,7 @@ export async function fillOrder(order) {
             S.stats.earned += cost;
         } else {
             // They wanted to sell, we bought from them
-            addItem(order.resource, order.qty);
+            addItem(S.inv, order.resource, order.qty);
         }
 
         notif(`✅ Trade complete: ${order.qty} ${R[order.resource]?.i} for $${cost}`);
@@ -124,7 +124,7 @@ export async function fillOrder(order) {
     } catch (e) {
         console.error('Fill order error:', e);
         // Refund on error
-        if (isBuy) addItem(order.resource, order.qty);
+        if (isBuy) addItem(S.inv, order.resource, order.qty);
         if (!isBuy) S.money += cost;
         toast('Failed to complete trade', 'err');
     }
@@ -151,7 +151,7 @@ export async function cancelOrder(order) {
 
         // Refund reserved items/money
         if (order.type === 'sell') {
-            addItem(order.resource, order.qty);
+            addItem(S.inv, order.resource, order.qty);
         } else {
             S.money += order.qty * order.price;
         }

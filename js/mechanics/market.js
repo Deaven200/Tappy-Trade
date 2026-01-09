@@ -49,8 +49,7 @@ export function sell(itemId, quantity) {
 
     // Update displays
     save();
-    window.renderInv();
-    window.updateMoney();
+    window.render();
     toast(`Sold ${quantity} ${item.n} for $${total.toFixed(0)}`, 'ok');
     playS('sell');
 }
