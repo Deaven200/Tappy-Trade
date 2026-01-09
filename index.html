@@ -1187,10 +1187,20 @@
                 <div id="login-form">
                     <p style="color:var(--muted);font-size:0.8rem;margin-bottom:12px">Create an account to chat with
                         other players!</p>
-                    <input type="text" id="auth-name" placeholder="Username"
+                    <input type="text" id="auth-user" placeholder="Username"
                         style="width:100%;padding:10px;margin-bottom:8px;border-radius:6px;background:var(--bg2);color:var(--text);border:none">
-                    <input type="password" id="auth-pass" placeholder="Password"
-                        style="width:100%;padding:10px;margin-bottom:12px;border-radius:6px;background:var(--bg2);color:var(--text);border:none">
+                    <div style="position:relative;margin-bottom:12px">
+                        <input type="password" id="auth-pass" placeholder="Password"
+                            style="width:100%;padding:10px;padding-right:40px;border-radius:6px;background:var(--bg2);color:var(--text);border:none">
+                        <button onclick="togglePasswordVisibility()" type="button"
+                            style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1.2rem"
+                            title="Show/Hide Password">👁️</button>
+                    </div>
+                    <label
+                        style="display:flex;align-items:center;gap:8px;margin-bottom:12px;cursor:pointer;font-size:0.9rem">
+                        <input type="checkbox" id="remember-me" checked style="width:16px;height:16px;cursor:pointer">
+                        <span>Remember Me</span>
+                    </label>
                     <button class="btn green" style="width:100%;margin-bottom:8px" onclick="registerAccount()">Create
                         Account</button>
                     <button class="btn purple" style="width:100%" onclick="loginAccount()">Log In</button>
@@ -1837,6 +1847,11 @@
                     loggedInUser = JSON.parse(saved);
                     window.loggedInUser = loggedInUser; // Expose for chat module
                     userName = loggedInUser.username;
+
+                    // Update account button to show username
+                    if (window.updateAccountButton) {
+                        window.updateAccountButton();
+                    }
                 }
             } catch (e) { }
         }
@@ -2042,9 +2057,26 @@
         // Helper functions that were deleted as duplicates
         function floatTextAt(text, el) {
             if (!el) return;
-            const rect = el.getBoundingClientRect();
-            floatText(text, rect.left + rect.width / 2 - 15, rect.top);
+            const x = el.getBoundingClientRect().left + 20;
+            const y = el.getBoundingClientRect().top - 20;
+            floatText(text, x, y);
         }
+
+        function togglePasswordVisibility() {
+            const passInput = document.getElementById('auth-pass');
+            const toggleBtn = event.target;
+            if (!passInput) return;
+
+            if (passInput.type === 'password') {
+                passInput.type = 'text';
+                toggleBtn.textContent = '🙈';
+            } else {
+                passInput.type = 'password';
+                toggleBtn.textContent = '👁️';
+            }
+        }
+
+        function showAccount() { closeMenu(); $('account-modal').classList.add('show'); updateAccountUI(); }
 
         // Export functions for HTML onclick handlers
         window.tap = tap;

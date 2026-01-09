@@ -53,40 +53,74 @@ export function updateAccountUI() {
 export async function registerAccount() {
     const usernameInput = document.getElementById('auth-user');
     const passwordInput = document.getElementById('auth-pass');
+    const rememberMeCheckbox = document.getElementById('remember-me');
+    const submitBtn = document.querySelector('[onclick="registerAccount()"]');
 
     if (!usernameInput || !passwordInput) return;
 
     const username = usernameInput.value.trim();
     const password = passwordInput.value;
+    const rememberMe = rememberMeCheckbox?.checked ?? true;
 
+    // Validation
     if (!username || !password) {
-        toast('Fill all fields!', 'err');
+        toast('Please fill all fields!', 'err');
         return;
     }
 
     if (username.length < 3 || username.length > 20) {
-        toast('Username must be 3-20 chars', 'err');
+        toast('Username must be 3-20 characters', 'err');
         return;
     }
 
-    // Simple registration (would use Firebase Auth in production)
-    loggedInUser = { id: Date.now().toString(), username };
-    window.loggedInUser = loggedInUser; // Expose globally
-    localStorage.setItem('tt4_user', JSON.stringify(loggedInUser));
-
-    toast('Account created!', 'ok');
-    playS('ach');
-    updateAccountUI();
-
-    // Trigger initial cloud save
-    if (window.saveToCloud) {
-        await window.saveToCloud();
+    if (password.length < 6) {
+        toast('Password must be at least 6 characters', 'err');
+        return;
     }
 
-    usernameInput.value = '';
-    passwordInput.value = '';
+    // Show loading state
+    const originalText = submitBtn?.textContent;
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = '🔄 Creating Account...';
+    }
 
-    closeAccount();
+    try {
+        // Simulate async registration
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Simple registration (would use Firebase Auth in production)
+        loggedInUser = { id: Date.now().toString(), username };
+        window.loggedInUser = loggedInUser;
+
+        // Save based on Remember Me
+        if (rememberMe) {
+            localStorage.setItem('tt4_user', JSON.stringify(loggedInUser));
+        }
+
+        toast('Account created! ✨', 'ok');
+        playS('ach');
+        updateAccountUI();
+        updateAccountButton();
+
+        // Trigger initial cloud save
+        if (window.saveToCloud) {
+            await window.saveToCloud();
+        }
+
+        usernameInput.value = '';
+        passwordInput.value = '';
+
+        setTimeout(() => closeAccount(), 300);
+
+    } catch (error) {
+        toast('Registration failed. Try again!', 'err');
+    } finally {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+        }
+    }
 }
 
 /**
@@ -95,41 +129,68 @@ export async function registerAccount() {
 export async function loginAccount() {
     const usernameInput = document.getElementById('auth-user');
     const passwordInput = document.getElementById('auth-pass');
+    const rememberMeCheckbox = document.getElementById('remember-me');
+    const submitBtn = document.querySelector('[onclick="loginAccount()"]');
 
     if (!usernameInput || !passwordInput) return;
 
     const username = usernameInput.value.trim();
     const password = passwordInput.value;
+    const rememberMe = rememberMeCheckbox?.checked ?? true;
 
     if (!username || !password) {
-        toast('Fill all fields!', 'err');
+        toast('Please fill all fields!', 'err');
         return;
     }
 
-    // Simple login (would use Firebase Auth in production)
-    loggedInUser = { id: Date.now().toString(), username };
-    window.loggedInUser = loggedInUser; // Expose globally
-    localStorage.setItem('tt4_user', JSON.stringify(loggedInUser));
-
-    toast('Logged in!', 'ok');
-    playS('ach');
-    updateAccountUI();
-
-    // Try to load cloud save
-    try {
-        const loaded = await loadFromCloud(loggedInUser.id);
-        if (!loaded) {
-            console.log('No cloud save found, will create new one on next save');
-        }
-    } catch (e) {
-        console.log('No cloud save found:', e);
+    // Show loading state
+    const originalText = submitBtn?.textContent;
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = '🔄 Logging In...';
     }
 
-    usernameInput.value = '';
-    passwordInput.value = '';
+    try {
+        // Simulate async login
+        await new Promise(resolve => setTimeout(resolve, 500));
 
-    // Close the modal
-    closeAccount();
+        // Simple login (would use Firebase Auth in production)
+        loggedInUser = { id: Date.now().toString(), username };
+        window.loggedInUser = loggedInUser;
+
+        // Save based on Remember Me
+        if (rememberMe) {
+            localStorage.setItem('tt4_user', JSON.stringify(loggedInUser));
+        }
+
+        toast('Welcome back! 🎮', 'ok');
+        playS('ach');
+        updateAccountUI();
+        updateAccountButton();
+
+        // Try to load cloud save
+        try {
+            const loaded = await loadFromCloud(loggedInUser.id);
+            if (!loaded) {
+                console.log('No cloud save found, will create new one on next save');
+            }
+        } catch (e) {
+            console.log('No cloud save found:', e);
+        }
+
+        usernameInput.value = '';
+        passwordInput.value = '';
+
+        setTimeout(() => closeAccount(), 300);
+
+    } catch (error) {
+        toast('Login failed. Check credentials!', 'err');
+    } finally {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+        }
+    }
 }
 
 /**
@@ -137,10 +198,14 @@ export async function loginAccount() {
  */
 export function logoutAccount() {
     loggedInUser = null;
+    window.loggedInUser = null;
     localStorage.removeItem('tt4_user');
-    toast('Logged out', 'ok');
-    updateAccountUI();
-    closeAccount();
+    toast('Logged out. Refreshing...', 'ok');
+
+    // Refresh page after short delay for new player experience
+    setTimeout(() => {
+        window.location.reload();
+    }, 800);
 }
 
 /**
@@ -163,4 +228,22 @@ export function loadSavedUser() {
  */
 export function getLoggedInUser() {
     return loggedInUser;
+}
+
+/**
+ * Update account button to show username when logged in
+ */
+export function updateAccountButton() {
+    const accountBtn = document.getElementById('account-btn');
+    if (!accountBtn) return;
+
+    if (loggedInUser) {
+        // Show username with green dot
+        accountBtn.innerHTML = `🟢 ${loggedInUser.username}`;
+        accountBtn.title = 'Account Settings';
+    } else {
+        // Default state
+        accountBtn.innerHTML = '👤 Account';
+        accountBtn.title = 'Login or Register';
+    }
 }

@@ -37,7 +37,7 @@ import { update, startGameLoop } from './mechanics/gameLoop.js';
 import { openBuild, doBuild, closeBuild, canAfford, pay, getUpgradeCost } from './mechanics/building.js';
 
 // Multiplayer modules (Phase 2F)
-import { showAccount, closeAccount, registerAccount, loginAccount, logoutAccount, loadSavedUser, getLoggedInUser } from './multiplayer/accounts.js';
+import { showAccount, closeAccount, registerAccount, loginAccount, logoutAccount, loadSavedUser, getLoggedInUser, updateAccountButton } from './multiplayer/accounts.js';
 import { showChat, closeChat, sendChat, setupChatKeyboard } from './multiplayer/chat.js';
 import { showLeaderboard, closeLeaderboard } from './multiplayer/leaderboard.js';
 
@@ -160,6 +160,7 @@ window.loginAccount = loginAccount;
 window.logoutAccount = logoutAccount;
 window.loadSavedUser = loadSavedUser;
 window.getLoggedInUser = getLoggedInUser;
+window.updateAccountButton = updateAccountButton;
 window.showChat = showChat;
 window.closeChat = closeChat;
 window.sendChat = sendChat;
