@@ -38,10 +38,7 @@ export async function recordGovernmentSale(resourceKey, amount) {
     const category = getResourceCategory(resourceKey);
     if (!category) return;
 
-    const userId = window.loggedInUser?.id;
-    if (!userId || !window.db) return;
-
-    // Update local data
+    // Update local data (works for both logged in and guest)
     if (!playerTiers[category]) {
         playerTiers[category] = { totalSold: 0, currentTier: 0 };
     }
@@ -56,14 +53,18 @@ export async function recordGovernmentSale(resourceKey, amount) {
         handleTierUnlock(category, newTier);
     }
 
-    // Save to Firebase
-    try {
-        await window.db.collection('users').doc(userId).set({
-            governmentTiers: playerTiers
-        }, { merge: true });
-    } catch (error) {
-        console.error('Failed to save government tiers:', error);
+    // Save to Firebase ONLY if logged in
+    const userId = window.loggedInUser?.id;
+    if (userId && window.db) {
+        try {
+            await window.db.collection('users').doc(userId).set({
+                governmentTiers: playerTiers
+            }, { merge: true });
+        } catch (error) {
+            console.error('Failed to save government tiers:', error);
+        }
     }
+    // For guest players, tiers are kept in memory (lost on refresh, but works during session)
 }
 
 /**

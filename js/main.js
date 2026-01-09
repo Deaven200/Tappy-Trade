@@ -63,6 +63,7 @@ import { calculateSynergyBonus, getPlotBackground } from './mechanics/plotEffect
 import { createLimitOrder, cancelLimitOrder, processLimitOrders } from './firebase/limitOrders.js';
 import { postOrder, fillOrder, cancelOrder as cancelPlayerOrder } from './firebase/playerMarket.js';
 import { updateDayNight, startDayNightCycle } from './ui/dayNight.js';
+import { showLoginScreen, hideLoginScreen, showLoginForm, showRegisterForm, backToMainLogin, handleLogin, handleRegister, continueAsGuest, convertGuestToAccount, shouldShowLoginScreen } from './ui/loginScreen.js';
 import { init } from './core/init.js';
 
 // ===== GLOBAL EXPORTS FOR BACKWARDS COMPATIBILITY =====
@@ -221,6 +222,16 @@ window.fillOrder = fillOrder;
 window.cancelOrder = cancelPlayerOrder; // Renamed to avoid conflict
 window.updateDayNight = updateDayNight;
 window.startDayNightCycle = startDayNightCycle;
+window.showLoginScreen = showLoginScreen;
+window.hideLoginScreen = hideLoginScreen;
+window.showLoginForm = showLoginForm;
+window.showRegisterForm = showRegisterForm;
+window.backToMainLogin = backToMainLogin;
+window.handleLogin = handleLogin;
+window.handleRegister = handleRegister;
+window.continueAsGuest = continueAsGuest;
+window.convertGuestToAccount = convertGuestToAccount;
+window.shouldShowLoginScreen = shouldShowLoginScreen;
 window.init = init; // MOBILE FIX: Now properly imported at top of file
 
 // ===== MODULE STATUS LOG =====
@@ -300,6 +311,17 @@ window.addEventListener('beforeunload', () => {
 // This allows index.html to wait for all exports before calling init()
 window.dispatchEvent(new Event('modulesReady'));
 console.log('📡 modulesReady event dispatched - all window exports complete');
+
+// LOGIN SCREEN: Check if should show login screen
+// Only auto-init if user is logged in or in guest mode
+if (shouldShowLoginScreen()) {
+    console.log('🔐 Showing login screen...');
+    showLoginScreen();
+} else {
+    console.log('✅ User already logged in or in guest mode, auto-initializing...');
+    // User is logged in or chose guest - proceed with init
+    // Init will be called from index.html's modulesReady handler
+}
 
 // NOTE: The game init() function and remaining game logic is still in index.html
 // This will be extracted in future phases
