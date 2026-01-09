@@ -103,6 +103,11 @@ export async function registerAccount() {
         updateAccountUI();
         updateAccountButton();
 
+        // Load government tiers
+        if (window.loadGovernmentTiers) {
+            window.loadGovernmentTiers(loggedInUser.id);
+        }
+
         // Trigger initial cloud save
         if (window.saveToCloud) {
             await window.saveToCloud();
@@ -167,6 +172,11 @@ export async function loginAccount() {
         playS('ach');
         updateAccountUI();
         updateAccountButton();
+
+        // Load government tiers
+        if (window.loadGovernmentTiers) {
+            window.loadGovernmentTiers(loggedInUser.id);
+        }
 
         // Try to load cloud save
         try {

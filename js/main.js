@@ -40,6 +40,7 @@ import { openBuild, doBuild, closeBuild, canAfford, pay, getUpgradeCost } from '
 import { showAccount, closeAccount, registerAccount, loginAccount, logoutAccount, loadSavedUser, getLoggedInUser, updateAccountButton } from './multiplayer/accounts.js';
 import { showChat, closeChat, sendChat, setupChatKeyboard } from './multiplayer/chat.js';
 import { showLeaderboard, closeLeaderboard } from './multiplayer/leaderboard.js';
+import { loadGovernmentTiers, recordGovernmentSale, calculateGovernmentPrice, getAllPlayerTiers } from './mechanics/governmentTiers.js';
 
 // UI System modules (Phase 2H)
 import { applySettings, setTheme, setFontSize, toggleTheme, updateThemeButton } from './ui/settings.js';
@@ -48,6 +49,7 @@ import { showConfetti, closeAchieve } from './ui/achievementsUI.js';
 import { closeTutorial, showTutorialIfNeeded } from './ui/tutorial.js';
 import { renderHelp } from './ui/help.js';
 import { renderStats } from './ui/stats.js';
+import { showGovernmentDev, closeGovernmentDev } from './ui/governmentDev.js';
 import { renameFarm } from './ui/farmNaming.js';
 import { resetGame } from './ui/gameReset.js';
 import { showTip } from './ui/tooltip.js';
@@ -167,6 +169,10 @@ window.sendChat = sendChat;
 window.setupChatKeyboard = setupChatKeyboard;
 window.showLeaderboard = showLeaderboard;
 window.closeLeaderboard = closeLeaderboard;
+window.loadGovernmentTiers = loadGovernmentTiers;
+window.recordGovernmentSale = recordGovernmentSale;
+window.calculateGovernmentPrice = calculateGovernmentPrice;
+window.getAllPlayerTiers = getAllPlayerTiers;
 
 // UI Systems (Phase 2H)
 window.applySettings = applySettings;
@@ -183,6 +189,8 @@ window.closeTutorial = closeTutorial;
 window.showTutorialIfNeeded = showTutorialIfNeeded;
 window.renderHelp = renderHelp;
 window.renderStats = renderStats;
+window.showGovernmentDev = showGovernmentDev;
+window.closeGovernmentDev = closeGovernmentDev;
 window.renameFarm = renameFarm;
 window.resetGame = resetGame;
 window.showTip = showTip;

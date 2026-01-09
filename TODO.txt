@@ -1,5 +1,35 @@
 # Tappy Trade - TODO List
 
+## 🔥 Priority: Engagement Systems
+
+### Streak System (APPROVED)
+- [ ] Daily login streak bonus
+  - +1% per consecutive day
+  - -2% for each day missed (doesn't reset!)
+  - Caps at +100% bonus
+  - Show streak counter in UI
+  - Warning notification if about to lose streak
+  - Estimated time: 2-3 hours
+
+### 24-Hour Money Leaderboard (APPROVED)
+- [ ] Live competition ladder
+  - Tracks money earned in last 24 hours (rolling window)
+  - Updates in real-time
+  - Show top 10 + your rank
+  - Reset every 24 hours
+  - Rewards for top performers
+  - Estimated time: 3-4 hours
+
+### Player Economy System (DESIGN APPROVED)
+- [ ] New player → Old player economic loop
+  - New players focus on gathering (wood, stone, berries, etc.)
+  - Old players buy raw materials from market
+  - Old players craft advanced goods (bread, cloth, furniture)
+  - Resource market with buy orders
+  - Make gathering profitable for beginners
+  - Make crafting profitable for veterans
+  - Estimated time: 1 week
+
 ## Discord Integration
 - [ ] Set up Discord bot for two-way chat sync (Discord ↔ Game)
   - Create Discord bot application
