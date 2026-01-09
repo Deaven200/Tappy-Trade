@@ -185,9 +185,12 @@ function renderChat() {
             const time = msg.createdAt?.toDate?.() || new Date();
             const timeStr = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
+            // Support both userName (game) and username (Discord bot)
+            const displayName = msg.userName || msg.username || 'Anonymous';
+
             h += `<div style="margin-bottom:8px;${isMe ? 'text-align:right' : ''}">
                 <div style="display:inline-block;max-width:80%;padding:8px 12px;border-radius:12px;background:${isMe ? 'var(--blue)' : 'var(--card)'}">
-                    <div style="font-size:0.7rem;color:${isMe ? 'rgba(255,255,255,0.7)' : 'var(--muted)'};margin-bottom:2px">${msg.userName || 'Anonymous'} · ${timeStr}</div>
+                    <div style="font-size:0.7rem;color:${isMe ? 'rgba(255,255,255,0.7)' : 'var(--muted)'};margin-bottom:2px">${displayName} · ${timeStr}</div>
                     <div>${msg.text}</div>
                 </div>
             </div>`;
