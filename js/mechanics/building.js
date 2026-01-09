@@ -141,7 +141,7 @@ export function doBuild(t) {
     if (t === '__upgrade') {
         const s = S.plots[buildP]?.subs[buildS];
         if (!s || s.lv >= 5) return;
-        const cost = getUpgradeCost(s.lv);
+        const cost = getUpgradeCost(s.t, s.lv);  // Fixed: pass both type and level
         if (!canAfford(cost)) {
             toast('Cannot afford upgrade!', 'err');
             return;
