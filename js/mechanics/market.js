@@ -22,28 +22,37 @@ export function getPrice(itemId) {
 
 /**
  * Sell items to the government market
- * @param {string} itemId - Item to sell
- * @param {number} quantity - Amount to sell
+ * Now tracks sales for personal government tier progression
  */
 export function sell(itemId, quantity) {
-    if (!window.hasItem(itemId, quantity)) {
-        toast('Not enough items!', 'err');
-        playS('err');
+    const item = R[itemId];
+    if (!item || !S.inv[itemId] || S.inv[itemId] < quantity) {
+        toast('Not enough to sell!', 'err');
         return;
     }
 
-    const price = getPrice(itemId);
-    const total = price * quantity;
+    // Get personal government price (based on player's tier)
+    const personalPrice = window.calculateGovernmentPrice
+        ? window.calculateGovernmentPrice(itemId, item.p)
+        : item.p;
 
-    window.remItem(itemId, quantity);
+    const total = personalPrice * quantity;
+
+    // Perform the sale
+    S.inv[itemId] -= quantity;
     S.money += total;
-    S.stats.sold += quantity;
-    S.stats.earned += total;
 
-    toast(`Sold for $${total}`, 'ok');
-    playS('tap');
+    // Track government sale for tier progression
+    if (window.recordGovernmentSale) {
+        window.recordGovernmentSale(itemId, quantity);
+    }
+
+    // Update displays
     save();
-    window.render();
+    window.renderInv();
+    window.updateMoney();
+    toast(`Sold ${quantity} ${item.n} for $${total.toFixed(0)}`, 'ok');
+    playS('sell');
 }
 
 /**
@@ -55,9 +64,20 @@ export function sellAll() {
 
     for (const [itemId, qty] of Object.entries(S.inv)) {
         if (qty > 0) {
-            const price = getPrice(itemId);
-            totalMoney += price * qty;
+            const item = R[itemId];
+            // Get personal government price based on player's tier
+            const personalPrice = window.calculateGovernmentPrice
+                ? window.calculateGovernmentPrice(itemId, item.p)
+                : item.p;
+
+            totalMoney += personalPrice * qty;
             totalItems += qty;
+
+            // Track government sales for tier progression
+            if (window.recordGovernmentSale) {
+                window.recordGovernmentSale(itemId, qty);
+            }
+
             S.inv[itemId] = 0;
         }
     }
