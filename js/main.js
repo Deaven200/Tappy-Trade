@@ -296,5 +296,10 @@ window.addEventListener('beforeunload', () => {
     }
 });
 
+// MOBILE FIX: Dispatch event to signal modules are ready
+// This allows index.html to wait for all exports before calling init()
+window.dispatchEvent(new Event('modulesReady'));
+console.log('📡 modulesReady event dispatched - all window exports complete');
+
 // NOTE: The game init() function and remaining game logic is still in index.html
 // This will be extracted in future phases
