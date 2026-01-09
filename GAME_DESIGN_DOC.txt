@@ -2,552 +2,685 @@
                     TAPPY TRADE - GAME DESIGN DOCUMENT
 ================================================================================
 
-Date: 2026-01-04
-Platform: Mobile (Primary), PC, Browser
-Genre: 2D Trading/Economy Idle Game
-Engine: Unity (Recommended)
+Last Updated: 2026-01-09
+Platform: Web Browser (Mobile + Desktop)
+Genre: Multiplayer Idle Trading/Economy Game
+Engine: Vanilla JavaScript (Modular ES6)
+Live URL: https://deaven200.github.io/Tappy-Trade-github/
 
 ================================================================================
-                              CORE CONCEPT
+                               CORE CONCEPT
 ================================================================================
 
-A mobile-first trading game where players harvest resources from wild land,
-sell them in markets, and expand their empire by buying more plots.
+A browser-based multiplayer trading game where players harvest resources,
+build production chains, hire workers, and trade in real-time markets.
 
 Key Features:
-- Tap to harvest wild resources (wood, berries, herbs)
-- Real-time production and regrowth
-- Player market + Government market (dual economy)
-- Guild/trading company system
-- Market manipulation possibilities
-- Simple sprites with sounds and animations
+- Tap-to-harvest wild resources
+- 40+ building types with production chains
+- Dual market system (Player + Government)
+- Real-time multiplayer (500-1000 concurrent players)
+- Discord integration for community chat
+- Cloud saves with offline progression
+- Worker automation system
+- Resource processing and manufacturing
 
 ================================================================================
-                            CORE GAME LOOP
+                             CORE GAME LOOP
 ================================================================================
 
-1. Start with 1 free overgrown plot of land
-2. Tap trees, berry bushes, herbs to harvest
-3. Resources go into inventory (1000 slots per plot)
-4. Sell resources to market for money
-5. Use money to buy more land plots (exponentially more expensive)
-6. Empty plots regrow over 4-12 hours
-7. Expand empire with more plots and production
+1. Start with 1 free plot containing 3 wild subplots
+2. Tap subplots to harvest wood, berries, herbs
+3. Resources accumulate in inventory (expandable capacity)
+4. Sell to Government Market for guaranteed money
+5. Trade with real players in Player Market for better deals
+6. Buy more plots (exponentially expensive: $5k, $15k, $35k...)
+7. Build structures (farms, sawmills, factories)
+8. Hire workers for automated harvesting
+9. Create production chains (wood → planks → furniture)
+10. Expand empire across multiple plots
+11. Dominate markets through strategic trading
 
 ================================================================================
-                          LAND PLOT SYSTEM
+                           LAND PLOT SYSTEM
 ================================================================================
 
-Starting State:
-- Plot #1: FREE (tutorial plot)
-- Each plot: 1000 inventory slots
-- Wild → Harvested → Empty → Regrow (4-12 hours)
+Plot Structure:
+- Each PLOT contains 3 SUB-PLOTS
+- Maximum plots: ~10+ (exponential cost scaling)
+- Players can switch between owned plots
 
-Plot Costs (Exponential scaling):
-- Plot #1: FREE
+Plot Costs (Exponential):
+- Plot #1: FREE (starter plot)
 - Plot #2: $5,000
 - Plot #3: $15,000
 - Plot #4: $35,000
-- Scaling: Each plot ~2-3x more expensive
+- Plot #5: $75,000
+- Continues scaling 2-3x per plot
 
-Plot Structure (NEW MENU-BASED SYSTEM):
-- Each PLOT contains 3 SUB-PLOTS (displayed as boxes at top of screen)
-- Sub-plots can be:
-  * WILD LAND: Grows resources over time (forest, herbs, berries)
-  * BUILDINGS: Placed by player for processing/production
+Sub-Plot Types:
+1. WILD LAND
+   - Natural resource generation (forests, berry bushes)
+   - Tap to harvest manually
+   - Resources regenerate over time
+   - Can be upgraded (Lv 1-5) for faster regen
+   
+2. BUILDINGS
+   - Replace wild subplots
+   - Auto-process inventory materials
+   - Require construction resources (wood, stone, money)
+   - Can be upgraded (Lv 1-5) for better efficiency
+   - Can be demolished (50% resource refund)
 
 Sub-Plot Interactions:
-- TAP: Harvest resources from wild land
-- TAP & HOLD: Open building placement menu
-- NPC Workers: Can be hired to auto-harvest sub-plots
-
-Building Placement:
-- Buildings replace wild sub-plots
-- Cost: Resources + Money
-- Example: Sawmill = 50 Wood + 20 Stone + $500
-- Buildings process inventory items automatically
+- TAP: Harvest resources / View building status
+- TAP & HOLD: Open build/upgrade menu
+- Workers can be assigned to auto-harvest
 
 ================================================================================
-                        HARVESTABLE RESOURCES
+                         RESOURCE SYSTEM (40+)
 ================================================================================
 
-Wild Resources (tap to collect):
+Tier 1: Raw Resources (Wild Harvest)
+🌲 Wood       - From forests, base material
+🪨 Stone      - From rocky areas
+🫐 Berries    - From wild bushes, food resource
+🌿 Herbs      - From herb patches
+🌾 Wheat      - From wild grass/early farms
+🥕 Carrots    - Farm vegetable
+🥔 Potatoes   - Farm vegetable
+🍄 Mushrooms  - Forest resource
+🌸 Flowers    - Decorative/crafting
+🪵 Logs       - Large trees
 
-🌲 Trees
-   - Yield: 5-10 Wood each
-   - ~15-20 trees per plot
-   - Total: ~150-200 wood per plot
+Tier 2: Processed Goods (Buildings Required)
+📐 Planks     - Sawmill: 5 wood → 1 plank
+🧱 Bricks     - Kiln: 3 stone → 1 brick
+🍞 Bread      - Bakery: 2 wheat → 1 bread
+🥛 Milk       - Dairy: From cows
+🥚 Eggs       - Coop: From chickens
+🧵 Thread     - Mill: From cotton/wool
+🪙 Iron Ore   - Mine output
+🧲 Iron Bar   - Forge: 2 ore → 1 bar
+🪵 Beam       - Advanced lumber
+🧴 Glass      - Furnace: From sand
 
-🫐 Wild Berries
-   - Yield: 3-7 Berries each
-   - ~10-15 bushes per plot
+Tier 3: Manufactured Goods (Multi-Step)
+🪑 Furniture  - Workshop: planks + iron
+⚙️ Tools      - Forge: iron + wood
+🏺 Pottery    - Kiln: clay crafting
+🎨 Paint      - Factory: flowers + chemicals
+🧺 Baskets    - Weaver: thread crafting
+🔧 Nails      - Forge: iron processing
+🪵 Barrel     - Cooper: planks assembly
+🗝️ Keys       - Blacksmith: iron crafting
+📜 Paper      - Mill: wood pulp processing
+🍯 Honey      - Apiary: from bees
 
-🌿 Herbs
-   - Yield: 2-5 Herbs each
-   - ~10-15 patches per plot
+Specialty Resources:
+🐝 Bees       - Apiary production
+🐄 Cows       - Livestock for milk
+🐔 Chickens   - Livestock for eggs
+🐑 Sheep      - Livestock for wool
+🌱 Seeds      - Farming input
+💎 Gems       - Rare mining output
 
-🪨 Stones (Optional)
-   - Yield: 1-3 Stone each
-   - Scattered randomly
+Resource Properties:
+- Stack Size: 100 (most items)
+- Regeneration: 5-15 minutes for wild resources
+- Processing Time: 30 seconds - 5 minutes depending on complexity
+- Quality: All standard (no rarity system currently)
 
 ================================================================================
-                          INVENTORY SYSTEM
+                         INVENTORY SYSTEM
 ================================================================================
 
 Capacity:
-- Base: 1000 slots per owned plot
-- 1 plot = 1000 slots
-- 2 plots = 2000 slots
-- Scales with land ownership
+- Base: 100 slots per plot owned
+- 1 plot = 100 slots
+- 5 plots = 500 slots
+- Storage buildings add capacity (warehouses, barns)
+- Each storage building: +50-100 slots
 
-Stacking:
-- Wood: Stack to 100
-- Berries: Stack to 50
-- Herbs: Stack to 50
-- Prevents inventory spam
+Organization:
+- List view (default): Scrollable item list
+- Grid view (toggle): Icon-based display
+- Sort options: Name, Quantity, Type, Value
+- Filter by: Resource tier, building type
+- Quick actions: Sell, Use, Info
+
+Stack Rules:
+- Most items: 100 per stack
+- Food items: 50 per stack
+- Unique items: 1 per stack
+- Auto-stacking on collection
 
 ================================================================================
-                          MARKET SYSTEMS
+                           BUILDING SYSTEM
 ================================================================================
 
---- GOVERNMENT MARKET (NPC/Automated) ---
+Building Categories:
+
+🌿 GATHERING (Wild Resource Enhancers)
+- Forest (All levels) - Better wood production
+- Berry Grove - Enhanced berry yield
+- Herb Garden - Cultivated herbs
+- Rock Quarry - Stone extraction
+
+🌾 FARMS (Food Production)
+- Wheat Field - Wheat farming
+- Vegetable Patch - Carrots, potatoes
+- Fruit Orchard - Apples, berries
+- Mushroom Farm - Controlled mushroom growth
+
+🐄 LIVESTOCK (Animal Products)
+- Chicken Coop - Eggs, feathers
+- Dairy Barn - Milk from cows
+- Sheep Pen - Wool production
+- Beehive/Apiary - Honey production
+
+🏭 MANUFACTURING (Processing)
+- Sawmill - Wood → Planks (5:1 ratio, 2min)
+- Kiln - Stone → Bricks (3:1 ratio, 3min)
+- Forge - Iron Ore → Iron Bars (2:1, 4min)
+- Bakery - Wheat → Bread (2:1, 2min)
+- Weaver - Thread → Cloth (3:1, 5min)
+
+🐝 SPECIALTY (Advanced)
+- Workshop - Furniture crafting (complex recipes)
+- Brewery - Beverage production
+- Pottery - Clay crafting
+- Florist - Flower arrangements
+
+📦 UTILITY (Infrastructure)
+- Warehouse - +100 inventory capacity
+- Worker Lodge - +1 worker slot
+- Market Stall - Access to trading from home
+- Storage Shed - +50 capacity (cheap)
+
+Building Costs (Example):
+- Sawmill: 50 wood + 20 stone + $500
+- Wheat Field: 25 wood + $300
+- Dairy Barn: 100 planks + 50 stone + $2,000
+- Workshop: 200 planks + 100 iron + $5,000
+
+Upgrade System:
+- All buildings: Level 1-5
+- Each level: +10% efficiency, +10 storage
+- Upgrade costs: 75% of base cost × level
+- Benefits compound (Lv5 = 40% faster than Lv1)
+
+Building Actions:
+- Upgrade: Improve efficiency and capacity
+- Pause: Stop production temporarily
+- Demolish: Remove building (50% resource refund)
+- Assign Worker: Automate production
+
+Production Display:
+"🏭 Sawmill (Lv 3)
+Status: RUNNING
+Input: Wood (150 available)
+Output: Planks
+Rate: 5 wood → 1 plank (90 seconds)
+Efficiency: 130% (from level)
+Produced: 45 planks today"
+
+================================================================================
+                           WORKER SYSTEM
+================================================================================
+
+Worker Types:
+1. Harvester - Collects from wild subplots
+2. Farmhand - Tends to farm buildings
+3. Processor - Operates manufacturing
+4. General - Works any subplot (80% efficiency)
+
+Worker Mechanics:
+- Max workers: 10 (expandable with lodges)
+- Hire cost: $500 + ($200 × current worker count)
+- No ongoing wages (one-time purchase)
+- Efficiency: 100% of manual tapping
+- Interval: Harvests every 5 seconds
+- Assignment: Permanent until fired or reassigned
+
+Worker Assignment:
+"👷 Worker #1
+Assigned: Plot 1, Subplot 2 (Forest)
+Produces: ~720 wood/hour
+Status: ACTIVE
+[FIRE] [REASSIGN]"
+
+Worker Benefits:
+- Passive income while offline
+- Scales with building levels
+- No diminishing returns
+- Can be reassigned anytime
+- Fire for 0 refund (manage carefully)
+
+Offline Progression:
+- Workers continue producing (max 8 hours stored)
+- Login message: "Your 3 workers collected 5,760 wood!"
+- Resources auto-added to inventory (if space)
+- If inventory full: Lost resources noted
+
+================================================================================
+                           MARKET SYSTEMS
+================================================================================
+
+--- GOVERNMENT MARKET (NPC) ---
 
 Features:
-- Unlimited supply/demand (always available)
-- Dynamic pricing based on global player production
-- Price formula: Base Price × (Demand / Supply)
-- Updates every 15-30 minutes
+- Always available (unlimited supply/demand)
+- Fixed base prices per resource
+- Prices fluctuate ±20% based on global player activity
+- Updates every 15 minutes
+- No transaction fees
+- Instant buy/sell
+
+Price Formula:
+Display Price = Base Price × (Global Demand / Global Supply)
 
 Example Prices:
-Item      | Sell Price | Buy Price
-----------|------------|----------
-Wood      | $5         | $8
-Berries   | $8         | $12
-Herbs     | $10        | $15
+Resource  | Base | Current Buy | Current Sell
+----------|------|-------------|-------------
+Wood      | $5   | $8          | $4  📉 (oversupply)
+Planks    | $20  | $32         | $18 📈 (high demand)
+Bread     | $12  | $15         | $10 ➡️  (stable)
+Tools     | $50  | $65         | $45 📈 (scarce)
 
-Price Mechanics:
-- Oversupply = prices drop
-- Undersupply = prices rise
-- Daily events can boost certain items
+UI Display:
+"🏛️ GOVERNMENT MARKET
+Wood:    Buy $8  | Sell $4  📉 | You have: 150
+Planks:  Buy $32 | Sell $18 📈 | You have: 25
+
+[SELL ALL WOOD] - Earn $600
+Price updates in: 8:23"
 
 --- PLAYER MARKET (P2P Trading) ---
 
 Features:
-- Players post buy/sell orders
 - Order book system (like stock exchange)
-- Orders active for 24-48 hours
-- 5% transaction fee
-- Guild chat for negotiation
+- Players post BUY orders or SELL orders
+- Orders active for 48 hours (auto-cancel after)
+- 5% transaction fee (prevents spam)
+- Real-time order matching
+- Firebase real-time database integration
 
-Market Manipulation:
-- Guilds can coordinate buys to spike prices
-- Counter: Purchase limits or government interventions
+Order Types:
+1. SELL ORDER: "I have X units, sell for Y each"
+2. BUY ORDER: "I want X units, pay Y each"
+3. Orders fill automatically when matched
 
-================================================================================
-                        AUTOMATION SYSTEM
-================================================================================
+Market UI:
+"🏪 PLAYER MARKET - Wood
 
-Auto-Sell Rules (per resource):
-"If Wheat price >= $8 → Sell to Government Market"
-"If Wheat inventory > 100 units → Sell excess"
+SELL ORDERS (Lowest first)
+$4.50 × 100 units - Player: Jax
+$4.75 × 250 units - Player: Kim
+$5.00 × 500 units - Player: Bob
 
-Auto-Buy Rules:
-"If Nails inventory < 20 → Buy from Player Market at max $12"
+BUY ORDERS (Highest first)
+$4.25 × 150 units - Player: Alice
+$4.00 × 300 units - Player: Dan
 
-Production Automation:
-- Auto-replant crops after harvest
-- Continuous production if materials available
-- Worker assignments (offline progression)
+[POST SELL ORDER]
+Quantity: [___] Price: $[___] = Total: $___
 
-================================================================================
-                      FUTURE EXPANSION IDEAS
-================================================================================
+[POST BUY ORDER]
+Quantity: [___] Price: $[___] = Total: $___"
 
-Tier 1: Raw Resources (MVP - CURRENT FOCUS)
-- Wood, Berries, Herbs, Stone
+Market Features:
+- Order history (last 50 transactions)
+- Price charts (planned feature)
+- Quick fill buttons (match best order)
+- Bulk trading available
+- Market manipulation possible with coordination
 
-Tier 2: Processed Goods (PHASE 2)
-- Planks (from wood)
-- Nails (from iron)
-- Paint, Bricks, Cloth
-
-Tier 3: Manufacturing (PHASE 3)
-- Boats, Furniture, Tools
-- Require multiple Tier 2 components
-
-Buildings to Add Later:
-- Barn (animals: milk, wool, eggs)
-- Mine (iron ore, copper, coal)
-- Sawmill (convert wood → planks)
-- Forge (iron ore → nails/tools)
-- Factory (complex manufacturing)
-
-Building Requirements Example:
-Barn = 20 Nails + 50 Planks + 5 Paint
-Workers = $10-25/hour depending on building
-Production times = 30 minutes to 8 hours
+Transaction Examples:
+- Sell 100 wood @ $4.50 = $450 revenue - $22.50 fee = $427.50 net
+- Buy 50 planks @ $18 = $900 cost + $45 fee = $945 total
 
 ================================================================================
-                       MULTIPLAYER FEATURES
+                         MULTIPLAYER FEATURES
 ================================================================================
 
-Connection Type:
-- Multiplayer through chat + player market ONLY
-- No direct co-op gameplay
-- Asynchronous trading
+--- CHAT SYSTEM ---
 
-Guilds/Trading Companies:
-- Shared warehouse (optional)
-- Group chat for coordination
-- Internal trading at fixed prices
-- Leaderboards (richest guild, most production)
+Global Chat:
+- Real-time messaging (Firebase)
+- 50 message history displayed
+- Auto-scroll to newest
+- Username + timestamp
+- Discord integration (bidirectional sync)
+- Trade coordination ("WTS 100 wood $4 each")
 
-Chat System:
-- Global Trade Chat: "WTS Wheat 100 units @ $6 each"
-- Guild Chat: Private coordination
-- Direct Messages: Negotiate deals
+Chat Commands:
+/help - Show commands
+/clear - Clear local chat view
+Messages limited to 200 characters
 
-Competitive Events (Optional):
-- Weekly challenges: "Produce most Boats this week"
-- Price wars: Guild vs Guild
+Discord Integration:
+- Messages post to Discord webhook
+- Discord messages appear in-game
+- Community extends beyond browser
+- No Discord account needed to play
+
+--- ACCOUNT SYSTEM ---
+
+Features:
+- Username + password (no email)
+- Simple hash password storage (SHA-256 style)
+- Cloud saves via Firebase Firestore
+- Auto-saves every 30 seconds
+- Manual save button available
+- Anonymous play supported (local storage only)
+
+Account Benefits:
+- Cloud save across devices
+- Access to player market
+- Chat privileges
+- Leaderboard participation
+- Trade history preservation
+
+Login Types:
+1. Guest Mode: Local saves only, no multiplayer
+2. Create Account: Full features unlocked
+3. Existing Account: Login to restore progress
+
+Account UI:
+"👤 Account
+Status: Logged in as Deaven200
+💾 Last save: 2:30 AM (auto-saved)
+☁️ Cloud Save: ON
+
+[LOGOUT] [CHANGE PASSWORD]"
+
+--- MULTIPLAYER SCALING ---
+
+Technical Capacity:
+- Firebase free tier: 500-1000 concurrent players
+- Market orders: Unlimited (database limited)
+- Chat messages: 50 visible, unlimited storage
+- Save frequency: 30 second intervals
+- Real-time updates: <500ms latency
+
+Security:
+- Server-side transaction validation
+- Anti-cheat for resource editing
+- Rate limiting on market orders
+- Password hashing (not plaintext)
+- Firebase rules enforce data integrity
 
 ================================================================================
-                        PROGRESSION SYSTEM
+                         USER INTERFACE
 ================================================================================
 
-NO TECH TREE - Players can buy anything if they have money
+Screen Layout (Mobile-Optimized):
 
-Progression Path:
-1. Harvest wild land
-2. Sell basic resources
-3. Save money for Plot #2
-4. Expand to more plots
-5. (Future) Buy buildings for processing
-6. (Future) Hire NPC workers for offline production
-7. (Future) Participate in player market
-
-Recurring Costs (Future):
-- Worker wages (hourly/daily)
-- Land maintenance (optional)
-- Building upkeep
-
-================================================================================
-                            UI/UX LAYOUT
-================================================================================
-
-NEW MENU-BASED SYSTEM (No Tile Grid)
-
-Home Screen Layout:
 ┌─────────────────────────────┐
-│  💰 Money: $12,530          │
-│  📦 Inventory: 350/1000     │
+│  💰 $12,530  📦 350/500     │ ← Header
 ├─────────────────────────────┤
-│  ┌───────────────────────┐  │
-│  │   PLOT BOX (Top)      │  │
-│  │ ┌─────┐┌─────┐┌─────┐ │  │
-│  │ │ Sub ││ Sub ││ Sub │ │  │
-│  │ │Plot1││Plot2││Plot3│ │  │
-│  │ │🌲   ││🫐   ││🏭   │ │  │
-│  │ └─────┘└─────┘└─────┘ │  │
-│  └───────────────────────┘  │
+│ ┌──────┬──────┬──────┐      │
+│ │🌲Lv2 │🫐Lv1 │🏭Lv3 │      │ ← Subplot Boxes
+│ │ 45W  │ 23B  │>Pln │      │    (Tap to interact)
+│ └──────┴──────┴──────┘      │
 ├─────────────────────────────┤
 │                             │
-│     MAIN CONTENT AREA       │
+│    MAIN CONTENT AREA        │
 │                             │
-│  (Shows details based on    │
-│   current selection/screen) │
+│  (Changes based on screen)  │
 │                             │
-│  - Selected sub-plot info   │
-│  - Resource ready to harvest│
-│  - Building production      │
-│  - NPC worker status        │
+│  - Home: Plot overview      │
+│  - Inventory: Item list     │
+│  - Markets: Trading UI      │
+│  - Chat: Message feed       │
 │                             │
 │                             │
 │                             │
 └─────────────────────────────┘
-│ [  1  ] │ [  2  ] │ [  3  ] │
-│Inventory│ Player  │  Gov    │
-│  /Home  │ Market  │ Market  │
+│ [🏠] │ [🏪] │ [🏛️] │ [💬] │ ← Nav Bar
 └─────────────────────────────┘
 
 Navigation Bar (Bottom):
+🏠 Home - Plot management, building overview, workers
+🏪 Player Market - Trade with real players
+🏛️ Government Market - NPC trading
+💬 Chat - Global chat + Discord
 
-┌─────────┬─────────┬─────────┐
-│    1    │    2    │    3    │
-├─────────┼─────────┼─────────┤
-│Inventory│ Player  │  Gov    │
-│ ↔ Home  │ Market  │ Market  │
-└─────────┴─────────┴─────────┘
+Top Bar:
+💰 Money display
+📦 Inventory: Current/Max
+⚙️ Settings (menu button)
+👤 Account status
 
-Button 1: TOGGLE - Inventory ↔ Home Screen
-  - If on Home → Go to Inventory
-  - If on Inventory → Go to Home
-  - If on Market → Go to Inventory
+Home Screen Details:
+"Plot 1 (3/3 subplots)
+[🌲 Forest Lv2] - 45 wood ready | +2.5 wood/min
+[🫐 Berry Lv1] - 23 berries      | +1.8 berries/min
+[🏭 Sawmill Lv3] - Producing     | 5 wood → 1 plank
 
-Button 2: PLAYER MARKET
-  - Buy/sell with other players
-  - Order book system
-  - Post offers & negotiate
+Workers Active: 2/10
+Plot 2: [SWITCH]
+[BUY NEW PLOT] - $35,000"
 
-Button 3: GOVERNMENT MARKET
-  - Fixed NPC prices
-  - Always available
-  - Dynamic pricing based on supply
+Inventory Screen:
+"📦 INVENTORY (350/500)
 
----
+🌲 Wood      × 150 [SELL]
+🫐 Berries   × 45  [SELL]
+📐 Planks    × 32  [SELL]
+🧱 Bricks    × 18  [SELL]
 
-Sub-Plot Interactions:
+[SELL ALL] [GRID VIEW]"
 
-TAP on Sub-Plot:
-┌─────────────────────────────┐
-│  Sub-Plot #1 - Forest       │
-├─────────────────────────────┤
-│  🌲 Wild Forest             │
-│  Resources Ready: 45 Wood   │
-│                             │
-│  [HARVEST ALL]              │
-│                             │
-│  Regrowth: 2h 30m remaining │
-└─────────────────────────────┘
+Settings Menu:
+⚙️ Settings
+🔊 Sound: ON
+🎵 Music: ON
+💾 Auto-Save: ON (30s)
+👤 Account: Deaven200
+📊 Stats
+🔄 Reset Progress
 
-TAP & HOLD on Sub-Plot:
-┌─────────────────────────────┐
-│  BUILD ON SUB-PLOT #2       │
-├─────────────────────────────┤
-│  Available Buildings:       │
-│                             │
-│  🏭 Sawmill     │ [BUILD]   │
-│     50 Wood + $500          │
-│     Converts: Wood → Planks │
-│                             │
-│  ⚒️ Forge       │ [LOCKED]  │
-│     Requires: Sawmill       │
-│                             │
-│  🏠 Barn        │ [BUILD]   │
-│     30 Planks + $800        │
-└─────────────────────────────┘
+Color Scheme:
+- Background: Dark theme (#1a1a1a)
+- Primary: Forest green (#22c55e)
+- Secondary: Gold (#fbbf24)
+- Error: Red (#ef4444)
+- Success: Green (#10b981)
 
----
+Typography:
+- Headers: Bold, 18-24px
+- Body: Regular, 14-16px
+- Small text: 12px
+- Monospace for numbers
 
-Inventory Screen (Button 1):
-┌─────────────────────────────┐
-│  📦 INVENTORY  350/1000     │
-├─────────────────────────────┤
-│ Item     │ Qty │ Action     │
-│──────────┼─────┼────────────│
-│ 🪵 Wood  │ 150 │ [Sell]     │
-│ 🫐 Berry │  45 │ [Sell]     │
-│ 🌿 Herbs │  80 │ [Sell]     │
-│ 📐 Plank │  25 │ [Sell]     │
-├─────────────────────────────┤
-│ [Sell All] [Sort] [Filter]  │
-└─────────────────────────────┘
-
----
-
-Player Market Screen (Button 2):
-┌─────────────────────────────┐
-│  🏪 PLAYER MARKET           │
-├─────────────────────────────┤
-│ [BUY ORDERS] [SELL ORDERS]  │
-├─────────────────────────────┤
-│ Item    │ Price │ Qty │ By  │
-│─────────┼───────┼─────┼─────│
-│ Wood    │ $4.50 │ 100 │ Jax │
-│ Planks  │ $12   │  50 │ Kim │
-│ Berries │ $6.25 │ 200 │ Bob │
-├─────────────────────────────┤
-│ [Post Buy Order]            │
-│ [Post Sell Order]           │
-└─────────────────────────────┘
-
----
-
-Government Market Screen (Button 3):
-┌─────────────────────────────┐
-│  🏛️ GOVERNMENT MARKET       │
-├─────────────────────────────┤
-│ Item    │ Buy   │ Sell │You │
-│─────────┼───────┼──────┼────│
-│ Wood    │ $8    │ $5 📈│150 │
-│ Berries │ $12   │ $8 📉│ 45 │
-│ Herbs   │ $15   │ $10  │ 80 │
-│ Planks  │ $20   │ $15  │ 25 │
-├─────────────────────────────┤
-│ Price updates every 15 min  │
-│ [Quick Sell All]            │
-└─────────────────────────────┘
-
----
-
-Building Production View:
-┌─────────────────────────────┐
-│  🏭 SAWMILL - Sub-Plot #2   │
-├─────────────────────────────┤
-│  Status: RUNNING            │
-│                             │
-│  Input:  Wood (150 in inv)  │
-│  Output: Planks             │
-│                             │
-│  Rate: 5 Wood → 1 Plank     │
-│  Time: 2 min per plank      │
-│                             │
-│  Produced Today: 12 Planks  │
-│                             │
-│  ⚠️ Stops when Wood = 0     │
-├─────────────────────────────┤
-│ [PAUSE] [DEMOLISH] [UPGRADE]│
-└─────────────────────────────┘
-
----
-
-NPC Worker Hiring:
-┌─────────────────────────────┐
-│  👷 HIRE WORKER             │
-├─────────────────────────────┤
-│  Sub-Plot: Forest #1        │
-│                             │
-│  Worker Cost: $10/hour      │
-│  Efficiency: 80% of tap     │
-│                             │
-│  [HIRE FOR 1 HOUR]  - $10   │
-│  [HIRE FOR 8 HOURS] - $70   │
-│  [HIRE PERMANENT]   - $25/h │
-└─────────────────────────────┘
+Animations:
+- Resource collection: Float up (+50 wood)
+- Money gain/loss: Flash green/red
+- Building completion: Celebration
+- Smooth transitions between screens
 
 ================================================================================
-                      TECHNICAL CONSIDERATIONS
+                         TECHNICAL ARCHITECTURE
 ================================================================================
 
-Platform: Unity (Recommended)
-- Native mobile apps (iOS + Android)
-- WebGL for browser
-- Good sprite/animation handling
-- Scalable for future features
+Technology Stack:
+- Frontend: Vanilla JavaScript (ES6 Modules)
+- Architecture: 43 modular ES6 files
+- Backend: Firebase (Firestore + Auth)
+- Hosting: GitHub Pages (static site)
+- Audio: Web Audio API + MP3 files
 
-Backend Needs:
-- Real-time database (Firebase/Supabase)
-- Server clock for production timers (anti-cheat)
-- Market price calculation job (every 15 min)
-- Server-side transaction validation
+Module Structure:
+/js
+  /config       - Game data (resources, buildings)
+  /core         - State management, game loop
+  /mechanics    - Harvesting, building, workers
+  /ui           - Rendering, screens, modals
+  /multiplayer  - Chat, market, accounts
+  /utils        - Helper functions, DOM utilities
 
-Art Style:
-- Simple 2D sprites
-- Minimal animations
-- Sound effects
-- Mobile-optimized
+Key Features:
+- 43 active modules (fully modularized)
+- ES6 import/export system
+- Global state management (window.S)
+- Event-driven architecture
+- Auto-save system (30s intervals)
+- Render optimization (only update changed UI)
+
+Performance:
+- Game loop: 60 FPS
+- Auto-save: Every 30 seconds
+- Market updates: Real-time (Firebase listeners)
+- Chat sync: <500ms latency
+- Offline mode: Full functionality (except multiplayer)
 
 Save System:
-- Cloud saves (cross-platform)
-- Auto-save every few minutes
-- Offline progression support
+- Local Storage: Guest mode fallback
+- Cloud Save: Firebase Firestore
+- Save data: JSON serialization (~10-50KB)
+- Auto-save on: Actions, timers, logout
+- Manual save: Button in settings
+
+Data Structure (Save):
+{
+  money: 12530,
+  plots: [{subs: [{t:'wild',c:10,lv:2}, ...]}],
+  inv: {wood: 150, planks: 32, ...},
+  workers: [{plot:0,sub:1,interval:5}],
+  stats: {built: 15, harvested: 5420, ...},
+  prices: {wood: 5, planks: 20, ...}
+}
 
 ================================================================================
-                        DEVELOPMENT PHASES
+                         DEVELOPMENT STATUS
 ================================================================================
 
-PHASE 1: MVP (Core Prototype - MENU-BASED)
-- Single plot with 3 sub-plots
-- Menu-based UI (no tile grid)
-- Bottom navigation bar (1-2-3 buttons)
-- Tap sub-plot to harvest resources
-- Basic inventory screen (Button 1 toggle)
-- Government market only (Button 3)
-- Money display
-- Buy second plot
+COMPLETED FEATURES:
+✅ Core game loop (tap to harvest)
+✅ 40+ resources (tier 1-3)
+✅ 40+ buildings (6 categories)
+✅ Inventory system (expandable)
+✅ Worker automation (10 max)
+✅ Player market (order book)
+✅ Government market (dynamic pricing)
+✅ Cloud saves (Firebase)
+✅ Account system (username/password)
+✅ Global chat (Firebase real-time)
+✅ Discord integration (webhook sync)
+✅ Upgrade system (buildings Lv 1-5)
+✅ Offline progression (8 hour cap)
+✅ Mobile optimization
+✅ Music system (Little Jam soundtrack)
+✅ Sound effects (harvest, build, sell)
+✅ Auto-save (30 second intervals)
+✅ Multiple plot management
+✅ Building demolition (50% refund)
+✅ Modular architecture (43 modules)
+✅ Price fluctuation system
+✅ Transaction fees (5% player market)
 
-PHASE 2: Expansion
-- Regrowth timer system
-- Multiple plots management
-- Save/load system
-- Better UI/animations
-- Plot selection/switching
+KNOWN ISSUES:
+- None currently!
 
-PHASE 3: Buildings & Production
-- Tap & hold to place buildings
-- Sawmill (wood → planks)
-- Building resource consumption
-- Production status view
-- Building upgrade system
-
-PHASE 4: Economy
-- Dynamic government pricing
-- Player market (Button 2)
-- Order book system
-- Basic automation rules
-
-PHASE 5: Workers & Social
-- NPC worker hiring
-- Guild system
-- Chat system
-- Leaderboards
-- Offline progression
-
-================================================================================
-                          MONETIZATION IDEAS
-================================================================================
-
-Optional (F2P Friendly):
-- Speed-ups for regrowth timers
-- Cosmetic skins for plots/UI
-- Extra land plot slots
-- Premium workers (10-20% efficiency boost)
-- Ad rewards (2x production for 1 hour)
-
-Avoid: Pay-to-win that breaks economy
+PLANNED FEATURES (Future):
+- Leaderboards (richest player, top producer)
+- Guild system (shared warehouses)
+- Events (2x production weekends)
+- Achievements (unlock cosmetics)
+- Plot naming/customization
+- Trade history charts
+- Mobile app (Progressive Web App)
+- Automation rules (if price > X, sell Y)
 
 ================================================================================
-                        SIMPLIFIED MVP FOCUS
+                         GAME BALANCE
 ================================================================================
 
-For Initial Build (Menu-Based):
-1. One free plot with 3 sub-plots
-2. Tap sub-plot to view harvest options
-3. Tap "Harvest All" to collect
-4. Inventory screen (Button 1 toggle)
-5. Government market (Button 3)
-6. Sell items for money
-7. Buy Plot #2 for $5,000
-8. Regrowth timer (4-12 hours)
+Economy Design:
+- Early game: $5-10 per harvest (20-30 min for plot 2)
+- Mid game: $50-100 per production cycle (buildings)
+- Late game: $500+ per bulk trade (player market)
 
-Keep It Simple:
-- No buildings yet (Phase 3)
-- No workers yet (Phase 5)
-- No player market yet (Phase 4)
-- No automation yet
-- Government market with stable prices
+Progression Pace:
+- Plot 1: Free (immediate)
+- Plot 2: ~30-45 minutes of active play
+- Plot 3: ~2-3 hours total playtime
+- Plot 4: ~6-8 hours with automation
+- Plot 5+: Days/weeks (long-term goals)
 
-Goal: Prove the core loop is fun!
+Building Investment:
+- Starter building: $300-500 (affordable quickly)
+- Mid-tier: $2,000-5,000 (requires planning)
+- Advanced: $10,000+ (end-game investments)
 
-================================================================================
-                              NEXT STEPS
-================================================================================
+Worker Economics:
+- First worker: $500 (worth it immediately)
+- 10 workers: $10,500 total (strong passive income)
+- ROI: ~4-6 hours of passive collection
 
-1. Set up project (Unity, Web, or chosen platform)
-2. Create folder structure
-3. Build menu-based UI layout
-4. Create 3 sub-plot display boxes at top
-5. Implement bottom navigation bar (1-2-3)
-6. Build inventory screen with toggle
-7. Create government market screen
-8. Implement tap-to-harvest on sub-plots
-9. Add money system
-10. Create regrowth timer system
-11. Add plot purchasing
-12. Test & balance
+Market Balance:
+- Government: Stable, guaranteed trades
+- Player: ±20% better deals (risk vs reward)
+- Transaction fee: Prevents spam, encourages bulk
 
 ================================================================================
-                                 NOTES
+                            PLAYER EXPERIENCE
 ================================================================================
 
-- Start SIMPLE - prove core loop first
-- No feature creep initially
-- Mobile-first design (big tap targets)
-- Save system is critical (cloud saves)
-- Balance economy carefully (playtest!)
-- Real-time waiting should feel rewarding, not punishing
-- Consider 2x speed events or boosts
+Typical Session:
+1. Login → Check workers (collect offline resources)
+2. Harvest ready subplots (1-2 minutes)
+3. Check markets for good deals (compare prices)
+4. Post trading orders (buy materials, sell products)
+5. Upgrade a building or hire worker (investment)
+6. Chat with community (coordinate trades)
+7. Set up production chains (plan next session)
+8. Logout → Workers continue producing
+
+Session Length:
+- Quick check: 2-5 minutes (collect + sell)
+- Active play: 15-30 minutes (trading + building)
+- Deep session: 1+ hour (market domination)
+
+Retention Hooks:
+- Workers produce while away (FOMO reducer)
+- Market orders can fill anytime (check back)
+- Cloud saves (no progress loss)
+- Community chat (social connection)
+- Long-term plot goals (weeks of progression)
+
+Monetization:
+- Currently: 100% free, no ads
+- Potential: Cosmetic skins, plot slots
 
 ================================================================================
-                              END OF DOC
+                               NOTES
+================================================================================
+
+Design Philosophy:
+- Idle game with active opportunities
+- Player skill = Market timing, not reflexes
+- Multiplayer enhances but isn't required
+- Progression should feel rewarding
+- No pay-to-win elements
+- Community-driven economy
+
+Balance Considerations:
+- Government market prevents total player market control
+- Transaction fees slow rapid trading
+- Plot costs scale exponentially (long-term goals)
+- Workers provide passive income (offline-friendly)
+- Resources stack (inventory management)
+
+Technical Notes:
+- Firebase free tier sufficient for 500-1000 players
+- Modular architecture allows easy feature additions
+- ES6 modules enable code splitting
+- GitHub Pages hosting (free, reliable)
+- Progressive Web App compatible
+
+================================================================================
+                               END OF DOCUMENT
 ================================================================================

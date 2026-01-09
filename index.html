@@ -1677,24 +1677,7 @@
             if (type === 'sell') {
                 // Selling lowers price (supply increases)
                 S.prices[id] = Math.max(1, S.prices[id] - impact);
-            } else if (type === 'buy') {
-                // Buying raises price (demand increases)
                 S.prices[id] = Math.min(basePrice * 3, S.prices[id] + impact);
-            }
-        }
-
-        function canAfford(c) {
-            if (c.m && S.money < c.m) return 0;
-            for (const k in c) {
-                if (k !== 'm' && !hasItem(k, c[k])) return 0;
-            }
-            return 1;
-        }
-
-        function pay(c) {
-            if (c.m) S.money -= c.m;
-            for (const k in c) {
-                if (k !== 'm') remItem(k, c[k]);
             }
         }
 
