@@ -1818,7 +1818,7 @@
 
         // All initialization now handled by main.js
         // window exports are handled by main.js
-        window.init();
+        // window.init() removed to prevent race condition - handled by initializeGame() above
     </script>
 </body>
 
