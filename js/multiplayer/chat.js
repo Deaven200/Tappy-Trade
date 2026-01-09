@@ -5,11 +5,40 @@
 
 import { $ } from '../utils/dom.js';
 import { toast } from '../utils/feedback.js';
-import { sanitizeInput } from '../utils/security.js';
+import { sanitizeInput, sanitizeHTML } from '../utils/security.js';
 
 // Chat state
 let chatMessages = [];
 let unsubChat = null;
+
+// Discord webhook for sending game messages to Discord
+const DISCORD_WEBHOOK = 'https://discordapp.com/api/webhooks/1459058604500848711/H2AeMm-thJildJtn-8yJe5GWTc68fn2xAecQiCUZ8RlsUO8iqQykIfZz-eRB7tr5DXf2';
+
+/**
+ * Send message to Discord via webhook
+ */
+async function sendToDiscord(username, message) {
+    // Don't send if webhook not configured
+    if (DISCORD_WEBHOOK === 'YOUR_CHAT_WEBHOOK_URL_HERE' || !DISCORD_WEBHOOK) {
+        return;
+    }
+
+    try {
+        await fetch(DISCORD_WEBHOOK, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                username: `🎮 ${username}`,
+                content: message,
+                avatar_url: `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`
+            })
+        });
+        console.log('✅ Message sent to Discord');
+    } catch (error) {
+        console.error('Failed to send to Discord:', error);
+        // Don't show error to user - Discord is optional
+    }
+}
 
 /**
  * Show chat modal and load messages
@@ -175,24 +204,21 @@ function renderChat() {
  * Send chat message to Discord webhook
  */
 async function sendToDiscordWebhook(username, message) {
-    const DISCORD_WEBHOOK_URL = 'YOUR_CHAT_WEBHOOK_URL_HERE';
-
-    // Don't send if webhook not configured
-    if (DISCORD_WEBHOOK_URL === 'YOUR_CHAT_WEBHOOK_URL_HERE') {
-        return;
-    }
+    const DISCORD_WEBHOOK_URL = 'https://discordapp.com/api/webhooks/1459058604500848711/H2AeMm-thJildJtn-8yJe5GWTc68fn2xAecQiCUZ8RlsUO8iqQykIfZz-eRB7tr5DXf2';
 
     try {
         await fetch(DISCORD_WEBHOOK_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                username: `${username} (Tappy Trade)`,
-                avatar_url: 'https://em-content.zobj.net/thumbs/120/google/350/video-game_1f3ae.png',
+                username: `🎮 ${username}`,
+                avatar_url: `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`,
                 content: message
             })
         });
+        console.log('✅ Message sent to Discord');
     } catch (error) {
+        console.error('Discord webhook failed:', error);
         // Silently fail - chat webhook is optional
         throw error;
     }
