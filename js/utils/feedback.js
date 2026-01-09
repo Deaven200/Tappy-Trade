@@ -65,10 +65,29 @@ export function floatTextAt(text, element) {
  * Play a sound effect
  * @param {string} t - Sound type: 'tap', 'harvest', 'sell', 'buy', 'build', 'ach', 'err'
  */
+// Shared AudioContext
+let audioCtx = null;
+
+/**
+ * Play a sound effect
+ * @param {string} t - Sound type: 'tap', 'harvest', 'sell', 'buy', 'build', 'ach', 'err'
+ */
 export function playS(t) {
     if (!window.S || !window.S.sound) return;
+
     try {
-        const a = new AudioContext();
+        // Initialize context on first interaction/play
+        if (!audioCtx) {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            audioCtx = new AudioContext();
+        }
+
+        // Resume if suspended (browser autopilot policy)
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+
+        const a = audioCtx;
         const o = a.createOscillator();
         const g = a.createGain();
         o.connect(g);
@@ -88,14 +107,14 @@ export function playS(t) {
         } else if (t === 'build' || t === 'upgrade') {
             o.frequency.value = 659;
             o.start();
-            setTimeout(() => o.frequency.value = 784, 100);
+            setTimeout(() => { if (o) o.frequency.value = 784; }, 100);
             g.gain.exponentialRampToValueAtTime(0.01, a.currentTime + 0.3);
             o.stop(a.currentTime + 0.3);
         } else if (t === 'ach') {
             o.frequency.value = 523;
             o.start();
-            setTimeout(() => o.frequency.value = 659, 100);
-            setTimeout(() => o.frequency.value = 784, 200);
+            setTimeout(() => { if (o) o.frequency.value = 659; }, 100);
+            setTimeout(() => { if (o) o.frequency.value = 784; }, 200);
             g.gain.exponentialRampToValueAtTime(0.01, a.currentTime + 0.4);
             o.stop(a.currentTime + 0.4);
         } else if (t === 'err') {
@@ -104,7 +123,9 @@ export function playS(t) {
             g.gain.exponentialRampToValueAtTime(0.01, a.currentTime + 0.1);
             o.stop(a.currentTime + 0.1);
         }
-    } catch (e) { }
+    } catch (e) {
+        // Fallback or ignore audio errors
+    }
 }
 
 /**

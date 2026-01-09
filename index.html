@@ -1646,6 +1646,9 @@
         let musicStarted = false;
 
         function initMusic() {
+            // Prevent multiple initializations
+            if (bgMusic) return;
+
             // Randomize between two tracks
             const tracks = [
                 [
