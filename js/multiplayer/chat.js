@@ -44,6 +44,7 @@ async function sendToDiscord(username, message) {
  * Show chat modal and load messages
  */
 export function showChat() {
+    console.log('📬 showChat() called');
     const modal = $('chat-modal');
     if (modal) {
         modal.classList.add('show');
@@ -73,10 +74,13 @@ export function closeChat() {
  * Load chat messages from Firebase
  */
 function loadChat() {
+    console.log('📬 loadChat() called');
     const messagesEl = $('chat-messages');
 
     // Access global db from index.html
     const db = window.db;
+
+    console.log('📬 Firebase db:', db ? 'Connected ✅' : 'NOT CONNECTED ❌');
 
     if (!db) {
         if (messagesEl) {
@@ -88,13 +92,19 @@ function loadChat() {
     // Unsubscribe from previous listener
     if (unsubChat) unsubChat();
 
+    console.log('📬 Setting up Firebase listener...');
+
     // Subscribe to chat messages
     unsubChat = db.collection('chat')
         .orderBy('createdAt', 'desc')
         .limit(50)
         .onSnapshot(snap => {
             chatMessages = snap.docs.map(d => ({ id: d.id, ...d.data() })).reverse();
+            console.log(`📬 Loaded ${chatMessages.length} chat messages:`, chatMessages);
+            window.chatMessages = chatMessages; // Expose for debugging
             renderChat();
+        }, error => {
+            console.error('📬 Firebase listener error:', error);
         });
 }
 
