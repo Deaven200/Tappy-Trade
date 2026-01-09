@@ -125,16 +125,25 @@ export async function handleRegister() {
 export function continueAsGuest() {
     console.log('👤 Continuing as guest');
 
+    // Clear any existing save data to start fresh
+    localStorage.removeItem('tt4');
+    localStorage.removeItem('tt4_user');
+
     // Set guest flag in localStorage
     localStorage.setItem('tt4_guest', 'true');
 
     // Hide login screen
     hideLoginScreen();
 
-    // Init game
+    // Init game (will start with fresh default state)
     if (window.init) window.init();
 
-    toast('Playing as Guest - Create an account to save your progress!', 'info');
+    toast('Playing as Guest - Your progress will be saved locally!', 'info');
+
+    // Show hint about creating account
+    setTimeout(() => {
+        toast('💡 Create an account from the menu to save to cloud!', 'info');
+    }, 3000);
 }
 
 /**
