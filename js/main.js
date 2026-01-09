@@ -221,7 +221,8 @@ window.fillOrder = fillOrder;
 window.cancelOrder = cancelPlayerOrder; // Renamed to avoid conflict
 window.updateDayNight = updateDayNight;
 window.startDayNightCycle = startDayNightCycle;
-window.init = init;
+window.setMarketTab = setMarketTab;
+window.init = init; // MOBILE FIX: Now properly imported at top of file
 
 // ===== MODULE STATUS LOG =====
 
