@@ -77,12 +77,16 @@ export async function handleLogin() {
     }
 
     // Call existing login function
-    if (window.loginUser) {
-        const success = await window.loginUser(username, password);
-        if (success) {
+    if (window.loginAccount) {
+        // Pass arguments to accounts.js (which now accepts them)
+        await window.loginAccount(username, password);
+        if (window.getLoggedInUser && window.getLoggedInUser()) {
             hideLoginScreen();
             if (window.init) window.init();
         }
+    } else {
+        console.error('window.loginAccount not found');
+        toast('Login system not ready', 'err');
     }
 }
 
@@ -110,12 +114,16 @@ export async function handleRegister() {
     }
 
     // Call existing register function
-    if (window.registerUser) {
-        const success = await window.registerUser(username, password);
-        if (success) {
+    if (window.registerAccount) {
+        // Pass arguments to accounts.js (which now accepts them)
+        await window.registerAccount(username, password);
+        if (window.getLoggedInUser && window.getLoggedInUser()) {
             hideLoginScreen();
             if (window.init) window.init();
         }
+    } else {
+        console.error('window.registerAccount not found');
+        toast('Registration system not ready', 'err');
     }
 }
 

@@ -50,16 +50,15 @@ export function updateAccountUI() {
 /**
  * Register new account
  */
-export async function registerAccount() {
+export async function registerAccount(userArg, passArg) {
     const usernameInput = document.getElementById('auth-user');
     const passwordInput = document.getElementById('auth-pass');
     const rememberMeCheckbox = document.getElementById('remember-me');
     const submitBtn = document.querySelector('[onclick="registerAccount()"]');
 
-    if (!usernameInput || !passwordInput) return;
-
-    const username = usernameInput.value.trim();
-    const password = passwordInput.value;
+    // Use arguments if provided, otherwise get from DOM
+    const username = userArg || usernameInput?.value.trim();
+    const password = passArg || passwordInput?.value;
     const rememberMe = rememberMeCheckbox?.checked ?? true;
 
     // Validation
@@ -131,16 +130,15 @@ export async function registerAccount() {
 /**
  * Login to existing account
  */
-export async function loginAccount() {
+export async function loginAccount(userArg, passArg) {
     const usernameInput = document.getElementById('auth-user');
     const passwordInput = document.getElementById('auth-pass');
     const rememberMeCheckbox = document.getElementById('remember-me');
     const submitBtn = document.querySelector('[onclick="loginAccount()"]');
 
-    if (!usernameInput || !passwordInput) return;
-
-    const username = usernameInput.value.trim();
-    const password = passwordInput.value;
+    // Use arguments if provided, otherwise get from DOM
+    const username = userArg || usernameInput?.value.trim();
+    const password = passArg || passwordInput?.value;
     const rememberMe = rememberMeCheckbox?.checked ?? true;
 
     if (!username || !password) {
