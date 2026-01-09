@@ -1284,30 +1284,31 @@
             // Note: R, T, B, PLOTS, ACH, CONFIG, etc. are now imported via main.js
             // All functions are exported to window object by main.js
 
-            // MOBILE FIX: Wait for main.js to dispatch modulesReady event
+            // MOBILE FIX: Initialize game when modules are ready
             function initializeGame() {
                 console.log('🎮 Initializing game...');
 
                 // Check if window.init exists (exported from main.js)
                 if (typeof window.init === 'function') {
-                    window.init();
-                    console.log('✅ Game initialized successfully');
+                    // Ensure DOM is ready before calling init
+                    if (document.readyState === 'loading') {
+                        document.addEventListener('DOMContentLoaded', () => {
+                            window.init();
+                            console.log('✅ Game initialized successfully (after DOMContentLoaded)');
+                        });
+                    } else {
+                        window.init();
+                        console.log('✅ Game initialized successfully');
+                    }
                 } else {
-                    console.error('❌ window.init not found after modulesReady event!');
+                    console.error('❌ window.init not found!');
                 }
             }
 
-            // MOBILE FIX: Listen for modulesReady event from main.js
-            window.addEventListener('modulesReady', () => {
-                console.log('📡 Received modulesReady event - all exports loaded');
-
-                // Ensure DOM is ready before calling init
-                if (document.readyState === 'loading') {
-                    document.addEventListener('DOMContentLoaded', initializeGame);
-                } else {
-                    initializeGame();
-                }
-            });
+            // MOBILE FIX: Race condition fix - imports execute synchronously!
+            // By the time this line runs, main.js has ALREADY dispatched modulesReady
+            // So we check if init is available immediately instead of waiting for an event
+            initializeGame();
         </script>
         let screen = 'home'; // Current active screen
         let invView = 'list'; // 'list' or 'grid'
