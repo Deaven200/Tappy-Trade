@@ -1506,14 +1506,7 @@
         }
     </script>
     <script>
-        let screen = 'home'; // Current active screen
-        let invView = 'list'; // 'list' or 'grid'
-        let invSort = 'name'; // 'name', 'qty', 'value'
 
-        // Market UI state
-        let marketTab = 'sell'; // 'sell', 'buy', 'prices'
-        let sellQty = {}; // Tracks selected qty per item
-        let priceHistory = {}; // { resourceId: [prices...] } for sparklines
 
         // Variables that were in modules are now available globally via window
         // Examples: window.R, window.T, window.B, window.S, window.save, window.ACH, etc.
@@ -1615,7 +1608,10 @@
                     .limit(50)
                     .onSnapshot(snap => {
                         window.orders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                        if (screen === 'player') render();
+                        // Check if we're on the player market screen before re-rendering
+                        if (window.getScreen && window.getScreen() === 'player') {
+                            window.render();
+                        }
                     });
 
                 // Load cloud save if logged in
