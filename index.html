@@ -1807,326 +1807,331 @@
                                 window.orders = [];
 
                                 async function initFirebase() {
+                                console.log('🔥 initFirebase() called');
                                 try {
                                 // firebase.initializeApp() already called in
-                                // db = firebase.firestore(); // Already set as window.db
-                                auth = firebase.auth();
 
-                                // Anonymous sign in
-                                const result = await auth.signInAnonymously();
-                                window.userId = result.user.uid;
-                                console.log('Firebase connected, user:', window.userId);
-                                notif('🌐 Connected to market!');
+                                <head>
+                                    // db = firebase.firestore(); // Already set as window.db
+                                    auth = firebase.auth();
 
-                                // Listen for orders
-                                unsubOrders = db.collection('orders')
-                                .where('status', '==', 'open')
-                                .orderBy('createdAt', 'desc')
-                                .limit(50)
-                                .onSnapshot(snap => {
-                                window.orders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                                if (screen === 'player') render();
-                                });
+                                    // Anonymous sign in
+                                    const result = await auth.signInAnonymously();
+                                    window.userId = result.user.uid;
+                                    console.log('Firebase connected, user:', window.userId);
+                                    notif('🌐 Connected to market!');
 
-                                // Load cloud save if logged in
-                                if (loggedInUser) {
-                                const loaded = await loadFromCloud();
-                                if (loaded) {
-                                notif('☁️ Cloud progress loaded!');
-                                render();
-                                }
-                                }
-                                } catch (e) {
-                                console.error('Firebase error:', e);
-                                toast('Market offline', 'err');
-                                }
-                                }
-                                initFirebase(); // Initialize Firebase and connect to market
+                                    // Listen for orders
+                                    unsubOrders = db.collection('orders')
+                                    .where('status', '==', 'open')
+                                    .orderBy('createdAt', 'desc')
+                                    .limit(50)
+                                    .onSnapshot(snap => {
+                                    window.orders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                                    if (screen === 'player') render();
+                                    });
 
-
-                                // ===== ACCOUNT SYSTEM (Firestore-based) =====
-                                let userName = 'Guest';
-                                let loggedInUser = null; // { username, id }
-                                let unsubChat = null;
-                                let chatMessages = [];
-
-                                function updateAccountUI() {
-                                const status = $('account-status');
-                                const loginForm = $('login-form');
-                                const loggedIn = $('logged-in');
-
-                                if (loggedInUser) {
-                                userName = loggedInUser.username;
-                                status.innerHTML = `✅ <b>${userName}</b> - ☁️ Cloud Save ON < br> <small
-                                        style="color:var(--muted)">Auto-saves every 30s</small>`;
-                                    loginForm.style.display = 'none';
-                                    loggedIn.style.display = 'block';
-                                    $('display-name').textContent = userName;
-                                    } else {
-                                    userName = 'Guest';
-                                    status.innerHTML = '⚠️ Not logged in (playing as guest)';
-                                    loginForm.style.display = 'block';
-                                    loggedIn.style.display = 'none';
+                                    // Load cloud save if logged in
+                                    if (loggedInUser) {
+                                    const loaded = await loadFromCloud();
+                                    if (loaded) {
+                                    notif('☁️ Cloud progress loaded!');
+                                    render();
                                     }
                                     }
+                                    } catch (e) {
+                                    console.error('Firebase error:', e);
+                                    toast('Market offline', 'err');
+                                    }
+                                    }
+                                    console.log('🔥 About to call initFirebase...');
+                                    initFirebase(); // Initialize Firebase and connect to market
 
-                                    // Simple hash function for password (not cryptographically secure, but good
-                                    enough
-                                    for a game)
-                                    function simpleHash(str) {
-                                    let hash = 0;
-                                    for (let i = 0; i < str.length; i++) { const char=str.charCodeAt(i); hash=((hash <<
-                                        5) - hash) + char; hash=hash & hash; } return hash.toString(16); } async
-                                        function registerAccount() { const name=$('auth-name').value.trim(); const
-                                        pass=$('auth-pass').value; if (!name) { toast('Enter a username', 'err' );
-                                        return; } if (name.length < 3) { toast('Username must be 3+ characters', 'err'
-                                        ); return; } if (!pass || pass.length < 4) { toast('Password must be 4+
-                                        characters', 'err' ); return; } if (!db) { toast('Not connected to
-                                        server', 'err' ); return; } try { // Check if username exists const
-                                        existing=await db.collection('users').where('username', '==' ,
-                                        name.toLowerCase()).get(); if (!existing.empty) { toast('Username already
-                                        taken!', 'err' ); return; } // Create account const doc=await
-                                        db.collection('users').add({ username: name.toLowerCase(), displayName: name,
-                                        passHash: simpleHash(pass), createdAt:
-                                        firebase.firestore.FieldValue.serverTimestamp() }); loggedInUser={ id: doc.id,
-                                        username: name }; localStorage.setItem('tt4_user',
-                                        JSON.stringify(loggedInUser)); // Save initial state to cloud await
-                                        saveToCloud(); toast('Account created!', 'ok' ); notif(`👤 Welcome, ${name}!`);
-                                        updateAccountUI(); closeAccount(); } catch (e) { toast('Failed to create
-                                        account', 'err' ); console.error(e); } } async function loginAccount() { const
-                                        name=$('auth-name').value.trim(); const pass=$('auth-pass').value; if (!name ||
-                                        !pass) { toast('Enter username and password', 'err' ); return; } if (!db) {
-                                        toast('Not connected to server', 'err' ); return; } try { const snap=await
-                                        db.collection('users') .where('username', '==' , name.toLowerCase())
-                                        .where('passHash', '==' , simpleHash(pass)) .get(); if (snap.empty) {
-                                        toast('Wrong username or password', 'err' ); return; } const user=snap.docs[0];
-                                        loggedInUser={ id: user.id, username: user.data().displayName };
-                                        window.loggedInUser=loggedInUser; // Expose for chat module
-                                        localStorage.setItem('tt4_user', JSON.stringify(loggedInUser)); toast('Logged
-                                        in!', 'ok' ); // Load cloud save if exists const loaded=await loadFromCloud();
-                                        if (loaded) { toast('☁️ Progress loaded!', 'ok' ); } else { // First time on
-                                        this device, save current progress to cloud await saveToCloud(); }
-                                        updateAccountUI(); closeAccount(); render(); } catch (e) { toast('Login
-                                        failed', 'err' ); console.error(e); } } function logoutAccount() {
-                                        loggedInUser=null; window.loggedInUser=null; // Clear for chat module
-                                        localStorage.removeItem('tt4_user'); toast('Logged out', 'ok' );
-                                        updateAccountUI(); closeAccount(); } // Load saved user on start function
-                                        loadSavedUser() { try { const saved=localStorage.getItem('tt4_user'); if (saved)
-                                        { loggedInUser=JSON.parse(saved); window.loggedInUser=loggedInUser; // Expose
-                                        for chat module userName=loggedInUser.username; // Update account button to show
-                                        username if (window.updateAccountButton) { window.updateAccountButton(); } } }
-                                        catch (e) { } } function showAccount() { closeMenu();
-                                        $('account-modal').classList.add('show'); updateAccountUI(); } function
-                                        closeAccount() { $('account-modal').classList.remove('show'); } //=====CHAT
-                                        SYSTEM MOVED TO js/multiplayer/chat.js (Phase 2I)=====//=====FARM NAMING MOVED
-                                        TO js/ui/farmNaming.js (Phase 2L)=====//=====MENU SYSTEM=====let menuOpen=false;
-                                        function toggleMenu() { const modal=$('menu-modal'); if
-                                        (modal.classList.contains('show')) { modal.classList.remove('show'); } else {
-                                        updateAccountUI(); // Update farm name display const
-                                        farmNameEl=$('farm-name-display'); if (farmNameEl)
-                                        farmNameEl.textContent=S.farmName || "Untitled Farm" ;
-                                        modal.classList.add('show'); } } function showStats() { closeMenu();
-                                        screen='stats' ; render(); } function showHelp() { closeMenu(); screen='help' ;
-                                        render(); } //=====HELP SCREEN MOVED TO js/ui/help.js (Phase 2K)=====//
-                                        Background music let bgMusic=null; let musicStarted=false; function initMusic()
-                                        { // Randomize between two tracks const tracks=[ [ 'music/Little Jam.mp3'
-                                        , './music/Little Jam.mp3' , '/music/Little Jam.mp3'
-                                        , 'public/music/Little Jam.mp3' , './public/music/Little Jam.mp3' , ],
-                                        [ 'music/Little Jam 2.mp3' , './music/Little Jam 2.mp3'
-                                        , '/music/Little Jam 2.mp3' , 'public/music/Little Jam 2.mp3'
-                                        , './public/music/Little Jam 2.mp3' , ] ]; const
-                                        MUSIC_CANDIDATES=tracks[Math.floor(Math.random() * tracks.length)]; let
-                                        musicIdx=0; bgMusic=new Audio(MUSIC_CANDIDATES[musicIdx]); bgMusic.loop=true;
-                                        bgMusic.volume=0.3; bgMusic.muted=!S.sound; bgMusic.preload='auto' ; const
-                                        tryNextSource=()=> {
-                                        musicIdx++;
-                                        if (musicIdx >= MUSIC_CANDIDATES.length) {
-                                        console.log('Music file not found in any location');
-                                        return;
-                                        }
-                                        bgMusic.src = MUSIC_CANDIDATES[musicIdx];
-                                        bgMusic.load();
-                                        };
 
-                                        bgMusic.addEventListener('error', () => {
-                                        tryNextSource();
-                                        });
+                                    // ===== ACCOUNT SYSTEM (Firestore-based) =====
+                                    let userName = 'Guest';
+                                    let loggedInUser = null; // { username, id }
+                                    let unsubChat = null;
+                                    let chatMessages = [];
 
-                                        const tryPlay = async () => {
-                                        if (musicStarted) return true;
-                                        if (!S.sound) return false;
-                                        bgMusic.muted = false;
-                                        try {
-                                        await bgMusic.play();
-                                        musicStarted = true;
-                                        return true;
-                                        } catch (e) {
-                                        console.log('Music autoplay blocked:', e.name);
-                                        return false;
-                                        }
-                                        };
+                                    function updateAccountUI() {
+                                    const status = $('account-status');
+                                    const loginForm = $('login-form');
+                                    const loggedIn = $('logged-in');
 
-                                        // Start on first user interaction - iOS requires touchend, not touchstart
-                                        const startMusic = () => {
-                                        if (musicStarted) {
-                                        removeListeners();
-                                        return;
-                                        }
-                                        tryPlay().then((started) => {
-                                        if (started) {
-                                        removeListeners();
-                                        }
-                                        });
-                                        };
-
-                                        const removeListeners = () => {
-                                        document.removeEventListener('click', startMusic);
-                                        document.removeEventListener('touchstart', startMusic);
-                                        document.removeEventListener('touchend', startMusic);
-                                        document.removeEventListener('keydown', startMusic);
-                                        };
-
-                                        // Allow other UI (like sound toggle) to trigger play
-                                        window.__ttStartMusic = startMusic;
-
-                                        // Multiple event types for better mobile compatibility
-                                        document.addEventListener('click', startMusic);
-                                        document.addEventListener('touchstart', startMusic, { passive: true });
-                                        document.addEventListener('touchend', startMusic, { passive: true });
-                                        document.addEventListener('keydown', startMusic);
-                                        }
-
-                                        // ===== SERVICE WORKER TEMPORARILY DISABLED =====
-                                        /*
-                                        if ('serviceWorker' in navigator) {
-                                        window.addEventListener('load', () => {
-                                        navigator.serviceWorker.register('./service-worker.js')
-                                        .then((registration) => {
-                                        console.log('✅ Service Worker registered successfully');
-
-                                        // Helper function to safely check for updates
-                                        const checkForUpdate = () => {
-                                        if (registration && registration.active) {
-                                        registration.update().catch(err => {
-                                        // Silently ignore update errors to avoid spam
-                                        console.debug('Update check skipped:', err.message);
-                                        });
-                                        }
-                                        };
-
-                                        // Check for updates every 5 minutes
-                                        setInterval(checkForUpdate, 300000); // 5 minutes
-
-                                        // Check when user returns to the app
-                                        document.addEventListener('visibilitychange', () => {
-                                        if (!document.hidden) {
-                                        checkForUpdate();
-                                        }
-                                        });
-
-                                        // Check when app gains focus
-                                        window.addEventListener('focus', checkForUpdate);
-
-                                        // Listen for updates
-                                        registration.addEventListener('updatefound', () => {
-                                        const newWorker = registration.installing;
-
-                                        newWorker.addEventListener('statechange', () => {
-                                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                        // New version available - auto reload after 3 seconds
-                                        console.log('🎉 New version found! Auto-updating in 3 seconds...');
-                                        setTimeout(() => {
-                                        newWorker.postMessage({ type: 'SKIP_WAITING' });
-                                        window.location.reload();
-                                        }, 3000);
-                                        }
-                                        });
-                                        });
-                                        })
-                                        .catch((error) => {
-                                        console.log('❌ Service Worker registration failed:', error);
-                                        });
-                                        }
-                                        */
-                                        console.log('⚠️ Service Worker DISABLED - Fresh files will load');
-
-                                        // Debug: Check close button CSS
-                                        setTimeout(() => {
-                                        const closeBtn = document.querySelector('.modal-close');
-                                        if (closeBtn) {
-                                        const styles = window.getComputedStyle(closeBtn);
-                                        console.log('🔵 [DEBUG] Close button CSS:');
-                                        console.log(' - Background:', styles.backgroundColor);
-                                        console.log(' - Color:', styles.color);
-                                        console.log(' - Border:', styles.border);
-                                        console.log(' - Expected: RGB(239, 68, 68) bright red');
-                                        }
-                                        }, 1000);
-
-                                        // Helper functions that were deleted as duplicates
-                                        function floatTextAt(text, el) {
-                                        if (!el) return;
-                                        const x = el.getBoundingClientRect().left + 20;
-                                        const y = el.getBoundingClientRect().top - 20;
-                                        floatText(text, x, y);
-                                        }
-
-                                        function togglePasswordVisibility() {
-                                        const passInput = document.getElementById('auth-pass');
-                                        const toggleBtn = event.target;
-                                        if (!passInput) return;
-
-                                        if (passInput.type === 'password') {
-                                        passInput.type = 'text';
-                                        toggleBtn.textContent = '🙈';
+                                    if (loggedInUser) {
+                                    userName = loggedInUser.username;
+                                    status.innerHTML = `✅ <b>${userName}</b> - ☁️ Cloud Save ON < br> <small
+                                            style="color:var(--muted)">Auto-saves every 30s</small>`;
+                                        loginForm.style.display = 'none';
+                                        loggedIn.style.display = 'block';
+                                        $('display-name').textContent = userName;
                                         } else {
-                                        passInput.type = 'password';
-                                        toggleBtn.textContent = '👁️';
+                                        userName = 'Guest';
+                                        status.innerHTML = '⚠️ Not logged in (playing as guest)';
+                                        loginForm.style.display = 'block';
+                                        loggedIn.style.display = 'none';
                                         }
                                         }
 
-                                        function showAccount() { closeMenu();
-                                        $('account-modal').classList.add('show');
-                                        updateAccountUI(); }
+                                        // Simple hash function for password (not cryptographically secure, but good
+                                        enough
+                                        for a game)
+                                        function simpleHash(str) {
+                                        let hash = 0;
+                                        for (let i = 0; i < str.length; i++) { const char=str.charCodeAt(i); hash=((hash
+                                            << 5) - hash) + char; hash=hash & hash; } return hash.toString(16); } async
+                                            function registerAccount() { const name=$('auth-name').value.trim(); const
+                                            pass=$('auth-pass').value; if (!name) { toast('Enter a username', 'err' );
+                                            return; } if (name.length < 3) { toast('Username must be 3+
+                                            characters', 'err' ); return; } if (!pass || pass.length < 4) {
+                                            toast('Password must be 4+ characters', 'err' ); return; } if (!db) {
+                                            toast('Not connected to server', 'err' ); return; } try { // Check if
+                                            username exists const existing=await
+                                            db.collection('users').where('username', '==' , name.toLowerCase()).get();
+                                            if (!existing.empty) { toast('Username already taken!', 'err' ); return; }
+                                            // Create account const doc=await db.collection('users').add({ username:
+                                            name.toLowerCase(), displayName: name, passHash: simpleHash(pass),
+                                            createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+                                            loggedInUser={ id: doc.id, username: name };
+                                            localStorage.setItem('tt4_user', JSON.stringify(loggedInUser)); // Save
+                                            initial state to cloud await saveToCloud(); toast('Account created!', 'ok'
+                                            ); notif(`👤 Welcome, ${name}!`); updateAccountUI(); closeAccount(); } catch
+                                            (e) { toast('Failed to create account', 'err' ); console.error(e); } } async
+                                            function loginAccount() { const name=$('auth-name').value.trim(); const
+                                            pass=$('auth-pass').value; if (!name || !pass) { toast('Enter username and
+                                            password', 'err' ); return; } if (!db) { toast('Not connected to
+                                            server', 'err' ); return; } try { const snap=await db.collection('users')
+                                            .where('username', '==' , name.toLowerCase()) .where('passHash', '==' ,
+                                            simpleHash(pass)) .get(); if (snap.empty) { toast('Wrong username or
+                                            password', 'err' ); return; } const user=snap.docs[0]; loggedInUser={ id:
+                                            user.id, username: user.data().displayName };
+                                            window.loggedInUser=loggedInUser; // Expose for chat module
+                                            localStorage.setItem('tt4_user', JSON.stringify(loggedInUser));
+                                            toast('Logged in!', 'ok' ); // Load cloud save if exists const loaded=await
+                                            loadFromCloud(); if (loaded) { toast('☁️ Progress loaded!', 'ok' ); } else {
+                                            // First time on this device, save current progress to cloud await
+                                            saveToCloud(); } updateAccountUI(); closeAccount(); render(); } catch (e) {
+                                            toast('Login failed', 'err' ); console.error(e); } } function
+                                            logoutAccount() { loggedInUser=null; window.loggedInUser=null; // Clear for
+                                            chat module localStorage.removeItem('tt4_user'); toast('Logged out', 'ok' );
+                                            updateAccountUI(); closeAccount(); } // Load saved user on start function
+                                            loadSavedUser() { try { const saved=localStorage.getItem('tt4_user'); if
+                                            (saved) { loggedInUser=JSON.parse(saved); window.loggedInUser=loggedInUser;
+                                            // Expose for chat module userName=loggedInUser.username; // Update account
+                                            button to show username if (window.updateAccountButton) {
+                                            window.updateAccountButton(); } } } catch (e) { } } function showAccount() {
+                                            closeMenu(); $('account-modal').classList.add('show'); updateAccountUI(); }
+                                            function closeAccount() { $('account-modal').classList.remove('show'); }
+                                            //=====CHAT SYSTEM MOVED TO js/multiplayer/chat.js (Phase
+                                            2I)=====//=====FARM NAMING MOVED TO js/ui/farmNaming.js (Phase
+                                            2L)=====//=====MENU SYSTEM=====let menuOpen=false; function toggleMenu() {
+                                            const modal=$('menu-modal'); if (modal.classList.contains('show')) {
+                                            modal.classList.remove('show'); } else { updateAccountUI(); // Update farm
+                                            name display const farmNameEl=$('farm-name-display'); if (farmNameEl)
+                                            farmNameEl.textContent=S.farmName || "Untitled Farm" ;
+                                            modal.classList.add('show'); } } function showStats() { closeMenu();
+                                            screen='stats' ; render(); } function showHelp() { closeMenu();
+                                            screen='help' ; render(); } //=====HELP SCREEN MOVED TO js/ui/help.js (Phase
+                                            2K)=====// Background music let bgMusic=null; let musicStarted=false;
+                                            function initMusic() { // Randomize between two tracks const tracks=[
+                                            [ 'music/Little Jam.mp3' , './music/Little Jam.mp3'
+                                            , '/music/Little Jam.mp3' , 'public/music/Little Jam.mp3'
+                                            , './public/music/Little Jam.mp3' , ], [ 'music/Little Jam 2.mp3'
+                                            , './music/Little Jam 2.mp3' , '/music/Little Jam 2.mp3'
+                                            , 'public/music/Little Jam 2.mp3' , './public/music/Little Jam 2.mp3' , ] ];
+                                            const MUSIC_CANDIDATES=tracks[Math.floor(Math.random() * tracks.length)];
+                                            let musicIdx=0; bgMusic=new Audio(MUSIC_CANDIDATES[musicIdx]);
+                                            bgMusic.loop=true; bgMusic.volume=0.3; bgMusic.muted=!S.sound;
+                                            bgMusic.preload='auto' ; const tryNextSource=()=> {
+                                            musicIdx++;
+                                            if (musicIdx >= MUSIC_CANDIDATES.length) {
+                                            console.log('Music file not found in any location');
+                                            return;
+                                            }
+                                            bgMusic.src = MUSIC_CANDIDATES[musicIdx];
+                                            bgMusic.load();
+                                            };
 
-                                        // Export functions for HTML onclick handlers
-                                        window.tap = tap;
-                                        window.openBuild = openBuild;
-                                        window.closeBuild = closeBuild;
-                                        window.doBuild = doBuild;
-                                        window.buyPlot = buyPlot;
-                                        window.hireWorker = hireWorker;
-                                        window.fireWorker = fireWorker;
-                                        window.sell = sell;
-                                        window.sellAll = sellAll;
-                                        window.buyFromGov = buyFromGov;
-                                        window.toggleTheme = toggleTheme;
-                                        window.setFontSize = setFontSize;
-                                        window.showMenu = showMenu;
-                                        window.closeMenu = closeMenu; // Export closeMenu
-                                        window.toggleMenu = showMenu; // toggleMenu is an alias for showMenu
-                                        window.showLeaderboard = showLeaderboard;
-                                        window.closeLeaderboard = closeLeaderboard;
-                                        window.showTip = showTip;
-                                        window.resetGame = resetGame;
-                                        window.showAccount = showAccount; // Export for account button
-                                        window.registerAccount = registerAccount; // Export for login/register
-                                        window.loginAccount = loginAccount;
-                                        window.logoutAccount = logoutAccount;
-                                        window.closeAccount = closeAccount; // Export for closing account modal
-                                        window.sendChat = sendChat;
-                                        window.closeChat = closeChat;
-                                        window.showChat = showChat;
-                                        window.submitLimitOrder = submitLimitOrder;
-                                        window.cancelOrder = cancelOrder;
-                                        window.postOrder = postOrder;
-                                        window.fillOrder = fillOrder;
-                                        window.processLimitOrders = processLimitOrders;
-                                        window.render = render; // Export render for HTML onclick handlers
-                                        window.renameFarm = renameFarm; // Export existing function
+                                            bgMusic.addEventListener('error', () => {
+                                            tryNextSource();
+                                            });
 
-                                        window.init();
-                                        </script>
+                                            const tryPlay = async () => {
+                                            if (musicStarted) return true;
+                                            if (!S.sound) return false;
+                                            bgMusic.muted = false;
+                                            try {
+                                            await bgMusic.play();
+                                            musicStarted = true;
+                                            return true;
+                                            } catch (e) {
+                                            console.log('Music autoplay blocked:', e.name);
+                                            return false;
+                                            }
+                                            };
+
+                                            // Start on first user interaction - iOS requires touchend, not touchstart
+                                            const startMusic = () => {
+                                            if (musicStarted) {
+                                            removeListeners();
+                                            return;
+                                            }
+                                            tryPlay().then((started) => {
+                                            if (started) {
+                                            removeListeners();
+                                            }
+                                            });
+                                            };
+
+                                            const removeListeners = () => {
+                                            document.removeEventListener('click', startMusic);
+                                            document.removeEventListener('touchstart', startMusic);
+                                            document.removeEventListener('touchend', startMusic);
+                                            document.removeEventListener('keydown', startMusic);
+                                            };
+
+                                            // Allow other UI (like sound toggle) to trigger play
+                                            window.__ttStartMusic = startMusic;
+
+                                            // Multiple event types for better mobile compatibility
+                                            document.addEventListener('click', startMusic);
+                                            document.addEventListener('touchstart', startMusic, { passive: true });
+                                            document.addEventListener('touchend', startMusic, { passive: true });
+                                            document.addEventListener('keydown', startMusic);
+                                            }
+
+                                            // ===== SERVICE WORKER TEMPORARILY DISABLED =====
+                                            /*
+                                            if ('serviceWorker' in navigator) {
+                                            window.addEventListener('load', () => {
+                                            navigator.serviceWorker.register('./service-worker.js')
+                                            .then((registration) => {
+                                            console.log('✅ Service Worker registered successfully');
+
+                                            // Helper function to safely check for updates
+                                            const checkForUpdate = () => {
+                                            if (registration && registration.active) {
+                                            registration.update().catch(err => {
+                                            // Silently ignore update errors to avoid spam
+                                            console.debug('Update check skipped:', err.message);
+                                            });
+                                            }
+                                            };
+
+                                            // Check for updates every 5 minutes
+                                            setInterval(checkForUpdate, 300000); // 5 minutes
+
+                                            // Check when user returns to the app
+                                            document.addEventListener('visibilitychange', () => {
+                                            if (!document.hidden) {
+                                            checkForUpdate();
+                                            }
+                                            });
+
+                                            // Check when app gains focus
+                                            window.addEventListener('focus', checkForUpdate);
+
+                                            // Listen for updates
+                                            registration.addEventListener('updatefound', () => {
+                                            const newWorker = registration.installing;
+
+                                            newWorker.addEventListener('statechange', () => {
+                                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                            // New version available - auto reload after 3 seconds
+                                            console.log('🎉 New version found! Auto-updating in 3 seconds...');
+                                            setTimeout(() => {
+                                            newWorker.postMessage({ type: 'SKIP_WAITING' });
+                                            window.location.reload();
+                                            }, 3000);
+                                            }
+                                            });
+                                            });
+                                            })
+                                            .catch((error) => {
+                                            console.log('❌ Service Worker registration failed:', error);
+                                            });
+                                            }
+                                            */
+                                            console.log('⚠️ Service Worker DISABLED - Fresh files will load');
+
+                                            // Debug: Check close button CSS
+                                            setTimeout(() => {
+                                            const closeBtn = document.querySelector('.modal-close');
+                                            if (closeBtn) {
+                                            const styles = window.getComputedStyle(closeBtn);
+                                            console.log('🔵 [DEBUG] Close button CSS:');
+                                            console.log(' - Background:', styles.backgroundColor);
+                                            console.log(' - Color:', styles.color);
+                                            console.log(' - Border:', styles.border);
+                                            console.log(' - Expected: RGB(239, 68, 68) bright red');
+                                            }
+                                            }, 1000);
+
+                                            // Helper functions that were deleted as duplicates
+                                            function floatTextAt(text, el) {
+                                            if (!el) return;
+                                            const x = el.getBoundingClientRect().left + 20;
+                                            const y = el.getBoundingClientRect().top - 20;
+                                            floatText(text, x, y);
+                                            }
+
+                                            function togglePasswordVisibility() {
+                                            const passInput = document.getElementById('auth-pass');
+                                            const toggleBtn = event.target;
+                                            if (!passInput) return;
+
+                                            if (passInput.type === 'password') {
+                                            passInput.type = 'text';
+                                            toggleBtn.textContent = '🙈';
+                                            } else {
+                                            passInput.type = 'password';
+                                            toggleBtn.textContent = '👁️';
+                                            }
+                                            }
+
+                                            function showAccount() { closeMenu();
+                                            $('account-modal').classList.add('show');
+                                            updateAccountUI(); }
+
+                                            // Export functions for HTML onclick handlers
+                                            window.tap = tap;
+                                            window.openBuild = openBuild;
+                                            window.closeBuild = closeBuild;
+                                            window.doBuild = doBuild;
+                                            window.buyPlot = buyPlot;
+                                            window.hireWorker = hireWorker;
+                                            window.fireWorker = fireWorker;
+                                            window.sell = sell;
+                                            window.sellAll = sellAll;
+                                            window.buyFromGov = buyFromGov;
+                                            window.toggleTheme = toggleTheme;
+                                            window.setFontSize = setFontSize;
+                                            window.showMenu = showMenu;
+                                            window.closeMenu = closeMenu; // Export closeMenu
+                                            window.toggleMenu = showMenu; // toggleMenu is an alias for showMenu
+                                            window.showLeaderboard = showLeaderboard;
+                                            window.closeLeaderboard = closeLeaderboard;
+                                            window.showTip = showTip;
+                                            window.resetGame = resetGame;
+                                            window.showAccount = showAccount; // Export for account button
+                                            window.registerAccount = registerAccount; // Export for login/register
+                                            window.loginAccount = loginAccount;
+                                            window.logoutAccount = logoutAccount;
+                                            window.closeAccount = closeAccount; // Export for closing account modal
+                                            window.sendChat = sendChat;
+                                            window.closeChat = closeChat;
+                                            window.showChat = showChat;
+                                            window.submitLimitOrder = submitLimitOrder;
+                                            window.cancelOrder = cancelOrder;
+                                            window.postOrder = postOrder;
+                                            window.fillOrder = fillOrder;
+                                            window.processLimitOrders = processLimitOrders;
+                                            window.render = render; // Export render for HTML onclick handlers
+                                            window.renameFarm = renameFarm; // Export existing function
+
+                                            window.init();
+                                            </script>
 </body>
 
 </html>```
