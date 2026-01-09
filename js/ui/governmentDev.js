@@ -11,10 +11,14 @@ import { $ } from '../utils/dom.js';
  * Show government development modal
  */
 export function showGovernmentDev() {
+    console.log('🏛️ Opening government development screen...');
     const modal = $('gov-dev-modal');
     if (modal) {
         modal.classList.add('show');
         renderGovernmentDev();
+        console.log('✅ Government modal opened');
+    } else {
+        console.error('❌ gov-dev-modal element not found!');
     }
 
     // Close menu if open
