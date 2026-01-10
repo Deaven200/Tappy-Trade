@@ -99,6 +99,8 @@ window.floatText = floatText;
 window.floatTextAt = floatTextAt; // Actual function, not alias
 window.playS = playS;
 window.vibrate = vibrate;
+window.toast = toast;
+window.notif = notif;
 
 // Inventory helpers - wrap to auto-pass S.inv
 window.getInvTotal = () => getInvTotal(S.inv || {});

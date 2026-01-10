@@ -1587,6 +1587,10 @@
         let auth = firebase.auth();
         let unsubOrders = null;
 
+        // Helper shims until main.js loads
+        if (!window.notif) window.notif = (m) => console.log('🔔 [Deferred]', m);
+        if (!window.toast) window.toast = (m) => console.log('🍞 [Deferred]', m);
+
         // Expose to window for markets.js module
         window.userId = null;
         window.orders = [];
