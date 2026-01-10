@@ -48,9 +48,9 @@ export function update(delta) {
         achievementTimer = 0;
     }
 
-    // Auto-save every 60 seconds
+    // Auto-save every 10 seconds
     saveTimer += delta;
-    if (saveTimer >= 60) {
+    if (saveTimer >= 10) {
         save();
         saveTimer = 0;
     }

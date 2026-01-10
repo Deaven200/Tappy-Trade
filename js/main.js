@@ -304,11 +304,16 @@ if (CONFIG.DEBUG_MODE || true) {  // Always log for now
     */
 }
 
-// Save on page close/exit
+// Save on page close/exit (Reliable for Desktop)
 window.addEventListener('beforeunload', () => {
     console.log('💾 Saving before page unload...');
-    // Don't save if we're resetting
-    if (!window.isResetting) {
+    if (!window.isResetting) save();
+});
+
+// Save on visibility change (Reliable for Mobile/Tab Switch)
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden' && !window.isResetting) {
+        console.log('💾 Saving on visibility hide...');
         save();
     }
 });
