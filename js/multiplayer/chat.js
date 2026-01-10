@@ -142,9 +142,13 @@ export async function sendChat() {
         username = currentUser.displayName || 'Anonymous';
         userId = currentUser.uid;
     } else {
-        // Guest user - create temporary ID
-        if (!window._guestChatId) {
+        // Guest user - create temporary ID or load from storage
+        const storedGuestId = localStorage.getItem('guest_chat_id');
+        if (storedGuestId) {
+            window._guestChatId = storedGuestId;
+        } else if (!window._guestChatId) {
             window._guestChatId = 'guest_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('guest_chat_id', window._guestChatId);
         }
         username = 'Guest';
         userId = window._guestChatId;
@@ -154,6 +158,13 @@ export async function sendChat() {
     const sanitizedText = sanitizeInput(text, 200); // Max 200 chars
     if (!sanitizedText) {
         toast('Message too long or invalid', 'err');
+        return;
+    }
+
+    // Check for commands
+    if (sanitizedText.trim().toLowerCase() === '/help') {
+        window.toast('Commands: /help (This menu)', 'nom');
+        $('chat-msg').value = '';
         return;
     }
 

@@ -97,6 +97,13 @@ function renderGovernmentDev() {
         html += `</div>`;
     }
 
-    html += '</div>';
-    container.innerHTML = html;
+}
+
+// Add generic Sell button at bottom
+html += `<div style="margin-top:20px;text-align:center">
+        <button class="btn green" style="padding:12px 24px" onclick="window.showPlayerMarket();window.closeGovernmentDev()">💰 Go to Market to Sell</button>
+    </div>`;
+
+html += '</div>';
+container.innerHTML = html;
 }

@@ -20,6 +20,11 @@ let renderTimer = 0; // Throttle render calls
  * @param {number} delta - Time delta in seconds
  */
 export function update(delta) {
+    // Security: Cap delta to prevent speedhacking (max 1 hour simulated per tick)
+    if (delta > 3600) delta = 3600;
+    // Also cap minimum to prevent negative time
+    if (delta < 0) delta = 0;
+
     // Update resource regeneration
     updatePlots(delta);
 
@@ -95,3 +100,12 @@ export function startGameLoop() {
 // Export for index.html to use
 window.update = update;
 window.startGameLoop = startGameLoop;
+window.stopGameLoop = stopGameLoop;
+
+export function stopGameLoop() {
+    if (gameLoopId) {
+        clearInterval(gameLoopId);
+        gameLoopId = null;
+        console.log('🛑 Game loop stopped');
+    }
+}
