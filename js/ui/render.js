@@ -49,13 +49,23 @@ export function switchScreen(screenName) {
 }
 
 /**
+ * Format large numbers (e.g. 1.2k, 1.5M, 1.5B)
+ */
+function formatNumber(num) {
+    if (num >= 1000000000) return (num / 1000000000).toFixed(1) + 'B';
+    if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+    if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
+    return num.toLocaleString();
+}
+
+/**
  * Update top stats bar (money, inventory count)
  */
 export function updateStats() {
     const moneyEl = document.getElementById('money');
     const invEl = document.getElementById('inv');
 
-    if (moneyEl) moneyEl.textContent = '$' + S.money.toLocaleString();
+    if (moneyEl) moneyEl.textContent = '$' + formatNumber(S.money);
     if (invEl) invEl.textContent = window.getInvTotal();
 }
 

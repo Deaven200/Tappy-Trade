@@ -157,6 +157,19 @@ export async function sendChat() {
         return;
     }
 
+    // Anti-Spam: Rate limiting (1 message per second)
+    const now = Date.now();
+    if (window._lastChatTime && now - window._lastChatTime < 1000) {
+        toast('Slow down!', 'err');
+        return;
+    }
+
+    // Anti-Spam: Duplicate message check
+    if (window._lastChatText === sanitizedText) {
+        toast('Do not spam!', 'err');
+        return;
+    }
+
     try {
         await db.collection('chat').add({
             text: sanitizedText,
@@ -164,6 +177,11 @@ export async function sendChat() {
             userId: userId,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
+
+        // Update anti-spam trackers
+        window._lastChatTime = now;
+        window._lastChatText = sanitizedText;
+
         input.value = '';
 
         // Send to Discord webhook (async, don't wait)

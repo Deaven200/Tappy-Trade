@@ -68,11 +68,13 @@
 1. CRITICAL VULNERABILITY: Negative Quantity Buy Order.
    The game does not validate if `quantity > 0` in `buyFromGov`
    or market order creation. Buying -1M items grants +$5M cash.
+   [FIXED] - Added validation `if (quantity <= 0) return;` in `buyFromGov` (market.js).
 
 2. Logic Bug: Daily Reward Claim.
    `dailyRewards.js` tries to add `reward.m` (money), but the
    config object likely uses `reward.reward` or `reward.value`.
    The player gets $0 even when the claim is successful.
+   [FIXED] - Updated `dailyRewards.js` to correctly check for `reward.reward` instead of just `.m`.
 
 3. Exploit: Time Travel.
    Client-side clock trust allows bypassing cooldowns for daily
@@ -91,6 +93,7 @@
    reload. The `playerTiers` object is stored in memory and only
    synced to Firebase (which Guests don't have), failing to
    save to `localStorage`.
+   [FIXED] - Moved `playerTiers` to the global `S` object so it persists in `localStorage` for guests (governmentTiers.js).
 
 
 === STRESS TEST ROUND 7 (TEN NEW THINGS) ERRORS & ISSUES ===
@@ -106,10 +109,12 @@
 3. Anti-Spam Failure.
    Chat allows sending identical messages repeatedly with no cooldown or
    spam detection.
+   [FIXED] - Added 1s rate limit and duplicate message prevention in `chat.js`.
 
 4. UI/UX: High Value Formatting.
    Money values > $1 Billion display as long integers (e.g., 1,500,000,000)
    instead of abbreviated formats (1.5B), impacting readability.
+   [FIXED] - Implemented `formatNumber` (e.g. 1.5B) in `render.js` for money display.
 
 
 === STRESS TEST ROUND 8 (NEXT 10 THINGS) ERRORS & ISSUES ===
@@ -117,10 +122,12 @@
 1. Logic Bug: Demolition Refund.
    Demolishing a building does NOT refund 50% cost as intended.
    Money balance remains unchanged.
+   [FIXED] - Added safety checks to `doBuild` in `building.js` to correctly locate original building costs for refunds.
 
 2. Logic Bug: Hard Reset.
    `resetGame()` function exists but fails to wipe `S.money` or `S.plots`
    effectively. Player retains progress after reset.
+   [FIXED] - Updated `resetGame.js` to explicitly remove `tt4` from localStorage and reset the in-memory state object.
 
 3. Code Issue: Event System.
    `triggerEvent` function is defined but not exposed globally or
@@ -129,6 +136,7 @@
 4. UI Issue: Notification Stacking.
    Multiple toasts stack directly on top of each other in the center
    of the screen, making text unreadable during high-activity moments.
+   [FIXED] - Updated `feedback.js` to clear previous toasts and add random offset to floating text to prevent overlap.
 
 
 === STRESS TEST ROUND 9 (EDGE CASES) ERRORS & ISSUES ===
@@ -149,10 +157,12 @@
 1. Logic Crash: Sell All.
    `sellAll()` throws TypeError if user possesses an item (e.g. from
    older save/mod) that is not in the current price list.
+   [FIXED] - Added check in `sellAll` (market.js) to skip invalid/ghost items instead of crashing.
 
 2. UI Breakage: Long Text Overflow.
    Farm names > 50 chars expand the UI container indefinitely, breaking
    layout on mobile/smaller screens due to missing text-overflow CSS.
+   [FIXED] - Added `max-width` and `text-overflow: ellipsis` to the farm name display in `index.html`.
 
 3. Exploit: Game Loop Speedup.
    Users can manually call `update(1000)` in console to speed up time
@@ -161,3 +171,4 @@
 4. Code Issue: CSS Variables.
    Code references `--bg1` but it is not defined in :root, potentially
    leading to fallback colors or inconsistencies.
+   [FIXED] - Added `--bg1` definition to `:root` in `index.html`.

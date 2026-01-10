@@ -10,11 +10,27 @@ import { $ } from './dom.js';
  * @param {string} m - Message to display
  * @param {string} t - Type: 'ok', 'err', or ''
  */
+// Toast timer to prevent early dismissal
+let toastTimer = null;
+
+/**
+ * Show a toast notification
+ * @param {string} m - Message to display
+ * @param {string} t - Type: 'ok', 'err', or ''
+ */
 export function toast(m, t = '') {
     const e = $('toast');
+
+    // Clear previous timer to prevent toast from hiding too early if spammed
+    if (toastTimer) clearTimeout(toastTimer);
+
     e.textContent = m;
     e.className = 'toast show ' + (t || '');
-    setTimeout(() => e.classList.remove('show'), 2000);
+
+    toastTimer = setTimeout(() => {
+        e.classList.remove('show');
+        toastTimer = null;
+    }, 2000);
 }
 
 /**
@@ -39,8 +55,13 @@ export function floatText(text, x, y, type = '') {
     const el = document.createElement('div');
     el.className = 'float-text ' + type;
     el.textContent = text;
-    el.style.left = x + 'px';
-    el.style.top = y + 'px';
+
+    // Add small random offset to prevent perfect stacking
+    const offsetX = (Math.random() - 0.5) * 20;
+    const offsetY = (Math.random() - 0.5) * 20;
+
+    el.style.left = (x + offsetX) + 'px';
+    el.style.top = (y + offsetY) + 'px';
     document.body.appendChild(el);
     setTimeout(() => el.remove(), 1000);
 }
