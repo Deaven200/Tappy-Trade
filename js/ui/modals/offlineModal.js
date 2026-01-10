@@ -1,73 +1,56 @@
 /**
  * Offline Progress Modal
- * Displays items gained while the player was away
+ * Displays earnings while player was away
  */
 
 import { $ } from '../../utils/dom.js';
-import { R } from '../../config/resources.js';
+import { R } from '../../config/data.js';
 
-/**
- * Show the offline progress modal
- * @param {Object} gained - Dictionary of gained items { itemId: quantity }
- * @param {number} seconds - Seconds offline
- */
-export function showOfflineProgress(gained, seconds) {
-    if (!gained || Object.keys(gained).length === 0) return;
+export function showOfflineProgress(gainedItems, seconds) {
+    const modalId = 'offline-modal';
+    let modal = $(modalId);
 
-    // Create modal structure if it doesn't exist
-    if (!$('offline-modal')) {
-        const modalHtml = `
-        <div id="offline-modal" class="modal">
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = modalId;
+        modal.className = 'modal';
+        modal.innerHTML = `
             <div class="modal-box">
                 <div class="modal-head">
                     <h3>🌙 Welcome Back!</h3>
-                    <div class="modal-close" onclick="document.getElementById('offline-modal').classList.remove('show')">×</div>
+                    <div class="modal-close" onclick="document.getElementById('${modalId}').classList.remove('show')">×</div>
                 </div>
-                <div class="modal-body" id="offline-body">
-                    <!-- Content injected here -->
+                <div class="modal-body" id="offline-content"></div>
+                <div class="modal-foot" style="padding:14px; text-align:center">
+                    <button class="btn green" onclick="document.getElementById('${modalId}').classList.remove('show')">Awesome!</button>
                 </div>
             </div>
-        </div>`;
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        `;
+        document.body.appendChild(modal);
     }
 
-    const modal = $('offline-modal');
-    const body = $('offline-body');
+    const content = modal.querySelector('#offline-content');
 
     // Format time
-    let timeStr = '';
-    if (seconds < 60) timeStr = `${Math.floor(seconds)}s`;
-    else if (seconds < 3600) timeStr = `${Math.floor(seconds / 60)}m`;
-    else timeStr = `${(seconds / 3600).toFixed(1)}h`;
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const timeStr = h > 0 ? `${h}h ${m}m` : `${m}m`;
 
-    let html = `<p style="color:var(--muted);margin-bottom:12px">You were gone for <b style="color:var(--text)">${timeStr}</b>.</p>`;
-    html += `<h4 style="margin-bottom:8px">Workers Collected:</h4>`;
+    let html = `<p style="color:var(--muted); margin-bottom:16px">You were gone for <b>${timeStr}</b>. Here is what your workers gathered:</p>`;
     html += `<div class="list">`;
 
-    let totalVal = 0;
-
-    for (const [id, qty] of Object.entries(gained)) {
-        const res = R[id];
-        if (!res) continue;
-        const val = qty * res.p;
-        totalVal += val;
-
-        html += `<div class="item">
-            <span class="ic">${res.i}</span>
-            <span class="nm">${res.n}</span>
-            <span class="qt">+${qty}</span>
-            <span class="pr">$${val}</span>
-        </div>`;
+    for (const [key, qty] of Object.entries(gainedItems)) {
+        const item = R[key] || { n: key, i: '📦' };
+        html += `
+            <div class="item">
+                <div class="ic">${item.i}</div>
+                <div class="nm">${item.n}</div>
+                <div class="qt" style="color:var(--green)">+${qty}</div>
+            </div>
+        `;
     }
-
     html += `</div>`;
-    html += `<div style="margin-top:16px;text-align:right;font-weight:bold;color:var(--gold)">Total Value ≈ $${totalVal.toLocaleString()}</div>`;
-    html += `<button class="btn green" style="width:100%;margin-top:12px;padding:12px" onclick="document.getElementById('offline-modal').classList.remove('show')">Awesome!</button>`;
 
-    body.innerHTML = html;
-
-    // Show modal (small delay to ensure transition works if just appended)
-    requestAnimationFrame(() => {
-        modal.classList.add('show');
-    });
+    content.innerHTML = html;
+    setTimeout(() => modal.classList.add('show'), 500); // Small delay to ensure logic loads
 }

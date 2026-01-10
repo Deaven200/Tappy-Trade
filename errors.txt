@@ -102,7 +102,7 @@ VERIFIED AND TESTED AT 8:01 AM 1/10/2026
 
 1. Major Feature Missing: Offline Progress.
    Simulating offline time yields 0 progress.
-   [FIXED] - Implemented `offlineModal.js` (Round 5). (Tested at 8:01 AM 1/10/2026)
+   [PARTIAL] - Implemented as banner, but needs proper Modal improvement. (Tested at 8:24 AM 1/10/2026)
 
 2. Content Missing: Plot 2 (Forest).
    Workers tab displays placeholder "Plot 1" cards.
@@ -144,7 +144,7 @@ VERIFIED AND TESTED AT 8:01 AM 1/10/2026
 
 2. Feature Missing: Game Pause.
    No ability to pause the game loop.
-   [FIXED] - Fixed `stopGameLoop` RAF ID tracking in `gameLoop.js`. (Tested at 8:12 AM 1/10/2026)
+   [FAILED] - `stopGameLoop` does not fully stop the game loop on live site. (Tested at 8:24 AM 1/10/2026)
 
 3. UX: Chat Command Feedback.
    Typing invalid or admin commands like `/help` provides no feedback.

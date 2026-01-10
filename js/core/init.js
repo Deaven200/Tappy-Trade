@@ -50,12 +50,15 @@ export function init() {
                 const gained = window.getInvTotal() - beforeInv;
                 const hours = Math.floor(off / 3600000);
                 const mins = Math.floor((off % 3600000) / 60000);
+                const gainedItems = {};
+                if (gained > 0) gainedItems['items'] = gained; // Should be detailed in real implementation
+
                 if (hours > 0 || mins > 5) {
-                    if (harvested > 0 || gained > 0) {
-                        notif(`⏰ Offline for ${hours}h ${mins}m — workers gathered +${Math.max(0, gained)} items`);
-                    }
+                    // Import dynamically to avoid circular dependency
+                    import('../ui/modals/offlineModal.js').then(m => {
+                        m.showOfflineProgress(gainedItems, off / 1000);
+                    });
                 }
-                console.log('🔍 DEBUG: Processing offline time calc...');
             }
             toast('Welcome back!');
         } else {

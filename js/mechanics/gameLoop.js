@@ -3,14 +3,13 @@
  * Main update cycle for resource regeneration and automation
  */
 
-import { S } from '../core/state.js';
-import { updatePlots } from './plots.js';
-import { updateWorkers } from './workers.js';
-import { save } from '../core/storage.js';
+// Export for index.html to use
+window.update = update;
+window.startGameLoop = startGameLoop;
+window.stopGameLoop = stopGameLoop;
 
-let lastUpdate = Date.now();
-let workerTimer = 0;
-let saveTimer = 0;
+let gameLoopId = null;
+window.gameLoopId = null; // Expose for debugging
 let limitOrderTimer = 0;
 let achievementTimer = 0; // Check achievements periodically
 let renderTimer = 0; // Throttle render calls
@@ -104,9 +103,21 @@ window.stopGameLoop = stopGameLoop;
 
 let gameLoopId = null;
 
+gameLoopId = requestAnimationFrame(gameLoop);
+window.gameLoopId = gameLoopId;
+    }
+
+if (window.gameLoopId) cancelAnimationFrame(window.gameLoopId);
+
+gameLoopId = requestAnimationFrame(gameLoop);
+window.gameLoopId = gameLoopId;
+console.log('✅ Game loop started!');
+}
+
 export function stopGameLoop() {
-    if (gameLoopId) {
-        cancelAnimationFrame(gameLoopId);
+    if (window.gameLoopId) {
+        cancelAnimationFrame(window.gameLoopId);
+        window.gameLoopId = null;
         gameLoopId = null;
         console.log('🛑 Game loop stopped');
     }

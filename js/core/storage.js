@@ -54,6 +54,9 @@ function migrateSave(loadedState) {
  */
 export function save() {
     S.lastUpdate = Date.now();
+    // Persist Government Tiers (fix for Round 6 bug)
+    if (window.playerTiers) S.playerTiers = window.playerTiers;
+
     localStorage.setItem('tt4', JSON.stringify(S));
 
     console.log('💾 Game saved at', new Date().toLocaleTimeString());
@@ -103,6 +106,12 @@ export function load() {
         migrated.inv = cleanInv;
 
         Object.assign(S, migrated);
+
+        // Restore Government Tiers (fix for Round 6 bug)
+        if (S.playerTiers) {
+            window.playerTiers = S.playerTiers;
+        }
+
         if (CONFIG.DEBUG_MODE) console.log('✅ Save loaded successfully');
         return 1;
     } catch (e) {
