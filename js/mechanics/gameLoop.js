@@ -3,6 +3,11 @@
  * Main update cycle for resource regeneration and automation
  */
 
+import { S } from '../core/state.js';
+import { updatePlots } from './plots.js';
+import { updateWorkers } from './workers.js';
+import { save } from '../core/storage.js';
+
 // Export for index.html to use
 window.update = update;
 window.startGameLoop = startGameLoop;
@@ -10,6 +15,10 @@ window.stopGameLoop = stopGameLoop;
 
 let gameLoopId = null;
 window.gameLoopId = null; // Expose for debugging
+
+let lastUpdate = Date.now();
+let workerTimer = 0;
+let saveTimer = 0;
 let limitOrderTimer = 0;
 let achievementTimer = 0; // Check achievements periodically
 let renderTimer = 0; // Throttle render calls
@@ -76,6 +85,9 @@ export function update(delta) {
 export function startGameLoop() {
     lastUpdate = Date.now();
 
+    // Stop any existing loop first to avoid duplicates
+    if (window.gameLoopId) stopGameLoop();
+
     function gameLoop() {
         try {
             const now = Date.now();
@@ -90,30 +102,17 @@ export function startGameLoop() {
             console.error('Game Loop Error:', e);
         }
         gameLoopId = requestAnimationFrame(gameLoop);
+        window.gameLoopId = gameLoopId;
     }
 
     gameLoopId = requestAnimationFrame(gameLoop);
+    window.gameLoopId = gameLoopId;
     console.log('✅ Game loop started!');
 }
 
-// Export for index.html to use
-window.update = update;
-window.startGameLoop = startGameLoop;
-window.stopGameLoop = stopGameLoop;
-
-let gameLoopId = null;
-
-gameLoopId = requestAnimationFrame(gameLoop);
-window.gameLoopId = gameLoopId;
-    }
-
-if (window.gameLoopId) cancelAnimationFrame(window.gameLoopId);
-
-gameLoopId = requestAnimationFrame(gameLoop);
-window.gameLoopId = gameLoopId;
-console.log('✅ Game loop started!');
-}
-
+/**
+ * Stop the game loop
+ */
 export function stopGameLoop() {
     if (window.gameLoopId) {
         cancelAnimationFrame(window.gameLoopId);
