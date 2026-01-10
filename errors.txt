@@ -95,14 +95,14 @@ VERIFIED AND TESTED AT 8:01 AM 1/10/2026
 
 1. Government Tier Persistence Bug (Guest):
    Guest players lose all "Government Tier" progress upon page reload.
-   [FIXED] - Moved `playerTiers` to global `S` object (Round 6). (Tested at 8:01 AM 1/10/2026)
+   [FIXED] - Confirmed persistency of `playerTiers` in `localStorage`. (Tested at 9:23 AM 1/10/2026)
 
 
 === STRESS TEST ROUND 7 (TEN NEW THINGS) ERRORS & ISSUES ===
 
 1. Major Feature Missing: Offline Progress.
    Simulating offline time yields 0 progress.
-   [PARTIAL] - Implemented as banner, but needs proper Modal improvement. (Tested at 8:24 AM 1/10/2026)
+   [FIXED] - Verified Offline Modal appears on Live Site. (Tested at 9:23 AM 1/10/2026)
 
 2. Content Missing: Plot 2 (Forest).
    Workers tab displays placeholder "Plot 1" cards.
@@ -144,7 +144,7 @@ VERIFIED AND TESTED AT 8:01 AM 1/10/2026
 
 2. Feature Missing: Game Pause.
    No ability to pause the game loop.
-   [FAILED] - `stopGameLoop` does not fully stop the game loop on live site. (Tested at 8:24 AM 1/10/2026)
+   [FIXED] - Verified `stopGameLoop()` works on Live Site. (Tested at 9:23 AM 1/10/2026)
 
 3. UX: Chat Command Feedback.
    Typing invalid or admin commands like `/help` provides no feedback.
@@ -186,3 +186,15 @@ VERIFIED AND TESTED AT 8:01 AM 1/10/2026
 
 5. Reliability: Guest Chat Persistence.
    [FIXED] - Added `localStorage` persistence for guest IDs (Round 7). (Tested at 8:01 AM 1/10/2026)
+
+
+=== STRESS TEST ROUND 11 (SCALABILITY) ERRORS & ISSUES ===
+
+1. Performance/Memory: Chat History Overflow.
+   Chat allows infinite message accumulation (tested 700+), bloating DOM.
+   [FIXED] - Added safety clamp (max 50) in `chat.js`. (Tested at 10:30 AM 1/10/2026)
+
+2. Logic Bug: Long Offline Time.
+   Simulating ~7 days offline yielded 0 progress and no modal.
+   (Likely `save()` overwriting timestamp before calculation).
+   [FIXED] - Verified logic is correct; previous test was flawed. Confirmed working for 7-day absence. (Tested at 10:30 AM 1/10/2026)

@@ -198,3 +198,45 @@
 
 10. CSS Variable Check: FAILED.
     - `--bg1` variable not found on root/body. Theme system likely hardcoded.
+
+
+=== STRESS TEST ROUND 11 (SCALABILITY & REGRESSION) ===
+
+1. Infinity Handling: PASSED.
+   - UI correctly displays "$InfinityB" and handles infinite resources 
+     without crashing.
+
+2. Max Worker Load (101 Workers): PASSED.
+   - Game maintained ~47 FPS with 100+ active workers and all plots execution.
+   - No significant lag spikes observed.
+
+3. Chat History Limit: FAILED.
+   - Chat DOM grew to 700+ elements after injection. No clamping logic found.
+   - Potential memory leak for long sessions.
+
+4. Tab Switching Performance: PASSED.
+   - 50 rapid tab switches in 5 seconds produced 0 console errors.
+
+5. Sound Persistence: PASSED.
+   - Toggling sound OFF persisted correctly across page reload.
+
+6. Toast Spam: PASSED.
+   - Fired 50 toasts. They stacked visually and cleared automatically.
+   - No permanent DOM residue.
+
+7. Floating Text Cleanup: PASSED.
+   - Spawned 50 floating texts. DOM count returned to 0 after animation.
+
+8. Long Offline Time: FAILED/INCONCLUSIVE.
+   - Simulated 7-day offline period. Login simply showed game.
+   - No Offline Modal appeared.
+   - Possible cause: `save()` function updating timestamp before write, 
+     or logic error in large delta calculation.
+
+9. Negative Input Regression: PASSED.
+   - Market correctly sanitized "-50" input to standard positive value.
+   - No exploit found.
+
+10. Save Corruption Resilience: PASSED.
+    - Injecting "CORRUPT" string into localStorage forced a clean 
+      save reset (New Game) without crashing.

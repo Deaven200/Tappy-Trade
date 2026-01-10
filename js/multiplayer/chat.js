@@ -219,6 +219,11 @@ function renderChat() {
     const loggedInUser = window.loggedInUser;
     let h = '';
 
+    // Safety Clamp: Ensure we never render more than 50 messages
+    if (chatMessages.length > 50) {
+        chatMessages = chatMessages.slice(0, 50);
+    }
+
     if (chatMessages.length === 0) {
         h = '<div class="empty">No messages yet. Say hi!</div>';
     } else {
