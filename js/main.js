@@ -41,6 +41,7 @@ import { showAccount, closeAccount, registerAccount, loginAccount, logoutAccount
 import { showChat, closeChat, sendChat, setupChatKeyboard } from './multiplayer/chat.js';
 import { showLeaderboard, closeLeaderboard } from './multiplayer/leaderboard.js';
 import { loadGovernmentTiers, recordGovernmentSale, calculateGovernmentPrice, getAllPlayerTiers } from './mechanics/governmentTiers.js';
+import { initializeEventHandlers } from './ui/eventHandlers.js';
 
 // UI System modules (Phase 2H)
 import { applySettings, setTheme, setFontSize, toggleTheme, updateThemeButton } from './ui/settings.js';
