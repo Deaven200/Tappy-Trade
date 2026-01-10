@@ -24,7 +24,7 @@ import { save, load, saveToCloud, loadFromCloud } from './core/storage.js';
 // UI modules (Phase 2D)
 import {
     render, switchScreen, updateStats, setInvView, setInvSort,
-    showHome, showInventory, showWorkers, showPlayerMarket, showStats, showHelp, showAchievements
+    showHome, showInventory, showWorkers, showPlayerMarket, showStats, showHelp, showAchievements, showPriceList
 } from './ui/render.js';
 import { initializeEventHandlers } from './ui/eventHandlers.js';
 
