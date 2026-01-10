@@ -89,7 +89,8 @@ export async function registerAccount(userArg, passArg) {
         await new Promise(resolve => setTimeout(resolve, 500));
 
         // Simple registration (would use Firebase Auth in production)
-        loggedInUser = { id: Date.now().toString(), username };
+        const cleanId = username.toLowerCase().replace(/[^a-z0-9]/g, '');
+        loggedInUser = { id: 'user_' + cleanId, username };
         window.loggedInUser = loggedInUser;
 
         // Save based on Remember Me
@@ -158,7 +159,9 @@ export async function loginAccount(userArg, passArg) {
         await new Promise(resolve => setTimeout(resolve, 500));
 
         // Simple login (would use Firebase Auth in production)
-        loggedInUser = { id: Date.now().toString(), username };
+        // FIX: Use username as ID to ensure consistent save lookup
+        const cleanId = username.toLowerCase().replace(/[^a-z0-9]/g, '');
+        loggedInUser = { id: 'user_' + cleanId, username };
         window.loggedInUser = loggedInUser;
 
         // Save based on Remember Me

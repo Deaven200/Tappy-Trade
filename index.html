@@ -1830,7 +1830,13 @@
 
         // All initialization now handled by main.js
         // window exports are handled by main.js
-        // window.init() removed to prevent race condition - handled by initializeGame() above
+        window.addEventListener('modulesReady', () => {
+            console.log('🚀 Modules ready, initializing game...');
+            // Initialize game if not blocked by login screen
+            if (window.init && typeof window.shouldShowLoginScreen === 'function' && !window.shouldShowLoginScreen()) {
+                window.init();
+            }
+        });
     </script>
 </body>
 

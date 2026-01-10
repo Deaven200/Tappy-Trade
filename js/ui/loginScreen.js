@@ -133,9 +133,9 @@ export async function handleRegister() {
 export function continueAsGuest() {
     console.log('👤 Continuing as guest');
 
-    // Clear any existing save data to start fresh
-    localStorage.removeItem('tt4');
-    localStorage.removeItem('tt4_user');
+    // Do NOT clear existing save data - let them resume their guest session
+    // localStorage.removeItem('tt4'); 
+    // localStorage.removeItem('tt4_user');
 
     // Set guest flag in localStorage
     localStorage.setItem('tt4_guest', 'true');
