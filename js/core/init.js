@@ -89,39 +89,8 @@ export function init() {
     // Initialize music
     if (window.initMusic) window.initMusic();
 
-    // ===== OFFLINE PROGRESS CALCULATION =====
-    const now = Date.now();
-    const lastUpdate = S.lastUpdate || now;
-    const timeDelta = now - lastUpdate;
-    const secondsOffline = timeDelta / 1000;
-    const maxOfflineSeconds = 12 * 3600; // 12 hours max
-
-    // Only process offline progress if >60 seconds passed
-    if (secondsOffline > 60) {
-        const catchupTime = Math.min(secondsOffline, maxOfflineSeconds);
-        console.log(`⏰ Offline for ${(catchupTime / 60).toFixed(1)} minutes, calculating catch-up...`);
-
-        // Calculate worker harvests (every 5 seconds)
-        const harvestCycles = Math.floor(catchupTime / 5);
-        if (harvestCycles > 0 && S.workers && S.workers.length > 0) {
-            for (let i = 0; i < harvestCycles; i++) {
-                window.updateWorkers();
-            }
-            console.log(`✅ Processed ${harvestCycles} worker harvest cycles`);
-        }
-
-        // Calculate resource regeneration
-        window.updatePlots(catchupTime);
-
-        const hours = Math.floor(catchupTime / 3600);
-        const minutes = Math.floor((catchupTime % 3600) / 60);
-        let timeStr = '';
-        if (hours > 0) timeStr += `${hours}h `;
-        if (minutes > 0 || hours === 0) timeStr += `${minutes}m`;
-
-        notif(`⏰ Welcome back! Collected ${harvestCycles} auto-harvests from ${timeStr} offline`);
-        save();
-    }
+    // Update lastUpdate timestamp
+    S.lastUpdate = now;
 
     // Update lastUpdate timestamp
     S.lastUpdate = now;

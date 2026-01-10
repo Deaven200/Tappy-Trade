@@ -73,14 +73,18 @@ export function startGameLoop() {
     lastUpdate = Date.now();
 
     function gameLoop() {
-        const now = Date.now();
-        const delta = (now - lastUpdate) / 1000; // Convert to seconds
-        lastUpdate = now;
+        try {
+            const now = Date.now();
+            const delta = (now - lastUpdate) / 1000; // Convert to seconds
+            lastUpdate = now;
 
-        // Cap delta to prevent huge jumps
-        const cappedDelta = Math.min(delta, 1);
+            // Cap delta to prevent huge jumps
+            const cappedDelta = Math.min(delta, 1);
 
-        update(cappedDelta);
+            update(cappedDelta);
+        } catch (e) {
+            console.error('Game Loop Error:', e);
+        }
         requestAnimationFrame(gameLoop);
     }
 
