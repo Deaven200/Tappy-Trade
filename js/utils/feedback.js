@@ -22,7 +22,7 @@ export function toast(m, t = '') {
  * @param {string} m - Message to display
  */
 export function notif(m) {
-    const e = $('notif');
+    const e = $('notif-container');
     e.textContent = m;
     e.classList.add('show');
     setTimeout(() => e.classList.remove('show'), 3000);

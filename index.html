@@ -1413,6 +1413,13 @@
         </div>
     </div>
     <!-- Daily Rewards Modal -->
+    <!-- Global Wrappers for Login Actions (Pre-load shims) -->
+    <script>
+        // Simple shims for login buttons to prevent errors if clicked early
+        window.continueAsGuest = () => { if (window.convertGuestToAccount) window.continueAsGuest(); else console.log('⏳ Waiting for game load...'); };
+        window.loginAccount = () => { if (window.handleLogin) window.loginAccount(); else console.log('⏳ Waiting for game load...'); };
+        window.registerAccount = () => { if (window.handleRegister) window.registerAccount(); else console.log('⏳ Waiting for game load...'); };
+    </script>
     <div class="modal" id="daily-modal">
         <div class="modal-box">
             <div class="modal-head">
@@ -1443,7 +1450,7 @@
         </div>
     </div>
     <div class="tip" id="tip"></div>
-    <div class="notif" id="notif"></div>
+    <div class="notif" id="notif-container"></div>
     <div class="tut" id="tutorial" style="display:none">
         <div class="tut-box">
             <h2>🌲 Welcome!</h2>
