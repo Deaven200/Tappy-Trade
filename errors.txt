@@ -10,8 +10,9 @@
    logic is stuck on default quantity (10) even when the
    user inputs a different number.
 
-4. UI Issue: Chat input field does not clear instantly
-   after the 'Send' button is clicked.
+4. UX Issue: Chat Input Delay.
+   Chat input remains filled until server confirms message sent, feeling laggy.
+   [FIXED] - Implemented Optimistic UI in `chat.js`, clearing input immediately.
 
 5. UI Issue: Modals (like Chat and Daily Rewards) can
    overlap and block background interactions without a
@@ -20,10 +21,9 @@
 
 === STRESS TEST ROUND 2 ERRORS & ISSUES ===
 
-1. Market 'Total' Price Bug: The "Total" price display
-   logic is not reactive enough. It remains 'stuck' at $50
-   (default) when fields are cleared or contain invalid
-   inputs (negative/NaN), which could mislead users.
+1. UI Issue: Market Total Price.
+   "Total" price in market post form does not update dynamically while typing.
+   [FIXED] - Updated `markets.js` to recalculate total instantly on `input` events.
 
 2. Chat History Bug (Guest): Chat messages sent as Guest
    did not appear in the scrollable history immediately
@@ -77,8 +77,8 @@
    [FIXED] - Updated `dailyRewards.js` to correctly check for `reward.reward` instead of just `.m`.
 
 3. Exploit: Time Travel.
-   Client-side clock trust allows bypassing cooldowns for daily
-   rewards by manipulating `S.lastDailyReward`.
+   Client-side clock trust allows bypassing cooldowns by changing system time.
+   [FIXED] - Added safety check in `dailyRewards.js` to prevent claiming if last claim time is in the future.
 
 4. Exploit: Save Manipulation.
    No checksum or server validation for Guest saves allows editing

@@ -122,7 +122,7 @@ export function renderPlayerMarket(container) {
             <span>each</span>
             <button class="btn green" id="post-order">Post</button>
         </div>
-        <div style="margin-top:8px;font-size:0.75rem;color:var(--muted)">
+        <div id="market-post-total" style="margin-top:8px;font-size:0.75rem;color:var(--muted)">
             Total: $${postQty * postPrice} ${postType === 'sell' ? `(You have: ${S.inv[postRes] || 0})` : ''}
         </div>
     </div>`;
@@ -213,11 +213,35 @@ export function renderPlayerMarket(container) {
         container.innerHTML = h;
 
         // Event listeners
+        // Dynamic updates without re-render destruction
+        const updateTotal = () => {
+            const totalEl = document.getElementById('market-post-total');
+            if (totalEl) {
+                const total = postQty * postPrice;
+                const invTxt = postType === 'sell' ? `(You have: ${S.inv[postRes] || 0})` : '';
+                totalEl.textContent = `Total: $${total} ${invTxt}`;
+            }
+        };
+
         $('type-sell')?.addEventListener('click', () => { postType = 'sell'; window.render(); });
         $('type-buy')?.addEventListener('click', () => { postType = 'buy'; window.render(); });
-        $('post-res')?.addEventListener('change', e => { postRes = e.target.value; postPrice = R[postRes]?.p || 5; window.render(); });
-        $('post-qty')?.addEventListener('change', e => { postQty = Math.max(1, parseInt(e.target.value) || 1); window.render(); });
-        $('post-price')?.addEventListener('change', e => { postPrice = Math.max(1, parseInt(e.target.value) || 1); window.render(); });
+
+        $('post-res')?.addEventListener('change', e => {
+            postRes = e.target.value;
+            postPrice = R[postRes]?.p || 5;
+            window.render();
+        });
+
+        $('post-qty')?.addEventListener('input', e => {
+            postQty = Math.max(1, parseInt(e.target.value) || 1);
+            updateTotal();
+        });
+
+        $('post-price')?.addEventListener('input', e => {
+            postPrice = Math.max(1, parseInt(e.target.value) || 1);
+            updateTotal();
+        });
+
         $('post-order')?.addEventListener('click', () => window.postOrder(postType, postRes, postQty, postPrice));
 
         container.querySelectorAll('[data-fill]').forEach(btn => {

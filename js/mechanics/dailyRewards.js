@@ -18,6 +18,11 @@ export function canClaimDaily() {
     const now = Date.now();
     const oneDayMs = 24 * 60 * 60 * 1000;
 
+    // Time Travel Protection: If last claim is in the future, prevent claim
+    if (lastClaim > now) {
+        return false;
+    }
+
     return (now - lastClaim) >= oneDayMs;
 }
 

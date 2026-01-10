@@ -7,9 +7,7 @@ import { S } from '../../core/state.js';
 import { R, ITEM_CATS } from '../../config/data.js';
 import { getInvTotal } from '../../utils/inventory.js';
 
-// View and sort state (could be moved to state.js later)
-let invView = 'list'; // 'list' or 'grid'
-let invSort = 'name'; // 'name', 'qty', or 'value'
+// View and sort state (now in S)
 let lastInvState = null; // Track last render state to prevent unnecessary re-renders
 let isInventoryInitialized = false;
 
@@ -17,14 +15,14 @@ let isInventoryInitialized = false;
  * Get current inventory view mode
  */
 export function getInventoryView() {
-    return invView;
+    return S.invView || 'list';
 }
 
 /**
  * Set inventory view mode
  */
 export function setInventoryView(view) {
-    invView = view;
+    S.invView = view;
     lastInvState = null; // Force re-render on view change
 }
 
@@ -32,14 +30,14 @@ export function setInventoryView(view) {
  * Get current inventory sort mode
  */
 export function getInventorySort() {
-    return invSort;
+    return S.invSort || 'name';
 }
 
 /**
  * Set inventory sort mode
  */
 export function setInventorySort(sort) {
-    invSort = sort;
+    S.invSort = sort;
     lastInvState = null; // Force re-render on sort change
 }
 
@@ -77,13 +75,13 @@ export function renderInventoryScreen(container) {
         // Controls: View toggle and Sort
         html += `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
             <div class="view-toggle">
-                <button class="${invView === 'list' ? 'active' : ''}" onclick="window.setInvView('list')">📋</button>
-                <button class="${invView === 'grid' ? 'active' : ''}" onclick="window.setInvView('grid')">📱</button>
+                <button class="${(S.invView || 'list') === 'list' ? 'active' : ''}" onclick="window.setInvView('list')">📋</button>
+                <button class="${(S.invView || 'list') === 'grid' ? 'active' : ''}" onclick="window.setInvView('grid')">📱</button>
             </div>
             <select onchange="window.setInvSort(this.value)" style="padding:4px 8px;border-radius:4px;background:var(--bg2);color:var(--text);border:none;font-size:0.75rem">
-                <option value="name" ${invSort === 'name' ? 'selected' : ''}>By Name</option>
-                <option value="qty" ${invSort === 'qty' ? 'selected' : ''}>By Quantity</option>
-                <option value="value" ${invSort === 'value' ? 'selected' : ''}>By Value</option>
+                <option value="name" ${(S.invSort || 'name') === 'name' ? 'selected' : ''}>By Name</option>
+                <option value="qty" ${(S.invSort || 'name') === 'qty' ? 'selected' : ''}>By Quantity</option>
+                <option value="value" ${(S.invSort || 'name') === 'value' ? 'selected' : ''}>By Value</option>
             </select>
         </div>`;
 
@@ -119,8 +117,9 @@ function renderEmptyInventory() {
 function renderInventoryItems(items) {
     // Sort items
     items.sort((a, b) => {
-        if (invSort === 'qty') return b[1] - a[1];
-        if (invSort === 'value') return (b[1] * (R[b[0]]?.p || 0)) - (a[1] * (R[a[0]]?.p || 0));
+        const sort = S.invSort || 'name';
+        if (sort === 'qty') return b[1] - a[1];
+        if (sort === 'value') return (b[1] * (R[b[0]]?.p || 0)) - (a[1] * (R[a[0]]?.p || 0));
         return (R[a[0]]?.n || '').localeCompare(R[b[0]]?.n || '');
     });
 
@@ -132,7 +131,7 @@ function renderInventoryItems(items) {
         <button class="btn green" onclick="window.sellAll && window.sellAll()" style="padding:6px 12px">💰 Sell All</button>
     </div>`;
 
-    if (invView === 'grid') {
+    if ((S.invView || 'list') === 'grid') {
         html += renderGridView(items);
     } else {
         html += renderListView(items);

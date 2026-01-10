@@ -14,6 +14,8 @@ export function getDefaultState() {
         money: 0,
         inv: {},
         cap: CONFIG.BASE_INVENTORY_CAP,
+        invSort: 'name',
+        invView: 'list',
         sound: 1,
         theme: 'dark',
         fontSize: 'normal',

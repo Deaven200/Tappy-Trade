@@ -170,6 +170,9 @@ export async function sendChat() {
         return;
     }
 
+    // Optimistic UI: Clear input immediately
+    input.value = '';
+
     try {
         await db.collection('chat').add({
             text: sanitizedText,
@@ -182,8 +185,6 @@ export async function sendChat() {
         window._lastChatTime = now;
         window._lastChatText = sanitizedText;
 
-        input.value = '';
-
         // Send to Discord webhook (async, don't wait)
         sendToDiscordWebhook(username, sanitizedText).catch(err => {
             console.log('Discord webhook failed (non-critical):', err);
@@ -192,6 +193,8 @@ export async function sendChat() {
     } catch (e) {
         console.error('Chat send error:', e);
         toast('Failed to send', 'err');
+        // Restore input on error
+        input.value = text;
     }
 }
 
