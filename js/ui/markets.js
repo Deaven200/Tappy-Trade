@@ -240,3 +240,34 @@ export function renderPlayerMarket(container) {
 
 // Export module state setters for window access
 export function setSellQty(id, qty) { sellQty[id] = qty; }
+
+/**
+ * Render Price List Reference Screen
+ * @param {HTMLElement} container
+ */
+export function renderPriceList(container) {
+    let h = `<div class="panel">
+        <h3>💰 Base Price List</h3>
+        <p style="color:var(--muted);font-size:0.75rem;margin-bottom:12px">Reference government sell prices</p>
+        <div class="list" style="margin-bottom:15px">`;
+
+    // Group by category if possible, or just flat list
+    // Flat list sorted by price is useful
+    const sortedItems = Object.entries(R).sort((a, b) => a[1].p - b[1].p);
+
+    for (const [id, r] of sortedItems) {
+        h += `<div class="item">
+            <span class="ic">${r.i}</span>
+            <div style="flex:1">
+                <div class="nm">${r.n}</div>
+            </div>
+            <div style="font-weight:bold;color:var(--gold)">$${r.p}</div>
+        </div>`;
+    }
+
+    h += `</div>
+        <button class="btn" onclick="showHome()" style="width:100%">Back to Game</button>
+    </div>`;
+
+    container.innerHTML = h;
+}

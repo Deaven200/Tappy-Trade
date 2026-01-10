@@ -96,6 +96,10 @@ export function render() {
         case 'help':
             renderHelpScreen(container);
             break;
+        case 'prices':
+            if (window.renderPriceList) window.renderPriceList(container);
+            else container.innerHTML = '<div class="panel">Loading...</div>';
+            break;
         default:
             // Unknown screen - show home
             renderHomeScreen(container);
@@ -125,6 +129,12 @@ function renderPlayerMarketScreen(container) {
 
 // Placeholder for help screen
 function renderHelpScreen(container) {
+    // Use the module if loaded, otherwise fallback
+    if (window.renderHelp) {
+        window.renderHelp(container);
+        return;
+    }
+
     container.innerHTML = `<div class="panel">
         <h3>❓ Help</h3>
         <p>Tappy Trade - A farming idle game</p>
@@ -166,6 +176,11 @@ export function showStats() {
 
 export function showHelp() {
     switchScreen('help');
+}
+
+export function showPriceList() {
+    switchScreen('prices');
+    if (window.closeMenu) window.closeMenu();
 }
 
 export function showAchievements() {

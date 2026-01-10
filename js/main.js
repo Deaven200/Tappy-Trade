@@ -53,7 +53,7 @@ import { showGovernmentDev, closeGovernmentDev } from './ui/governmentDev.js';
 import { renameFarm } from './ui/farmNaming.js';
 import { resetGame } from './ui/gameReset.js';
 import { showTip } from './ui/tooltip.js';
-import { renderMarket, renderPlayerMarket, setSellQty, resetMarketInit } from './ui/markets.js';
+import { renderMarket, renderPlayerMarket, setSellQty, resetMarketInit, renderPriceList } from './ui/markets.js';
 import { showSuggestions, closeSuggestions, sendSuggestion } from './ui/suggestions.js';
 
 // Additional Mechanics (Phase 2H)
@@ -232,6 +232,8 @@ window.handleRegister = handleRegister;
 window.continueAsGuest = continueAsGuest;
 window.convertGuestToAccount = convertGuestToAccount;
 window.shouldShowLoginScreen = shouldShowLoginScreen;
+window.renderPriceList = renderPriceList; // Export renderPriceList
+window.showPriceList = showPriceList; // Export showPriceList
 window.init = init; // MOBILE FIX: Now properly imported at top of file
 
 // ===== MODULE STATUS LOG =====
