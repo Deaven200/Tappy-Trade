@@ -46,29 +46,39 @@ export function init() {
         toast('Welcome back!');
     } else {
         // New game - show tutorial
-        $('tutorial').style.display = 'flex';
+        const tut = $('tutorial');
+        if (tut) tut.style.display = 'flex';
     }
 
     // Setup sound button
-    $('sound-btn').onclick = () => {
-        S.sound = S.sound ? 0 : 1;
-        $('sound-btn').textContent = S.sound ? '🔊 Sound ON' : '🔇 Sound OFF';
+    const soundBtn = $('sound-btn');
+    if (soundBtn) {
+        soundBtn.onclick = () => {
+            S.sound = S.sound ? 0 : 1;
+            soundBtn.textContent = S.sound ? '🔊 Sound ON' : '🔇 Sound OFF';
 
-        // Control music
-        if (window.bgMusic) {
-            window.bgMusic.muted = !S.sound;
-        }
+            // Control music
+            if (window.bgMusic) {
+                window.bgMusic.muted = !S.sound;
+            }
 
-        // Start music if enabling sound
-        if (S.sound && window.__ttStartMusic) {
-            window.__ttStartMusic();
-        }
-        save();
-    };
-    $('sound-btn').textContent = S.sound ? '🔊 Sound ON' : '🔇 Sound OFF';
+            // Start music if enabling sound
+            if (S.sound && window.__ttStartMusic) {
+                window.__ttStartMusic();
+            }
+            save();
+        };
+        soundBtn.textContent = S.sound ? '🔊 Sound ON' : '🔇 Sound OFF';
+    }
 
     // Initial render
-    window.render();
+    try {
+        window.render();
+    } catch (e) {
+        console.error('Initial render failed:', e);
+        // Fallback: try to show home screen at least
+        if (window.showHome) window.showHome();
+    }
 
     // Initialize event delegation (must be after render since it needs #main to exist)
     if (window.initializeEventHandlers) {
