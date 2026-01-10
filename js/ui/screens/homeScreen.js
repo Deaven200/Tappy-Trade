@@ -176,7 +176,6 @@ function renderSubplot(subplot, plotIndex, subIndex) {
     const isStorage = subplot.t === 'storage';
 
     return `<div class="sub ${ready ? 'ready' : ''} ${config.b ? 'building' : ''}" 
-                 data-action="tap"
                  data-p="${plotIndex}" data-s="${subIndex}" 
                  onclick="window.tap && window.tap(${plotIndex}, ${subIndex})"
                  style="opacity:0.85;backdrop-filter:blur(2px)">
