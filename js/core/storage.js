@@ -15,11 +15,30 @@ function migrateSave(loadedState) {
     const version = loadedState.saveVersion || 1;
     if (CONFIG.DEBUG_MODE) console.log('Migrating save from version', version, 'to', SAVE_VERSION);
 
+    // Critical Integrity Checks
+    if (typeof loadedState.money !== 'number' || isNaN(loadedState.money)) loadedState.money = 0;
+    if (loadedState.money < 0) loadedState.money = 0; // Prevent negative money debt
+
+    // Ensure inventory exists
+    if (!loadedState.inv || typeof loadedState.inv !== 'object') loadedState.inv = {};
+
+    // Ensure plots exist (if missing, reset to default)
+    if (!loadedState.plots || !Array.isArray(loadedState.plots) || loadedState.plots.length === 0) {
+        loadedState.plots = getDefaultState().plots;
+    }
+
     // Version 1 → 2: Fix inventory cap
     if (version < 2) {
         loadedState.cap = CONFIG.BASE_INVENTORY_CAP;
         loadedState.saveVersion = 2;
         if (CONFIG.DEBUG_MODE) console.log('✅ Migrated cap to', CONFIG.BASE_INVENTORY_CAP);
+    }
+
+    // Version 2 → 3: Add new persistence fields if missing
+    if (version < 3) {
+        if (!loadedState.invSort) loadedState.invSort = 'name';
+        if (!loadedState.invView) loadedState.invView = 'list';
+        loadedState.saveVersion = 3;
     }
 
     // Add missing fields

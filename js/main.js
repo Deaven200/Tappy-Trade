@@ -13,9 +13,12 @@ import { GAME_VERSION, VERSION_DATE, CONFIG, EVENTS, DAILY_REWARDS, SAVE_VERSION
 
 // Utility modules
 import { sanitizeHTML, sanitizeInput } from './utils/security.js';
-import { $, updateSaveIndicator, setLastSaveTime } from './utils/dom.js';
+import { $, updateSaveIndicator, setLastSaveTime, setupImageErrorFallback } from './utils/dom.js';
 import { toast, notif, floatText, floatTextAt, playS, vibrate } from './utils/feedback.js';
 import { getInvTotal, hasItem, addItem, remItem } from './utils/inventory.js';
+
+// Init global error handlers
+setupImageErrorFallback();
 
 // Core modules
 import { S, getDefaultState } from './core/state.js';
