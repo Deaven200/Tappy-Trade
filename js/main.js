@@ -234,6 +234,7 @@ window.convertGuestToAccount = convertGuestToAccount;
 window.shouldShowLoginScreen = shouldShowLoginScreen;
 window.renderPriceList = renderPriceList; // Export renderPriceList
 window.showPriceList = showPriceList; // Export showPriceList
+window.initializeEventHandlers = initializeEventHandlers; // Export initializeEventHandlers
 window.init = init; // MOBILE FIX: Now properly imported at top of file
 
 // ===== MODULE STATUS LOG =====
