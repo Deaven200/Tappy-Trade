@@ -64,6 +64,10 @@ export function sellAll() {
     for (const [itemId, qty] of Object.entries(S.inv)) {
         if (qty > 0) {
             const item = R[itemId];
+
+            // Safety check for invalid/ghost items
+            if (!item) continue;
+
             // Get personal government price based on player's tier
             const personalPrice = window.calculateGovernmentPrice
                 ? window.calculateGovernmentPrice(itemId, item.p)
@@ -97,6 +101,11 @@ export function sellAll() {
  * @param {number} quantity - Amount to buy
  */
 export function buyFromGov(itemId, quantity) {
+    // Security check: Prevent negative/zero quantity exploits
+    if (quantity <= 0) {
+        return;
+    }
+
     const price = getPrice(itemId);
     const cost = price * quantity;
 

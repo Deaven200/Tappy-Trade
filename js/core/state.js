@@ -43,7 +43,16 @@ export function getDefaultState() {
         dailyStreak: 0,
         limitOrders: [],
         farmName: "Untitled Farm",
-        hasRenamedFarm: false
+        limitOrders: [],
+        farmName: "Untitled Farm",
+        hasRenamedFarm: false,
+        governmentTiers: {
+            farming: { totalSold: 0, currentTier: 0 },
+            forestry: { totalSold: 0, currentTier: 0 },
+            mining: { totalSold: 0, currentTier: 0 },
+            livestock: { totalSold: 0, currentTier: 0 },
+            manufacturing: { totalSold: 0, currentTier: 0 }
+        }
     };
 }
 

@@ -1,0 +1,200 @@
+=== STRESS TEST ROUND 4 (PERSISTENCE & ENVIRONMENT) ===
+
+1. LocalStorage Persistence: PASSED. Game saves happen every 10 seconds.
+   Reloaded page after harvesting; items and money were preserved perfectly.
+
+2. Mobile Layout (375x812): USABLE.
+   - All tabs (Home, Inventory, Market) are functional.
+   - "Sell" buttons in Inventory are click-friendly.
+   - Market UI is slightly cramped (text near inputs), but functional.
+
+3. Idle Stability: PASSED.
+   - Ran idle for 30s+ with no errors or memory leaks.
+   - Workers continued to harvest in background.
+
+
+=== STRESS TEST ROUND 5 (SECURITY & EXPLOITS) ===
+
+1. "Time Traveller" Exploit: VULNERABLE.
+   - Manually setting `S.lastDailyReward` to yesterday allows instant
+     claiming of daily rewards.
+   - BUG FOUND: `claimDaily` function looks for `.m` but reward object
+     has `.reward`, resulting in $0 reward despite successful claim.
+
+2. Save File Manipulation: VULNERABLE.
+   - Manually setting `S.money` to 999,999,999 and reloading works.
+   - Game trusts client-side localStorage blindly (valid for Guest play).
+
+3. Market exploits:
+   - Integer Overflow (1e308 qty): SAFE. Game blocks it ("Not enough money").
+   - Negative Quantity Buy: CRITICAL VULNERABILITY.
+     Posting a generic buy order for -1,000,000 items *adds* the cost
+     to your balance ($5,000,000 gained instantly). Infinite money glitch.
+
+
+=== STRESS TEST ROUND 6 (ADVANCED FEATURES) ===
+
+1. Achievement System: PASSED.
+   - Manually triggering harvest stats to 1000 correctly fired the
+     'Achievement Unlocked: Farmer!' notification.
+
+2. Leaderboard Offline Handling: PASSED.
+   - Gracefully displayed '⚠️ Connect to play online...' error when
+     database connection was simulated as broken.
+
+3. Government Tier Persistence (Guest): FAILED (BUG CONFIRMED).
+   - Mocked sale of 1000 items correctly leveled up tier in-memory.
+   - Refreshing the page WIPED all government tier progress for Guest.
+   - Confirms that generic save system does not persist `playerTiers`
+     for Guest accounts, only `S` state (money/inv/plots).
+
+
+=== STRESS TEST ROUND 7 (THE "TEN NEW THINGS") ===
+
+1. Inventory Cap: PASSED. 
+   - Hitting 1000 items blocked further harvesting ("Inventory full!").
+
+2. Farm Renaming XSS: PASSED.
+   - HTML injection (<script>, <img>) was safely escaped.
+
+3. Worker Accuracy: PARTIAL.
+   - 1 Worker harvested 6 items in 20s (expected 4). slightly fast, 
+     but active.
+
+4. Offline Progress Modal: FAILED.
+   - Simulating 1 hour offline time did NOT trigger any "Welcome Back"
+     modal. Feature appears missing or broken.
+
+5. Settings Persistence: PASSED.
+   - Toggling "Sound" off persisted correctly through a reload.
+
+6. Plot Unlocking (Plot 2): FAILED.
+   - "Plot 2 - Forest" is not visible or purchasable in the Workers tab.
+     UI shows multiple identical "Plot 1" cards instead.
+
+7. Chat Anti-Spam: FAILED.
+   - Able to send "Spam" 3 times in a row with no rate limiting.
+
+8. Government Price Math: PASSED.
+   - Selling 1000 items correctly increased base price (5.25 -> 5.5).
+
+9. High Value Formatting: PARTIAL.
+   - $1.5B is shown as "1,500,000,000". Readableish, but lacks "1.5B"
+     short format common in idle games.
+
+10. Cheater Detection: FAILED.
+    - Setting Money to Infinity works fine ($∞ displayed). No "Cheater"
+      flag or crash.
+
+
+=== STRESS TEST ROUND 8 ( THE "NEXT 10 THINGS") ===
+
+1. Event Triggering: FAILED.
+   - Attempted to call `triggerEvent` for "Rain Bonus". Function
+     not exposed or found in global scope. Cannot verify if events work.
+
+2. Synergy Bonus: PASSED.
+   - Mixed plot (Farm/Mine/Factory) correctly calculated 1.2x (20%) bonus.
+
+3. Demolition Refund: FAILED.
+   - Demolishing a building gave $0 refund instead of expected 50%.
+   - Money stayed at 900 after building (cost 100) and demolishing.
+
+4. Max Level Upgrade: PASSED.
+   - Attempting to upgrade Level 5 building correctly blocked (Cost: NaN/Invalid).
+
+5. Hard Reset: FAILED.
+   - Calling `resetGame()` kept money at $5000. Did not wipe progress.
+
+6. Notification Stacking: MIXED.
+   - Queued 10 toasts. They appeared but overlapped visually in center.
+
+7. Confetti Animation: PASSED.
+   - `showConfetti()` worked perfectly.
+
+8. Resource Regeneration: PASSED.
+   - Emptied plot regenerated resources after 5s wait.
+
+9. Save Corruption: PASSED.
+   - Injecting `{bad_json` into localStorage caused game to safely
+     load fresh state instead of crashing.
+
+10. Cost Validation: PASSED.
+    - Buying with $0 correctly blocked.
+
+
+=== STRESS TEST ROUND 9 (EDGE CASES & MIGRATION) ===
+
+1. Save Migration (v0 -> v2): PASSED.
+   - Injected old save format. Game correctly updated `saveVersion` 
+     to 2 and applied new `cap` (1000).
+
+2. Cloud Save Throttling: PASSED.
+   - Rapid save calls correctly triggered `_cloudSaveQueued` flag, 
+     preventing database spam.
+
+3. Chat Command Injection: INCONCLUSIVE.
+   - `/help` command failed to send (Connection Error). No client-side
+     command handling detected.
+
+4. Multi-Buy Affordability: PASSED.
+   - Attempt to buy 10 items ($50) with $10 balance was correctly blocked.
+
+5. Invalid Worker Assignment: PASSED.
+   - Assigning worker to non-existent Plot 99 did NOT crash the game loop.
+     Robus error handling observed.
+
+6. Resource Icon Loading: PASSED.
+   - All loaded images valid. No broken icons found.
+
+7. Toast Auto-Dismissal: PASSED.
+   - Test toast disappeared automatically after ~4 seconds.
+
+8. Prestige/Rebirth: MISSING.
+   - No `prestige` or `rebirth` variables found in state. Feature absent.
+
+9. Game Pause: MISSING.
+   - No `pauseGame` function found. Stop logic unavailable.
+
+10. Inventory Filtering: PASSED.
+    - UI elements for sorting/filtering inventory were found and visible.
+
+
+=== STRESS TEST ROUND 10 (FINAL POLISH & UX) ===
+
+1. Inventory Sorting: PASSED (WITH CAVEATS).
+   - Functions correctly but applies sorting *within* item categories 
+     (e.g., Raw Materials vs Crops) rather than a global sort.
+
+2. Sell All Safety: FAILED (CRASH).
+   - `sellAll()` crashes the game loop if an inventory item exists
+     without a corresponding price entry (e.g., modded item/ghost item).
+
+3. Text Overflow: FAILED.
+   - 100-character farm name expands container indefinitely (1500px+),
+     breaking layout on smaller screens. No CSS truncation (ellipsis).
+
+4. Future Time Glitch: PASSED.
+   - Setting `lastUpdate` to Year 3000 did not crash game/give infinite
+     offline progress. Timestamps auto-corrected on reload.
+
+5. Double-Click Buy: PASSED.
+   - Rapid clicking does not allow buying more than affordable.
+
+6. LocalStorage Quota: PASSED.
+   - Writing 5MB+ to localStorage triggered browser error but Game
+     remained stable and functional.
+
+7. Game Loop Speedup: VULNERABLE.
+   - Manual calls to `update(1000)` successfully speed up game progression.
+     No server-side validation of tick rate.
+
+8. Achievement Persistence: PASSED.
+   - Unlocked achievements persist through reload perfectly.
+
+9. Market Price Stability: PASSED.
+   - Buying 100 items from Gov market did not increase unit price.
+     (Static pricing model confirmed).
+
+10. CSS Variable Check: FAILED.
+    - `--bg1` variable not found on root/body. Theme system likely hardcoded.

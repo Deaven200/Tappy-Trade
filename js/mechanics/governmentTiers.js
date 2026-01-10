@@ -6,14 +6,8 @@
 import { GOVERNMENT_CATEGORIES, GOVERNMENT_TIERS, getResourceCategory, getCurrentTier, getTierBonus, getPersonalGovPrice } from '../config/governmentTiers.js';
 import { toast, playS } from '../utils/feedback.js';
 
-// In-memory tier data (synced with Firebase)
-let playerTiers = {
-    farming: { totalSold: 0, currentTier: 0 },
-    forestry: { totalSold: 0, currentTier: 0 },
-    mining: { totalSold: 0, currentTier: 0 },
-    livestock: { totalSold: 0, currentTier: 0 },
-    manufacturing: { totalSold: 0, currentTier: 0 }
-};
+// In-memory tier data is now in S.governmentTiers for persistence
+import { S } from '../core/state.js';
 
 /**
  * Load player's government tiers from Firebase
@@ -24,7 +18,7 @@ export async function loadGovernmentTiers(userId) {
     try {
         const doc = await window.db.collection('users').doc(userId).get();
         if (doc.exists && doc.data().governmentTiers) {
-            playerTiers = doc.data().governmentTiers;
+            S.governmentTiers = doc.data().governmentTiers;
         }
     } catch (error) {
         console.error('Failed to load government tiers:', error);
@@ -38,17 +32,28 @@ export async function recordGovernmentSale(resourceKey, amount) {
     const category = getResourceCategory(resourceKey);
     if (!category) return;
 
-    // Update local data (works for both logged in and guest)
-    if (!playerTiers[category]) {
-        playerTiers[category] = { totalSold: 0, currentTier: 0 };
+    // Ensure state initialized (migration safety)
+    if (!S.governmentTiers) {
+        S.governmentTiers = {
+            farming: { totalSold: 0, currentTier: 0 },
+            forestry: { totalSold: 0, currentTier: 0 },
+            mining: { totalSold: 0, currentTier: 0 },
+            livestock: { totalSold: 0, currentTier: 0 },
+            manufacturing: { totalSold: 0, currentTier: 0 }
+        };
     }
 
-    const oldTier = playerTiers[category].currentTier;
-    playerTiers[category].totalSold += amount;
-    playerTiers[category].currentTier = getCurrentTier(playerTiers[category].totalSold);
+    // Update global state data
+    if (!S.governmentTiers[category]) {
+        S.governmentTiers[category] = { totalSold: 0, currentTier: 0 };
+    }
+
+    const oldTier = S.governmentTiers[category].currentTier;
+    S.governmentTiers[category].totalSold += amount;
+    S.governmentTiers[category].currentTier = getCurrentTier(S.governmentTiers[category].totalSold);
 
     // Check for tier unlock
-    const newTier = playerTiers[category].currentTier;
+    const newTier = S.governmentTiers[category].currentTier;
     if (newTier > oldTier) {
         handleTierUnlock(category, newTier);
     }
@@ -58,13 +63,13 @@ export async function recordGovernmentSale(resourceKey, amount) {
     if (userId && window.db) {
         try {
             await window.db.collection('users').doc(userId).set({
-                governmentTiers: playerTiers
+                governmentTiers: S.governmentTiers
             }, { merge: true });
         } catch (error) {
             console.error('Failed to save government tiers:', error);
         }
     }
-    // For guest players, tiers are kept in memory (lost on refresh, but works during session)
+    // Guest players now auto-save via the main game save loop since it's in S
 }
 
 /**
@@ -86,7 +91,7 @@ function handleTierUnlock(category, tier) {
  * Get player's current tier for a category
  */
 export function getPlayerTier(category) {
-    return playerTiers[category] || { totalSold: 0, currentTier: 0 };
+    return (S.governmentTiers && S.governmentTiers[category]) || { totalSold: 0, currentTier: 0 };
 }
 
 /**
@@ -106,5 +111,5 @@ export function calculateGovernmentPrice(resourceKey, basePrice) {
  * Get all player tiers (for UI display)
  */
 export function getAllPlayerTiers() {
-    return playerTiers;
+    return S.governmentTiers || {};
 }

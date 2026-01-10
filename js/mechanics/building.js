@@ -167,7 +167,7 @@ export function doBuild(t) {
         const orig = Object.values(B).flat().find(b => b.t === s.t);
 
         // Refund 50% of resources
-        if (orig) {
+        if (orig && orig.c) {
             for (const k in orig.c) {
                 if (k === 'm') {
                     S.money += Math.floor(orig.c.m * 0.5);
@@ -175,6 +175,10 @@ export function doBuild(t) {
                     addItem(k, Math.floor(orig.c[k] * 0.5));
                 }
             }
+            toast('Building demolished (50% refunded)', 'ok');
+        } else {
+            // Fallback if cost not found
+            toast('Building demolished', 'ok');
         }
 
         // Deduct storage capacity if building provided it

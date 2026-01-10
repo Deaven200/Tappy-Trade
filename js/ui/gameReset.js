@@ -3,6 +3,7 @@
  * Handles complete game reset with cloud save deletion
  */
 
+import { S, getDefaultState } from '../core/state.js';
 import { toast } from '../utils/feedback.js';
 
 /**
@@ -16,8 +17,14 @@ export function resetGame() {
     // Prevent beforeunload from saving over our reset
     window.isResetting = true;
 
-    // Clear ALL local storage
-    localStorage.clear();
+    // Clear local storage
+    localStorage.removeItem('tt4');
+
+    // Reset in-memory state immediately
+    const newState = getDefaultState();
+    // Preserve some settings if desired, or wipe clean. Wiping clean is safer for hard reset.
+    Object.keys(S).forEach(key => delete S[key]);
+    Object.assign(S, newState);
 
     // Clear cloud save if logged in
     const loggedInUser = window.loggedInUser;

@@ -48,9 +48,14 @@ export function claimDaily() {
     const reward = DAILY_REWARDS[tier];
 
     // Give reward
-    if (reward.m) {
+    if (typeof reward.reward === 'number') {
+        S.money += reward.reward;
+    }
+    // Legacy support or fallback if structure changes to .m key
+    else if (reward.m) {
         S.money += reward.m;
     }
+
     if (reward.items) {
         for (const [itemId, qty] of Object.entries(reward.items)) {
             addItem(itemId, qty);
@@ -59,7 +64,7 @@ export function claimDaily() {
 
     save();
     toast(`Day ${S.dailyStreak} reward claimed!`, 'ok');
-    notif(`🎁 Daily Reward: +$${reward.m || 0}!`);
+    notif(`🎁 Daily Reward: +$${reward.reward || reward.m || 0}!`);
 
     // Update UI to reflect new money and refresh modal
     if (window.render) window.render();
