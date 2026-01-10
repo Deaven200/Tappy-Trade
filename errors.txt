@@ -172,3 +172,31 @@
    Code references `--bg1` but it is not defined in :root, potentially
    leading to fallback colors or inconsistencies.
    [FIXED] - Added `--bg1` definition to `:root` in `index.html`.
+
+=== ADDITIONAL FIXES (ROUND 4) ===
+
+1. Feature: Inventory Sorting Persistence.
+   Inventory sort preference reset on reload.
+   [FIXED] - Added `invSort` and `invView` to global state `S` to persist preferences.
+
+2. Reliability: Save Migration & Integrity.
+   Corrupted saves (NaN money) could crash the game.
+   [FIXED] - Enhanced `migrateSave` to repair corrupted data and handle version upgrades.
+
+3. Reliability: Icon Fallback.
+   Missing images displayed ugly borders.
+   [FIXED] - Added global error handler to replace broken images with placeholders.
+
+=== FINAL POLISH (ROUND 5) ===
+
+1. Feature: Offline Progress UI.
+   Players received no feedback on offline gains (only console logs).
+   [FIXED] - Implemented `offlineModal.js` to display gained items and time away.
+
+2. UX: Favicon 404.
+   Console error for missing favicon.
+   [FIXED] - Added base64 data-uri favicon to index.html.
+
+3. UI: Modal Z-Index Stacking.
+   Notifications could appear behind modals.
+   [FIXED] - Adjusted CSS z-indices to ensure Toasts/Notifs > Modals > Nav.

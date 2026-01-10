@@ -5,6 +5,7 @@
 
 import { S } from './state.js';
 import { CONFIG, SAVE_VERSION } from '../config/constants.js';
+import { showOfflineProgress } from '../ui/modals/offlineModal.js';
 
 // Note: We access updateSaveIndicator and setLastSaveTime via window to avoid circular dependency
 
@@ -212,19 +213,21 @@ export async function loadFromCloud() {
                     }
                 }
 
-                // === DEBUG LOGGING START ===
-                const totalAfter = Object.values(migrated.inv || {}).reduce((a, b) => a + b, 0);
-                const gained = totalAfter - totalBefore;
-                console.log(`📦 Inventory After:  ${totalAfter} items (+${gained})`);
-                console.log(`\n📊 Items Gained:`);
+                // Calculate gained items for UI
+                const gainedItems = {};
                 for (const [k, v] of Object.entries(migrated.inv || {})) {
                     const before = invBefore[k] || 0;
                     const delta = v - before;
                     if (delta > 0) {
-                        console.log(`  +${delta} ${k} (${before} → ${v})`);
+                        gainedItems[k] = delta;
                     }
                 }
-                console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+
+                // Show offline progress modal
+                if (Object.keys(gainedItems).length > 0) {
+                    showOfflineProgress(gainedItems, offlineSeconds);
+                    console.log('🌙 Offline progress modal triggered');
+                }
                 // === DEBUG LOGGING END ===
             }
 

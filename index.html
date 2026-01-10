@@ -15,6 +15,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Tappy Trade">
+    <!-- Base64 Favicon to prevent 404 -->
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏠</text></svg>">
     <link rel="apple-touch-icon" href="./icons/icon-192.png">
 
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
@@ -467,7 +470,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 200;
+            z-index: 500;
             opacity: 0;
             pointer-events: none;
             transition: 0.3s
@@ -740,7 +743,7 @@
             padding: 10px 14px;
             border-radius: 8px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-            z-index: 150;
+            z-index: 1100;
             font-size: 0.8rem;
             transform: translateX(120%);
             transition: 0.3s;
