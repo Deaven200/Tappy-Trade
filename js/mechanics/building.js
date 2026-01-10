@@ -172,7 +172,7 @@ export function doBuild(t) {
                 if (k === 'm') {
                     S.money += Math.floor(orig.c.m * 0.5);
                 } else {
-                    addItem(k, Math.floor(orig.c[k] * 0.5));
+                    addItem(S.inv, k, Math.floor(orig.c[k] * 0.5));
                 }
             }
             toast('Building demolished (50% refunded)', 'ok');

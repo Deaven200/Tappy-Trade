@@ -10,26 +10,24 @@ import { $ } from './dom.js';
  * @param {string} m - Message to display
  * @param {string} t - Type: 'ok', 'err', or ''
  */
-// Toast timer to prevent early dismissal
-let toastTimer = null;
-
-/**
- * Show a toast notification
- * @param {string} m - Message to display
- * @param {string} t - Type: 'ok', 'err', or ''
- */
 export function toast(m, t = '') {
-    const e = $('toast');
-
-    // Clear previous timer to prevent toast from hiding too early if spammed
-    if (toastTimer) clearTimeout(toastTimer);
-
+    // Create new toast element
+    const e = document.createElement('div');
     e.textContent = m;
     e.className = 'toast show ' + (t || '');
 
-    toastTimer = setTimeout(() => {
+    // Calculate position based on existing toasts
+    const existing = document.querySelectorAll('.toast.show');
+    const offset = existing.length * 50 + 60; // 60px base + 50px per toast
+    e.style.top = offset + 'px';
+
+    document.body.appendChild(e);
+
+    // Remove after delay
+    setTimeout(() => {
         e.classList.remove('show');
-        toastTimer = null;
+        e.style.opacity = '0';
+        setTimeout(() => e.remove(), 300);
     }, 2000);
 }
 

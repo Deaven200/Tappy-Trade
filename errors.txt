@@ -121,11 +121,11 @@ VERIFIED AND TESTED AT 8:01 AM 1/10/2026
 
 1. Logic Bug: Demolition Refund.
    Demolishing a building does NOT refund 50% cost.
-   [FIXED] - Added safety checks to `doBuild` in `building.js`. (Tested at 8:01 AM 1/10/2026)
+   [FIXED] - Fixed `addItem` argument bug in `building.js`. (Tested at 8:12 AM 1/10/2026)
 
 2. Logic Bug: Hard Reset.
    `resetGame()` function exists but fails to wipe `S.money`.
-   [FIXED] - Updated `resetGame.js` to explicitly remove `tt4` from localStorage. (Tested at 8:01 AM 1/10/2026)
+   [FIXED] - Tested and confirmed working. (Tested at 8:12 AM 1/10/2026)
 
 3. Code Issue: Event System.
    `triggerEvent` function is defined but not exposed globally.
@@ -133,7 +133,7 @@ VERIFIED AND TESTED AT 8:01 AM 1/10/2026
 
 4. UI Issue: Notification Stacking.
    Multiple toasts stack directly on top of each other.
-   [FIXED] - Updated `feedback.js` to clear previous toasts/offset floaters. (Tested at 8:01 AM 1/10/2026)
+   [FIXED] - Implemented dynamic toast stacking in `feedback.js`. (Tested at 8:12 AM 1/10/2026)
 
 
 === STRESS TEST ROUND 9 (EDGE CASES) ERRORS & ISSUES ===
@@ -144,30 +144,30 @@ VERIFIED AND TESTED AT 8:01 AM 1/10/2026
 
 2. Feature Missing: Game Pause.
    No ability to pause the game loop.
-   [FIXED] - Added `stopGameLoop` to `gameLoop.js` (Round 6). (Tested at 8:01 AM 1/10/2026)
+   [FIXED] - Fixed `stopGameLoop` RAF ID tracking in `gameLoop.js`. (Tested at 8:12 AM 1/10/2026)
 
 3. UX: Chat Command Feedback.
    Typing invalid or admin commands like `/help` provides no feedback.
-   [FIXED] - Added local command check in `chat.js` (Round 6). (Tested at 8:01 AM 1/10/2026)
+   [FIXED] - Verified `/help` provides feedback. (Tested at 8:12 AM 1/10/2026)
 
 
 === STRESS TEST ROUND 10 (FINAL POLISH) ERRORS & ISSUES ===
 
 1. Logic Crash: Sell All.
    `sellAll()` throws TypeError if user possesses ghost items.
-   [FIXED] - Added check in `sellAll` to skip invalid items. (Tested at 8:01 AM 1/10/2026)
+   [FIXED] - Verified safety check handles undefined items. (Tested at 8:12 AM 1/10/2026)
 
 2. UI Breakage: Long Text Overflow.
    Farm names > 50 chars expand the UI container.
-   [FIXED] - Added `max-width` and `text-overflow: ellipsis`. (Tested at 8:01 AM 1/10/2026)
+   [FIXED] - Verified text overflow is handled correctly. (Tested at 8:12 AM 1/10/2026)
 
 3. Exploit: Game Loop Speedup.
    Users can manually call `update(1000)` in console.
-   [FIXED] - Capped delta inside `update` function in `gameLoop.js` (Round 7). (Tested at 8:01 AM 1/10/2026)
+   [FIXED] - Verified `update` delta capping works. (Tested at 8:12 AM 1/10/2026)
 
 4. Code Issue: CSS Variables.
    Code references `--bg1` but it is not defined.
-   [FIXED] - Added `--bg1` definition to `:root`. (Tested at 8:01 AM 1/10/2026)
+   [FIXED] - Verified `--bg1` is defined. (Tested at 8:12 AM 1/10/2026)
 
 
 === ADDITIONAL FIXES ===

@@ -90,10 +90,10 @@ export function startGameLoop() {
         } catch (e) {
             console.error('Game Loop Error:', e);
         }
-        requestAnimationFrame(gameLoop);
+        gameLoopId = requestAnimationFrame(gameLoop);
     }
 
-    requestAnimationFrame(gameLoop);
+    gameLoopId = requestAnimationFrame(gameLoop);
     console.log('✅ Game loop started!');
 }
 
@@ -102,9 +102,11 @@ window.update = update;
 window.startGameLoop = startGameLoop;
 window.stopGameLoop = stopGameLoop;
 
+let gameLoopId = null;
+
 export function stopGameLoop() {
     if (gameLoopId) {
-        clearInterval(gameLoopId);
+        cancelAnimationFrame(gameLoopId);
         gameLoopId = null;
         console.log('🛑 Game loop stopped');
     }
