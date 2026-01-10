@@ -240,3 +240,24 @@
 10. Save Corruption Resilience: PASSED.
     - Injecting "CORRUPT" string into localStorage forced a clean 
       save reset (New Game) without crashing.
+
+
+=== STRESS TEST ROUND 12 (FINAL ACCEPTANCE & MOBILE) ===
+
+1. Mobile Layout Check: PASSED.
+   - Verified on simulated iPhone X resolution (375x812).
+   - Bottom navigation, top header, and chat modal are fully usable.
+
+2. Network Disconnect Handling: FAILED (MISSING FEATURE).
+   - Simulating offline state (`window.dispatchEvent(new Event('offline'))`)
+     produced no UI feedback. User is unaware of disconnect.
+
+3. Accessibility Audit: PASSED.
+   - Screen Reader check found 0 issues with basic button/image labels.
+
+4. Memory Leak Check: PASSED.
+   - Rapidly toggling Inventory modal 50 times showed stable DOM count.
+
+5. "New Game" Clean Slate: FAILED.
+   - `localStorage.clear()` followed by reload restored the OLD save.
+   - The game appears to be auto-loading from cloud or has a 'ghost' save issue.

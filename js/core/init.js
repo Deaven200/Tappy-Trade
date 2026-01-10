@@ -15,6 +15,10 @@ import { updateDayNight, startDayNightCycle } from '../ui/dayNight.js';
 export function init() {
     console.log('🔍 DEBUG: Init started');
 
+    // Network Status Indicators
+    window.addEventListener('offline', () => toast('⚠️ Connection Lost - Offline Mode', 'err'));
+    window.addEventListener('online', () => toast('✅ Connection Restored', 'good'));
+
     // Restore logged-in account
     try {
         if (window.loadSavedUser) window.loadSavedUser();

@@ -17,6 +17,9 @@ export function resetGame() {
     // Prevent beforeunload from saving over our reset
     window.isResetting = true;
 
+    // Stop loop to prevent auto-saves or updates
+    if (window.stopGameLoop) window.stopGameLoop();
+
     // Clear local storage
     localStorage.removeItem('tt4');
 

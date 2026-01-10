@@ -198,3 +198,15 @@ VERIFIED AND TESTED AT 8:01 AM 1/10/2026
    Simulating ~7 days offline yielded 0 progress and no modal.
    (Likely `save()` overwriting timestamp before calculation).
    [FIXED] - Verified logic is correct; previous test was flawed. Confirmed working for 7-day absence. (Tested at 10:30 AM 1/10/2026)
+
+
+=== STRESS TEST ROUND 12 (FINAL ACCEPTANCE) ERRORS & ISSUES ===
+
+1. Feature Missing: Network Offline Indicator.
+   No UI feedback when internet connection is lost.
+   [FIXED] - Added `online`/`offline` listeners in `init.js`. (Code Implemented)
+
+2. Logic Critical: 'New Game' Fails.
+   Resetting/Clearing storage does not wipe save. Game reloads with old data.
+   (Suspect Guest ID re-use or Cloud sync override).
+   [FIXED] - Added safety block in `save()` during reset, and stopped game loop. Validated working. (Tested at 10:55 AM 1/10/2026)

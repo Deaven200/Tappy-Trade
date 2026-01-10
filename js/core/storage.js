@@ -53,6 +53,12 @@ function migrateSave(loadedState) {
  * Save game state to localStorage
  */
 export function save() {
+    // Critical: Do not save if we are in the middle of a reset (prevents resurrecting deleted saves)
+    if (window.isResetting) {
+        console.warn('⚠️ Save blocked: Game is resetting');
+        return;
+    }
+
     S.lastUpdate = Date.now();
     // Persist Government Tiers (fix for Round 6 bug)
     if (window.playerTiers) S.playerTiers = window.playerTiers;
