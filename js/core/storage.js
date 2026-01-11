@@ -38,22 +38,21 @@ function migrateSave(loadedState) {
     if (!loadedState.invSort) loadedState.invSort = 'name';
     if (!loadedState.invView) loadedState.invView = 'list';
     loadedState.saveVersion = 3;
-}
 
-// Version 3 → 4: Leaderboard initialization
-if (version < 4) {
-    loadedState.dayId = new Date().toISOString().split('T')[0];
-    // Important: Set startOfDayEarned to CURRENT earned, so they don't get credit for lifetime earnings today
-    loadedState.startOfDayEarned = loadedState.stats?.earned || 0;
-    loadedState.saveVersion = 4;
-    if (CONFIG.DEBUG_MODE) console.log('✅ Migrated leaderboard stats');
-}
+    // Version 3 → 4: Leaderboard initialization
+    if (version < 4) {
+        loadedState.dayId = new Date().toISOString().split('T')[0];
+        // Important: Set startOfDayEarned to CURRENT earned, so they don't get credit for lifetime earnings today
+        loadedState.startOfDayEarned = loadedState.stats?.earned || 0;
+        loadedState.saveVersion = 4;
+        if (CONFIG.DEBUG_MODE) console.log('✅ Migrated leaderboard stats');
+    }
 
-// Add missing fields
-if (!loadedState.farmName) loadedState.farmName = "Untitled Farm";
-if (loadedState.hasRenamedFarm === undefined) loadedState.hasRenamedFarm = false;
+    // Add missing fields
+    if (!loadedState.farmName) loadedState.farmName = "Untitled Farm";
+    if (loadedState.hasRenamedFarm === undefined) loadedState.hasRenamedFarm = false;
 
-return loadedState;
+    return loadedState;
 }
 
 /**
