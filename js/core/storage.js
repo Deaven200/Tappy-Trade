@@ -129,6 +129,9 @@ export function load() {
 /**
  * Save to cloud (Firebase)
  */
+/**
+ * Save to cloud (Firebase)
+ */
 export async function saveToCloud() {
     const loggedInUser = window.loggedInUser;
     const db = window.db;
@@ -141,18 +144,50 @@ export async function saveToCloud() {
     window._cloudSaving = true;
 
     try {
-        await db.collection('saves').doc(loggedInUser.id).set({
+        const saveData = {
             state: JSON.stringify(S),
             username: loggedInUser.username,
             money: S.money,
             lastSave: firebase.firestore.FieldValue.serverTimestamp()
-        });
+        };
+
+        // Save password if we have it in session (from login/register)
+        // This ensures new users get their password saved
+        if (loggedInUser.password) {
+            saveData.password = loggedInUser.password;
+        }
+
+        await db.collection('saves').doc(loggedInUser.id).set(saveData, { merge: true });
     } catch (e) {
         console.error('Cloud save failed:', e);
         // If failed, re-queue to try again
         window._cloudSaveQueued = true;
     }
     window._cloudSaving = false;
+}
+
+/**
+ * Verify user credentials against cloud
+ * @returns {Promise<boolean|null>} true if match, false if mismatch, null if user/pass not found
+ */
+export async function verifyCredentials(userId, password) {
+    const db = window.db;
+    if (!db) return null;
+
+    try {
+        const doc = await db.collection('saves').doc(userId).get();
+        if (doc.exists) {
+            const data = doc.data();
+            // If user has no password saved (legacy), allow logic to proceed (will save on next update)
+            if (!data.password) return null;
+
+            return data.password === password;
+        }
+        return null; // User doesn't exist yet
+    } catch (e) {
+        console.error('Credential check failed:', e);
+        return null;
+    }
 }
 
 /**

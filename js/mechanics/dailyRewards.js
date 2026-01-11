@@ -37,13 +37,30 @@ export function claimDaily() {
 
     const now = Date.now();
     const lastClaim = S.lastDailyReward || 0;
+    const oneDayMs = 24 * 60 * 60 * 1000;
     const twoDaysMs = 48 * 60 * 60 * 1000;
 
+    // Use existing bonus or init to 0
+    if (typeof S.streakBonus !== 'number') S.streakBonus = 0;
+
     // Check if streak continues or resets
-    if ((now - lastClaim) > twoDaysMs) {
-        S.dailyStreak = 1; // Reset streak if missed a day
+    if ((now - lastClaim) > twoDaysMs && lastClaim !== 0) {
+        // Streak broken
+        S.dailyStreak = 1;
+
+        // Calculate days missed for bonus decay
+        // If > 48h, missed 1 day. > 72h, missed 2 days.
+        const daysMissed = Math.floor((now - lastClaim) / oneDayMs) - 1;
+        const decay = Math.max(1, daysMissed) * 2; // -2% per day missed
+        S.streakBonus = Math.max(0, S.streakBonus - decay);
+
+        toast(`Streak broken! Bonus lost: -${decay}%`, 'err');
     } else {
+        // Streak continues
         S.dailyStreak = (S.dailyStreak || 0) + 1;
+
+        // Increase bonus (+1% capped)
+        S.streakBonus = Math.min((S.streakBonus || 0) + 1, CONFIG.MAX_STREAK_BONUS || 100);
     }
 
     S.lastDailyReward = now;
@@ -52,14 +69,20 @@ export function claimDaily() {
     const tier = Math.min(Math.floor(S.dailyStreak / 3), DAILY_REWARDS.length - 1);
     const reward = DAILY_REWARDS[tier];
 
+    // Calculate Bonus Multiplier
+    const bonusMult = 1 + (S.streakBonus / 100);
+
     // Give reward
+    let rewardAmount = 0;
     if (typeof reward.reward === 'number') {
-        S.money += reward.reward;
+        rewardAmount = reward.reward;
+    } else if (reward.m) {
+        rewardAmount = reward.m;
     }
-    // Legacy support or fallback if structure changes to .m key
-    else if (reward.m) {
-        S.money += reward.m;
-    }
+
+    // Apply bonus
+    const finalAmount = Math.floor(rewardAmount * bonusMult);
+    S.money += finalAmount;
 
     if (reward.items) {
         for (const [itemId, qty] of Object.entries(reward.items)) {
@@ -68,8 +91,15 @@ export function claimDaily() {
     }
 
     save();
-    toast(`Day ${S.dailyStreak} reward claimed!`, 'ok');
-    notif(`🎁 Daily Reward: +$${reward.reward || reward.m || 0}!`);
+
+    // Detailed feedback
+    if (S.streakBonus > 0) {
+        toast(`Day ${S.dailyStreak} claimed! (+${S.streakBonus}% Bonus)`, 'ok');
+        notif(`🎁 Daily: $${rewardAmount} + $${finalAmount - rewardAmount} (Bonus) = $${finalAmount}!`);
+    } else {
+        toast(`Day ${S.dailyStreak} reward claimed!`, 'ok');
+        notif(`🎁 Daily Reward: +$${finalAmount}!`);
+    }
 
     // Update UI to reflect new money and refresh modal
     if (window.render) window.render();
@@ -120,14 +150,25 @@ export function showDaily() {
     cal.innerHTML = h;
 
     // Update streak display
-    streakEl.innerHTML = `🔥 Current Streak: <b>${S.dailyStreak || 0}</b> days`;
+    const currentBonus = S.streakBonus || 0;
+    streakEl.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span>🔥 Streak: <b>${S.dailyStreak || 0}</b> days</span>
+            <span style="color:var(--gold)">⚡ Bonus: +${currentBonus}%</span>
+        </div>
+    `;
 
     // Update button
     if (canClaimDaily()) {
         const nextDay = ((S.dailyStreak || 0) % 7);
         const reward = DAILY_REWARDS[nextDay];
+
+        // Preview bonus
+        let baseAmt = reward.reward || reward.m || 0;
+        let bonusAmt = Math.floor(baseAmt * (1 + (currentBonus + 1) / 100)); // +1 because claiming adds 1%
+
         btn.disabled = false;
-        btn.textContent = `🎁 Claim ${reward.desc}!`;
+        btn.innerHTML = `🎁 Claim $${baseAmt} <span style="font-size:0.8em;opacity:0.8">(+${currentBonus + 1}%)</span>`;
         btn.classList.remove('off');
     } else {
         btn.disabled = true;

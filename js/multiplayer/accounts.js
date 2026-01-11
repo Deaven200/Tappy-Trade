@@ -4,7 +4,7 @@
  */
 
 import { toast, playS } from '../utils/feedback.js';
-import { save, loadFromCloud } from '../core/storage.js';
+import { save, loadFromCloud, verifyCredentials } from '../core/storage.js';
 
 // Global state (shared with index.html)
 let loggedInUser = null;
@@ -90,7 +90,8 @@ export async function registerAccount(userArg, passArg) {
 
         // Simple registration (would use Firebase Auth in production)
         const cleanId = username.toLowerCase().replace(/[^a-z0-9]/g, '');
-        loggedInUser = { id: 'user_' + cleanId, username };
+        // Store password in memory so it can be saved to cloud
+        loggedInUser = { id: 'user_' + cleanId, username, password };
         window.loggedInUser = loggedInUser;
 
         // Save based on Remember Me
@@ -155,13 +156,33 @@ export async function loginAccount(userArg, passArg) {
     }
 
     try {
-        // Simulate async login
-        await new Promise(resolve => setTimeout(resolve, 500));
+        const cleanId = username.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const userId = 'user_' + cleanId;
+
+        // Verify credentials with cloud
+        if (window.db) {
+            const isValid = await verifyCredentials(userId, password);
+
+            if (isValid === false) {
+                toast('Incorrect password!', 'err');
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
+                }
+                return;
+            }
+
+            if (isValid === null) {
+                console.log('No password saved for this user or user does not exist. Proceeding with legacy login.');
+            }
+        }
+
+        // Simulate async login (if not already delayed by verify)
+        // await new Promise(resolve => setTimeout(resolve, 500));
 
         // Simple login (would use Firebase Auth in production)
-        // FIX: Use username as ID to ensure consistent save lookup
-        const cleanId = username.toLowerCase().replace(/[^a-z0-9]/g, '');
-        loggedInUser = { id: 'user_' + cleanId, username };
+        // Store password in memory so it can be saved to cloud (updating legacy accounts)
+        loggedInUser = { id: userId, username, password };
         window.loggedInUser = loggedInUser;
 
         // Save based on Remember Me
@@ -189,12 +210,21 @@ export async function loginAccount(userArg, passArg) {
             console.log('No cloud save found:', e);
         }
 
+        // Trigger a save to ensure password is stored for future logins (legacy migration)
+        if (window.saveToCloud) {
+            // Small delay to ensure load finishes first if needed, though loadFromCloud is awaited above
+            setTimeout(() => {
+                window.saveToCloud();
+            }, 1000);
+        }
+
         usernameInput.value = '';
         passwordInput.value = '';
 
         setTimeout(() => closeAccount(), 300);
 
     } catch (error) {
+        console.error(error);
         toast('Login failed. Check credentials!', 'err');
     } finally {
         if (submitBtn) {

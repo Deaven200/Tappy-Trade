@@ -15,6 +15,7 @@ export const CONFIG = {
     EVENT_CHECK_INTERVAL: 300000, // 5 minutes
     SAVE_INTERVAL: 10000, // 10 seconds
     MAX_OFFLINE_HOURS: 8,
+    MAX_STREAK_BONUS: 100,
     DEBUG_MODE: false // Set to false for production
 };
 

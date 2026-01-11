@@ -43,6 +43,7 @@ export function getDefaultState() {
         nextEventAt: Date.now() + CONFIG.EVENT_CHECK_INTERVAL,
         lastDailyReward: 0,
         dailyStreak: 0,
+        streakBonus: 0,
         limitOrders: [],
         farmName: "Untitled Farm",
         limitOrders: [],
