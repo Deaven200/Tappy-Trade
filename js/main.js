@@ -42,7 +42,7 @@ import { openBuild, doBuild, closeBuild, canAfford, pay, getUpgradeCost } from '
 // Multiplayer modules (Phase 2F)
 import { showAccount, closeAccount, registerAccount, loginAccount, logoutAccount, loadSavedUser, getLoggedInUser, updateAccountButton } from './multiplayer/accounts.js';
 import { showChat, closeChat, sendChat, setupChatKeyboard } from './multiplayer/chat.js';
-import { showLeaderboard, closeLeaderboard } from './multiplayer/leaderboard.js';
+import { showLeaderboard, closeLeaderboard } from './ui/modals/leaderboardModal.js';
 import { loadGovernmentTiers, recordGovernmentSale, calculateGovernmentPrice, getAllPlayerTiers } from './mechanics/governmentTiers.js';
 import './mechanics/events.js'; // Exposes window.triggerEvent
 // Duplicate removed
