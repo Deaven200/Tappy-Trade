@@ -73,7 +73,7 @@ export function save() {
     // The indicator updates every second via setInterval in index.html
 
     // Auto-save to cloud if logged in (throttled)
-    if (window.loggedInUser && window.db && !window._cloudSaving) {
+    if (window.loggedInUser && window.db) {
         window._cloudSaveQueued = true;
     }
 }
@@ -136,7 +136,10 @@ export async function saveToCloud() {
 
     if (!loggedInUser || !db) return;
 
+    // Reset queue flag at START to capture new changes during save
+    window._cloudSaveQueued = false;
     window._cloudSaving = true;
+
     try {
         await db.collection('saves').doc(loggedInUser.id).set({
             state: JSON.stringify(S),
@@ -146,9 +149,10 @@ export async function saveToCloud() {
         });
     } catch (e) {
         console.error('Cloud save failed:', e);
+        // If failed, re-queue to try again
+        window._cloudSaveQueued = true;
     }
     window._cloudSaving = false;
-    window._cloudSaveQueued = false;
 }
 
 /**
