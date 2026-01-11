@@ -158,6 +158,24 @@ export function init() {
         console.log('🔍 DEBUG: Step 10 - Cloud Save Loop Started');
     }
 
+    // Leaderboard Sync (Dynamic Import)
+    import('../firebase/leaderboard.js').then(lb => {
+        // Run daily reset check immediately
+        if (lb.checkDailyReset) lb.checkDailyReset();
+
+        // Start submission loop (every minute)
+        setInterval(() => {
+            if (lb.submitScore) lb.submitScore();
+        }, 60000);
+
+        // Also check daily reset every minute (in case session crosses midnight)
+        setInterval(() => {
+            if (lb.checkDailyReset) lb.checkDailyReset();
+        }, 60000);
+
+        console.log('🏆 Leaderboard module loaded');
+    }).catch(e => console.error('Leaderboard load failed:', e));
+
     // ===== START MODULAR GAME LOOP =====
     console.log('🎮 Starting modular game loop...');
     try {

@@ -6,7 +6,7 @@
 // Version information
 export const GAME_VERSION = 'v1.3.4-modular';
 export const VERSION_DATE = '2026-01-06 16:08';
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 4;
 
 // Game configuration
 export const CONFIG = {

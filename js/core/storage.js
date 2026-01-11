@@ -35,18 +35,25 @@ function migrateSave(loadedState) {
         if (CONFIG.DEBUG_MODE) console.log('✅ Migrated cap to', CONFIG.BASE_INVENTORY_CAP);
     }
 
-    // Version 2 → 3: Add new persistence fields if missing
-    if (version < 3) {
-        if (!loadedState.invSort) loadedState.invSort = 'name';
-        if (!loadedState.invView) loadedState.invView = 'list';
-        loadedState.saveVersion = 3;
-    }
+    if (!loadedState.invSort) loadedState.invSort = 'name';
+    if (!loadedState.invView) loadedState.invView = 'list';
+    loadedState.saveVersion = 3;
+}
 
-    // Add missing fields
-    if (!loadedState.farmName) loadedState.farmName = "Untitled Farm";
-    if (loadedState.hasRenamedFarm === undefined) loadedState.hasRenamedFarm = false;
+// Version 3 → 4: Leaderboard initialization
+if (version < 4) {
+    loadedState.dayId = new Date().toISOString().split('T')[0];
+    // Important: Set startOfDayEarned to CURRENT earned, so they don't get credit for lifetime earnings today
+    loadedState.startOfDayEarned = loadedState.stats?.earned || 0;
+    loadedState.saveVersion = 4;
+    if (CONFIG.DEBUG_MODE) console.log('✅ Migrated leaderboard stats');
+}
 
-    return loadedState;
+// Add missing fields
+if (!loadedState.farmName) loadedState.farmName = "Untitled Farm";
+if (loadedState.hasRenamedFarm === undefined) loadedState.hasRenamedFarm = false;
+
+return loadedState;
 }
 
 /**

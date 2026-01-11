@@ -72,6 +72,13 @@ function handleClick(event) {
         case 'send-suggestion':
             if (window.sendSuggestion) window.sendSuggestion();
             break;
+        case 'show-leaderboard':
+            // Import dynamically and show
+            import('../ui/modals/leaderboardModal.js').then(m => {
+                if (window.closeMenu) window.closeMenu();
+                m.showLeaderboard();
+            });
+            break;
         default:
             console.warn('Unknown action:', action);
     }
