@@ -148,6 +148,16 @@ export function init() {
     // Update lastUpdate timestamp
     S.lastUpdate = Date.now();
 
+    // Cloud Save Sync Loop (Every 30 seconds)
+    if (window.saveToCloud) {
+        setInterval(() => {
+            if (window._cloudSaveQueued && window.loggedInUser && !window._cloudSaving) {
+                window.saveToCloud();
+            }
+        }, 30000);
+        console.log('🔍 DEBUG: Step 10 - Cloud Save Loop Started');
+    }
+
     // ===== START MODULAR GAME LOOP =====
     console.log('🎮 Starting modular game loop...');
     try {
