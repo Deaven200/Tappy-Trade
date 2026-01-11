@@ -220,75 +220,20 @@ export async function loadFromCloud() {
             const offlineHours = Math.min(offlineMs / (1000 * 60 * 60), CONFIG.MAX_OFFLINE_HOURS);
 
             if (offlineHours > 0.016) { // More than ~1 minute
-                const offlineSeconds = offlineHours * 3600;
-                const harvestCycles = Math.floor(offlineSeconds / 5);
+                // Use the unified offline simulation
+                // We need to wait for it, but loadFromCloud is async so that's fine
+                // Dynamic import to avoid circular dependency issues at top level
+                const { processOfflineProgress } = await import('../mechanics/offline.js');
 
-                // === DEBUG LOGGING START ===
-                console.log('\n🕐 OFFLINE PROGRESS CALCULATION 🕐');
-                console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-                const oldTime = new Date(cloudTime);
-                const newTime = new Date();
-                console.log(`⏰ Last Save: ${oldTime.toLocaleString()}`);
-                console.log(`⏰ Current:   ${newTime.toLocaleString()}`);
-                console.log(`⏱️  Offline:   ${(offlineMs / 60000).toFixed(1)} minutes (${offlineSeconds.toFixed(0)} seconds)`);
-                console.log(`👷 Workers:   ${migrated.workers?.length || 0}`);
-                console.log(`🔄 Harvest Cycles: ${harvestCycles} (capped at ${Math.min(harvestCycles, 8640)})`);
+                // Run the simulation
+                const result = await processOfflineProgress(offlineMs / 1000);
 
-                // Before state
-                const invBefore = {};
-                for (const [k, v] of Object.entries(migrated.inv || {})) {
-                    invBefore[k] = v;
+                // Show modal if gains occurred
+                if (result.netGain > 0) {
+                    const { showOfflineProgress } = await import('../ui/modals/offlineModal.js');
+                    showOfflineProgress(result.gainedItems, result.seconds);
+                    console.log('🌙 Offline progress modal triggered via Cloud Load');
                 }
-                const totalBefore = Object.values(invBefore).reduce((a, b) => a + b, 0);
-                console.log(`\n📦 Inventory Before: ${totalBefore} items`);
-                // === DEBUG LOGGING END ===
-
-                // Apply offline worker harvests
-                if (migrated.workers && migrated.workers.length > 0 && harvestCycles > 0) {
-                    for (let i = 0; i < Math.min(harvestCycles, 8640); i++) { // Cap at 12 hours of cycles
-                        for (const worker of migrated.workers) {
-                            const plot = migrated.plots[worker.plot];
-                            if (plot) {
-                                const sub = plot.subs[worker.sub];
-                                if (sub && sub.c > 0) {
-                                    const cfg = window.T?.[sub.t];
-                                    if (cfg) {
-                                        migrated.inv[cfg.i] = (migrated.inv[cfg.i] || 0) + 1;
-                                        sub.c--;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // Apply offline resource regeneration
-                for (const plot of migrated.plots || []) {
-                    for (const sub of plot.subs || []) {
-                        const cfg = window.T?.[sub.t];
-                        if (cfg && cfg.r) {
-                            const regenRate = cfg.r * offlineSeconds;
-                            sub.c = Math.min(cfg.m || 999, sub.c + regenRate);
-                        }
-                    }
-                }
-
-                // Calculate gained items for UI
-                const gainedItems = {};
-                for (const [k, v] of Object.entries(migrated.inv || {})) {
-                    const before = invBefore[k] || 0;
-                    const delta = v - before;
-                    if (delta > 0) {
-                        gainedItems[k] = delta;
-                    }
-                }
-
-                // Show offline progress modal
-                if (Object.keys(gainedItems).length > 0) {
-                    showOfflineProgress(gainedItems, offlineSeconds);
-                    console.log('🌙 Offline progress modal triggered');
-                }
-                // === DEBUG LOGGING END ===
             }
 
             // Load the cloud state into S

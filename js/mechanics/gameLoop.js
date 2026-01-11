@@ -26,8 +26,9 @@ let renderTimer = 0; // Throttle render calls
 /**
  * Main game loop update function
  * @param {number} delta - Time delta in seconds
+ * @param {boolean} isSimulation - If true, skips visual/save updates
  */
-export function update(delta) {
+export function update(delta, isSimulation = false) {
     // Security: Cap delta to prevent speedhacking (max 1 hour simulated per tick)
     if (delta > 3600) delta = 3600;
     // Also cap minimum to prevent negative time
@@ -51,6 +52,9 @@ export function update(delta) {
         }
         limitOrderTimer = 0;
     }
+
+    // === SKIP SIDE EFFECTS IF SIMULATING ===
+    if (isSimulation) return;
 
     // Check achievements every 15 seconds
     achievementTimer += delta;
