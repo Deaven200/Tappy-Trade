@@ -46,23 +46,18 @@ export function init() {
             const off = Date.now() - S.lastUpdate;
             console.log('🔍 DEBUG: Offline time:', off);
 
-            if (off > 1000) {
-                const beforeHarvested = S.stats?.harvested || 0;
-                const beforeInv = window.getInvTotal();
-                window.update(Math.min(off, 8 * 3600000));
-                const harvested = (S.stats?.harvested || 0) - beforeHarvested;
-                const gained = window.getInvTotal() - beforeInv;
-                const hours = Math.floor(off / 3600000);
-                const mins = Math.floor((off % 3600000) / 60000);
-                const gainedItems = {};
-                if (gained > 0) gainedItems['items'] = gained; // Should be detailed in real implementation
-
-                if (hours > 0 || mins > 5) {
-                    // Import dynamically to avoid circular dependency
-                    import('../ui/modals/offlineModal.js').then(m => {
-                        m.showOfflineProgress(gainedItems, off / 1000);
+            if (off > 5000) { // > 5 seconds
+                // Dynamic import to use the new offline module
+                import('../mechanics/offline.js').then(({ processOfflineProgress }) => {
+                    // Convert ms to seconds
+                    processOfflineProgress(off / 1000).then(result => {
+                        if (result.netGain > 0) {
+                            import('../ui/modals/offlineModal.js').then(m => {
+                                m.showOfflineProgress(result.gainedItems, result.seconds);
+                            });
+                        }
                     });
-                }
+                });
             }
             toast('Welcome back!');
         } else {
@@ -147,6 +142,34 @@ export function init() {
 
     // Update lastUpdate timestamp
     S.lastUpdate = Date.now();
+
+    // Cloud Save Sync Loop (Every 30 seconds)
+    if (window.saveToCloud) {
+        setInterval(() => {
+            if (window._cloudSaveQueued && window.loggedInUser && !window._cloudSaving) {
+                window.saveToCloud();
+            }
+        }, 30000);
+        console.log('🔍 DEBUG: Step 10 - Cloud Save Loop Started');
+    }
+
+    // Leaderboard Sync (Dynamic Import)
+    import('../firebase/leaderboard.js').then(lb => {
+        // Run daily reset check immediately
+        if (lb.checkDailyReset) lb.checkDailyReset();
+
+        // Start submission loop (every minute)
+        setInterval(() => {
+            if (lb.submitScore) lb.submitScore();
+        }, 60000);
+
+        // Also check daily reset every minute (in case session crosses midnight)
+        setInterval(() => {
+            if (lb.checkDailyReset) lb.checkDailyReset();
+        }, 60000);
+
+        console.log('🏆 Leaderboard module loaded');
+    }).catch(e => console.error('Leaderboard load failed:', e));
 
     // ===== START MODULAR GAME LOOP =====
     console.log('🎮 Starting modular game loop...');

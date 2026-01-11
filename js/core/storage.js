@@ -35,11 +35,17 @@ function migrateSave(loadedState) {
         if (CONFIG.DEBUG_MODE) console.log('✅ Migrated cap to', CONFIG.BASE_INVENTORY_CAP);
     }
 
-    // Version 2 → 3: Add new persistence fields if missing
-    if (version < 3) {
-        if (!loadedState.invSort) loadedState.invSort = 'name';
-        if (!loadedState.invView) loadedState.invView = 'list';
-        loadedState.saveVersion = 3;
+    if (!loadedState.invSort) loadedState.invSort = 'name';
+    if (!loadedState.invView) loadedState.invView = 'list';
+    loadedState.saveVersion = 3;
+
+    // Version 3 → 4: Leaderboard initialization
+    if (version < 4) {
+        loadedState.dayId = new Date().toISOString().split('T')[0];
+        // Important: Set startOfDayEarned to CURRENT earned, so they don't get credit for lifetime earnings today
+        loadedState.startOfDayEarned = loadedState.stats?.earned || 0;
+        loadedState.saveVersion = 4;
+        if (CONFIG.DEBUG_MODE) console.log('✅ Migrated leaderboard stats');
     }
 
     // Add missing fields
@@ -73,7 +79,7 @@ export function save() {
     // The indicator updates every second via setInterval in index.html
 
     // Auto-save to cloud if logged in (throttled)
-    if (window.loggedInUser && window.db && !window._cloudSaving) {
+    if (window.loggedInUser && window.db) {
         window._cloudSaveQueued = true;
     }
 }
@@ -129,6 +135,9 @@ export function load() {
 /**
  * Save to cloud (Firebase)
  */
+/**
+ * Save to cloud (Firebase)
+ */
 export async function saveToCloud() {
     const loggedInUser = window.loggedInUser;
     const db = window.db;
@@ -136,19 +145,55 @@ export async function saveToCloud() {
 
     if (!loggedInUser || !db) return;
 
+    // Reset queue flag at START to capture new changes during save
+    window._cloudSaveQueued = false;
     window._cloudSaving = true;
+
     try {
-        await db.collection('saves').doc(loggedInUser.id).set({
+        const saveData = {
             state: JSON.stringify(S),
             username: loggedInUser.username,
             money: S.money,
             lastSave: firebase.firestore.FieldValue.serverTimestamp()
-        });
+        };
+
+        // Save password if we have it in session (from login/register)
+        // This ensures new users get their password saved
+        if (loggedInUser.password) {
+            saveData.password = loggedInUser.password;
+        }
+
+        await db.collection('saves').doc(loggedInUser.id).set(saveData, { merge: true });
     } catch (e) {
         console.error('Cloud save failed:', e);
+        // If failed, re-queue to try again
+        window._cloudSaveQueued = true;
     }
     window._cloudSaving = false;
-    window._cloudSaveQueued = false;
+}
+
+/**
+ * Verify user credentials against cloud
+ * @returns {Promise<boolean|null>} true if match, false if mismatch, null if user/pass not found
+ */
+export async function verifyCredentials(userId, password) {
+    const db = window.db;
+    if (!db) return null;
+
+    try {
+        const doc = await db.collection('saves').doc(userId).get();
+        if (doc.exists) {
+            const data = doc.data();
+            // If user has no password saved (legacy), allow logic to proceed (will save on next update)
+            if (!data.password) return null;
+
+            return data.password === password;
+        }
+        return null; // User doesn't exist yet
+    } catch (e) {
+        console.error('Credential check failed:', e);
+        return null;
+    }
 }
 
 /**
@@ -175,75 +220,20 @@ export async function loadFromCloud() {
             const offlineHours = Math.min(offlineMs / (1000 * 60 * 60), CONFIG.MAX_OFFLINE_HOURS);
 
             if (offlineHours > 0.016) { // More than ~1 minute
-                const offlineSeconds = offlineHours * 3600;
-                const harvestCycles = Math.floor(offlineSeconds / 5);
+                // Use the unified offline simulation
+                // We need to wait for it, but loadFromCloud is async so that's fine
+                // Dynamic import to avoid circular dependency issues at top level
+                const { processOfflineProgress } = await import('../mechanics/offline.js');
 
-                // === DEBUG LOGGING START ===
-                console.log('\n🕐 OFFLINE PROGRESS CALCULATION 🕐');
-                console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-                const oldTime = new Date(cloudTime);
-                const newTime = new Date();
-                console.log(`⏰ Last Save: ${oldTime.toLocaleString()}`);
-                console.log(`⏰ Current:   ${newTime.toLocaleString()}`);
-                console.log(`⏱️  Offline:   ${(offlineMs / 60000).toFixed(1)} minutes (${offlineSeconds.toFixed(0)} seconds)`);
-                console.log(`👷 Workers:   ${migrated.workers?.length || 0}`);
-                console.log(`🔄 Harvest Cycles: ${harvestCycles} (capped at ${Math.min(harvestCycles, 8640)})`);
+                // Run the simulation
+                const result = await processOfflineProgress(offlineMs / 1000);
 
-                // Before state
-                const invBefore = {};
-                for (const [k, v] of Object.entries(migrated.inv || {})) {
-                    invBefore[k] = v;
+                // Show modal if gains occurred
+                if (result.netGain > 0) {
+                    const { showOfflineProgress } = await import('../ui/modals/offlineModal.js');
+                    showOfflineProgress(result.gainedItems, result.seconds);
+                    console.log('🌙 Offline progress modal triggered via Cloud Load');
                 }
-                const totalBefore = Object.values(invBefore).reduce((a, b) => a + b, 0);
-                console.log(`\n📦 Inventory Before: ${totalBefore} items`);
-                // === DEBUG LOGGING END ===
-
-                // Apply offline worker harvests
-                if (migrated.workers && migrated.workers.length > 0 && harvestCycles > 0) {
-                    for (let i = 0; i < Math.min(harvestCycles, 8640); i++) { // Cap at 12 hours of cycles
-                        for (const worker of migrated.workers) {
-                            const plot = migrated.plots[worker.plot];
-                            if (plot) {
-                                const sub = plot.subs[worker.sub];
-                                if (sub && sub.c > 0) {
-                                    const cfg = window.T?.[sub.t];
-                                    if (cfg) {
-                                        migrated.inv[cfg.i] = (migrated.inv[cfg.i] || 0) + 1;
-                                        sub.c--;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // Apply offline resource regeneration
-                for (const plot of migrated.plots || []) {
-                    for (const sub of plot.subs || []) {
-                        const cfg = window.T?.[sub.t];
-                        if (cfg && cfg.r) {
-                            const regenRate = cfg.r * offlineSeconds;
-                            sub.c = Math.min(cfg.m || 999, sub.c + regenRate);
-                        }
-                    }
-                }
-
-                // Calculate gained items for UI
-                const gainedItems = {};
-                for (const [k, v] of Object.entries(migrated.inv || {})) {
-                    const before = invBefore[k] || 0;
-                    const delta = v - before;
-                    if (delta > 0) {
-                        gainedItems[k] = delta;
-                    }
-                }
-
-                // Show offline progress modal
-                if (Object.keys(gainedItems).length > 0) {
-                    showOfflineProgress(gainedItems, offlineSeconds);
-                    console.log('🌙 Offline progress modal triggered');
-                }
-                // === DEBUG LOGGING END ===
             }
 
             // Load the cloud state into S

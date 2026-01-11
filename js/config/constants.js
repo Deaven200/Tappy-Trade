@@ -6,7 +6,7 @@
 // Version information
 export const GAME_VERSION = 'v1.3.4-modular';
 export const VERSION_DATE = '2026-01-06 16:08';
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 4;
 
 // Game configuration
 export const CONFIG = {
@@ -15,6 +15,7 @@ export const CONFIG = {
     EVENT_CHECK_INTERVAL: 300000, // 5 minutes
     SAVE_INTERVAL: 10000, // 10 seconds
     MAX_OFFLINE_HOURS: 8,
+    MAX_STREAK_BONUS: 100,
     DEBUG_MODE: false // Set to false for production
 };
 

@@ -43,6 +43,7 @@ export function getDefaultState() {
         nextEventAt: Date.now() + CONFIG.EVENT_CHECK_INTERVAL,
         lastDailyReward: 0,
         dailyStreak: 0,
+        streakBonus: 0,
         limitOrders: [],
         farmName: "Untitled Farm",
         limitOrders: [],
@@ -54,7 +55,11 @@ export function getDefaultState() {
             mining: { totalSold: 0, currentTier: 0 },
             livestock: { totalSold: 0, currentTier: 0 },
             manufacturing: { totalSold: 0, currentTier: 0 }
-        }
+        },
+        // Leaderboard / Daily Earnings
+        dayId: new Date().toISOString().split('T')[0],
+        startOfDayEarned: 0,
+        tempDailyEarned: 0 // Visual fallback if needed
     };
 }
 
