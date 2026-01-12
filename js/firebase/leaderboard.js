@@ -93,7 +93,11 @@ export async function submitScore() {
  * @returns {Function} unsubscribe function
  */
 export function subscribeLeaderboard(callback, dateId = null) {
-    if (!window.db) return () => { };
+    if (!window.db) {
+        console.warn('⚠️ Leaderboard: window.db not found');
+        callback([]); // Return empty list so UI doesn't hang
+        return () => { };
+    }
 
     const day = dateId || getUTCDayId();
 

@@ -83,7 +83,11 @@ function renderLeaderboardList(data) {
     if (!list) return;
 
     if (data.length === 0) {
-        list.innerHTML = `<div style="text-align:center;color:var(--muted);padding:20px">No scores yet today. Be the first!</div>`;
+        if (!window.db) {
+            list.innerHTML = `<div style="text-align:center;color:var(--highlight);padding:20px">⚠️ Database not connected.<br><span style="font-size:0.8em">Check your internet connection.</span></div>`;
+        } else {
+            list.innerHTML = `<div style="text-align:center;color:var(--muted);padding:20px">No scores yet today. Be the first!</div>`;
+        }
         return;
     }
 
