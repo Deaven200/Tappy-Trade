@@ -69,7 +69,7 @@ import { calculateSynergyBonus, getPlotBackground } from './mechanics/plotEffect
 import { createLimitOrder, cancelLimitOrder, processLimitOrders } from './firebase/limitOrders.js';
 import { postOrder, fillOrder, cancelOrder as cancelPlayerOrder } from './firebase/playerMarket.js';
 import { updateDayNight, startDayNightCycle } from './ui/dayNight.js';
-import { showLoginScreen, hideLoginScreen, showLoginForm, showRegisterForm, backToMainLogin, handleLogin, handleRegister, continueAsGuest, convertGuestToAccount, shouldShowLoginScreen } from './ui/loginScreen.js';
+import { showLoginScreen, hideLoginScreen, showLoginForm, showRegisterForm, backToMainLogin, handleLogin, handleRegister, continueSession, startNewGuestGame, convertGuestToAccount, shouldShowLoginScreen, updateLoginButtons } from './ui/loginScreen.js';
 import { init } from './core/init.js';
 
 // ===== GLOBAL EXPORTS FOR BACKWARDS COMPATIBILITY =====
@@ -237,7 +237,9 @@ window.showRegisterForm = showRegisterForm;
 window.backToMainLogin = backToMainLogin;
 window.handleLogin = handleLogin;
 window.handleRegister = handleRegister;
-window.continueAsGuest = continueAsGuest;
+window.continueSession = continueSession;
+window.startNewGuestGame = startNewGuestGame;
+window.updateLoginButtons = updateLoginButtons;
 window.convertGuestToAccount = convertGuestToAccount;
 window.shouldShowLoginScreen = shouldShowLoginScreen;
 window.renderPriceList = renderPriceList; // Export renderPriceList
