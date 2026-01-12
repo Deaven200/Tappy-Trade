@@ -15,8 +15,8 @@ export function showLeaderboard() {
     const modal = $('leaderboard-modal');
     if (!modal) return;
 
-    // Build Modal Structure if empty
-    if (!modal.innerHTML.trim()) {
+    // Build Modal Structure if empty OR if legacy structure detected (missing lb-list)
+    if (!modal.innerHTML.trim() || !modal.querySelector('#lb-list')) {
         modal.innerHTML = `
             <div class="modal-content" style="max-width:500px">
                 <div class="modal-header">
