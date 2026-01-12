@@ -92,7 +92,7 @@ function renderLeaderboardList(data) {
 
     data.forEach((entry, index) => {
         const rank = index + 1;
-        const isMe = entry.id === window.userId;
+        const isMe = entry.id === (window.loggedInUser ? window.loggedInUser.id : null);
         const rowStyle = isMe ? 'background:rgba(255,215,0,0.1);font-weight:bold' : '';
         const rankIcon = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
 

@@ -133,6 +133,11 @@ export async function handleRegister() {
  */
 export function continueSession() {
     console.log('👤 Resuming session');
+
+    // Restore user session if it exists
+    if (window.loadSavedUser) window.loadSavedUser();
+    if (window.updateAccountButton) window.updateAccountButton();
+
     hideLoginScreen();
     if (window.init) window.init();
     toast('Welcome back!', 'info');
