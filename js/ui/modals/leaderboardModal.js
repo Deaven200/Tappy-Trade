@@ -21,7 +21,7 @@ export function showLeaderboard() {
             <div class="modal-content" style="max-width:500px">
                 <div class="modal-header">
                     <h2>🏆 Daily Money Maker</h2>
-                    <button class="close-btn" onclick="closeLeaderboard()">×</button>
+                    <button class="modal-close" onclick="closeLeaderboard()">×</button>
                 </div>
                 <div class="modal-body">
                     <p style="text-align:center;color:var(--muted);margin-bottom:15px">
