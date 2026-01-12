@@ -148,6 +148,12 @@ export function doBuild(t) {
         }
         pay(cost);
         s.lv++;
+
+        // If building provides storage, increase global capacity on upgrade
+        if (T[s.t]?.cap) {
+            S.cap += T[s.t].cap; // Add another chunk of capacity (e.g. +250)
+        }
+
         playS('ach');
         toast(`Upgraded to Lv${s.lv}!`, 'ok');
         notif(`⬆️ ${T[s.t]?.n} upgraded to Level ${s.lv}!`);
@@ -184,7 +190,7 @@ export function doBuild(t) {
         // Deduct storage capacity if building provided it
         const buildingCfg = T[s.t];
         if (buildingCfg?.cap) {
-            S.cap -= buildingCfg.cap;
+            S.cap -= (buildingCfg.cap * s.lv); // Remove total capacity provided by this building
         }
 
         // Reset subplot to wilderness
