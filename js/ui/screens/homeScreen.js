@@ -26,7 +26,7 @@ export function resetHomeInit() {
 export function renderHomeScreen(container) {
     // Check if structural changes occurred (plots added/removed, buildings upgraded)
     const currentPlotCount = S.plots.length;
-    const currentBuildingLevels = S.plots.map(p => p.subs.map(s => s.lv || 1).join(',')).join(';');
+    const currentBuildingLevels = S.plots.map(p => p.subs.map(s => s.t + (s.lv || 1)).join(',')).join(';');
     const structureChanged = currentPlotCount !== lastPlotCount || currentBuildingLevels !== lastBuildingLevels;
 
     // First render: create DOM structure
