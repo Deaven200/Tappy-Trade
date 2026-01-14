@@ -87,7 +87,7 @@ function updateSubplotDisplay(plotIndex, subIndex, subplot) {
     if (subplot.t === 'storage') return;
 
     const level = subplot.lv || 1;
-    const storageBonus = (level - 1) * 10;
+    const storageBonus = (level - 1) * 250;
     const maxStorage = (config.m || 999) + storageBonus;
     const count = Math.floor(subplot.c);
 
@@ -162,7 +162,7 @@ function renderSubplot(subplot, plotIndex, subIndex) {
     if (!config) return '';
 
     const level = subplot.lv || 1;
-    const storageBonus = (level - 1) * 10;
+    const storageBonus = (level - 1) * 250;
     const maxStorage = (config.m || 999) + storageBonus;
     const count = Math.floor(subplot.c);
 

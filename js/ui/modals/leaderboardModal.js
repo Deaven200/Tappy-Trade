@@ -15,27 +15,27 @@ export function showLeaderboard() {
     const modal = $('leaderboard-modal');
     if (!modal) return;
 
-    // Build Modal Structure if empty OR if legacy structure detected (missing lb-list)
+    // Build Modal Structure using consistent modal-box design
     if (!modal.innerHTML.trim() || !modal.querySelector('#lb-list')) {
         modal.innerHTML = `
-            <div class="modal-content" style="max-width:500px">
-                <div class="modal-header">
-                    <h2>🏆 Daily Money Maker</h2>
+            <div class="modal-box" style="max-width:420px">
+                <div class="modal-head">
+                    <h3>🏆 Daily Leaderboard</h3>
                     <button class="modal-close" onclick="closeLeaderboard()">×</button>
                 </div>
                 <div class="modal-body">
-                    <p style="text-align:center;color:var(--muted);margin-bottom:15px">
-                        Top earners for <b id="lb-date">Today</b> (UTC).<br>
-                        Resets every 24 hours!
+                    <p style="text-align:center;color:var(--muted);margin-bottom:12px;font-size:0.85rem">
+                        Top earners for <b id="lb-date">Today</b> (UTC)<br>
+                        <span style="font-size:0.75rem">Resets every 24 hours!</span>
                     </p>
                     
-                    <div class="lb-my-score" style="background:var(--bg2);padding:10px;border-radius:8px;margin-bottom:15px;display:flex;justify-content:space-between;align-items:center;border:1px solid var(--accent)">
-                        <span>Your Daily Earnings:</span>
-                        <span style="font-size:1.2rem;font-weight:bold;color:var(--gold)">$0</span>
+                    <div style="background:linear-gradient(135deg, var(--bg2), var(--card));padding:12px;border-radius:10px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;border:1px solid var(--purple)">
+                        <span style="font-size:0.9rem">📊 Your Daily Earnings:</span>
+                        <span id="lb-my-score" style="font-size:1.3rem;font-weight:bold;color:var(--gold)">$0</span>
                     </div>
 
-                    <div id="lb-list" style="min-height:200px">
-                        <div style="text-align:center;padding:20px">Loading...</div>
+                    <div id="lb-list" style="min-height:180px;max-height:50vh;overflow-y:auto">
+                        <div style="text-align:center;padding:20px;color:var(--muted)">Loading...</div>
                     </div>
                 </div>
             </div>
@@ -43,7 +43,7 @@ export function showLeaderboard() {
     }
 
     // Update Your Score
-    const myScoreEl = modal.querySelector('.lb-my-score span:last-child');
+    const myScoreEl = modal.querySelector('#lb-my-score');
     if (myScoreEl) {
         myScoreEl.textContent = '$' + (getDailyEarned() || 0).toLocaleString();
     }
@@ -76,7 +76,7 @@ export function closeLeaderboard() {
 }
 
 /**
- * Render the list of scores
+ * Render the list of scores with improved styling
  */
 function renderLeaderboardList(data) {
     const list = document.getElementById('lb-list');
@@ -84,39 +84,44 @@ function renderLeaderboardList(data) {
 
     if (data.length === 0) {
         if (!window.db) {
-            list.innerHTML = `<div style="text-align:center;color:var(--highlight);padding:20px">⚠️ Database not connected.<br><span style="font-size:0.8em">Check your internet connection.</span></div>`;
+            list.innerHTML = `<div style="text-align:center;color:var(--red);padding:20px">⚠️ Database not connected.<br><span style="font-size:0.8em;color:var(--muted)">Check your internet connection.</span></div>`;
         } else {
-            list.innerHTML = `<div style="text-align:center;color:var(--muted);padding:20px">No scores yet today. Be the first!</div>`;
+            list.innerHTML = `<div style="text-align:center;color:var(--muted);padding:20px">No scores yet today.<br>Be the first to earn! 🚀</div>`;
         }
         return;
     }
 
-    let html = '<table style="width:100%;border-collapse:collapse">';
-    html += `<tr style="color:var(--muted);text-align:left"><th style="padding:5px">#</th><th style="padding:5px">Player</th><th style="padding:5px;text-align:right">Earned</th></tr>`;
+    let html = '<div class="list" style="gap:8px">';
 
     data.forEach((entry, index) => {
         const rank = index + 1;
         const isMe = entry.id === (window.loggedInUser ? window.loggedInUser.id : null);
-        const rowStyle = isMe ? 'background:rgba(255,215,0,0.1);font-weight:bold' : '';
-        const rankIcon = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
+        const bgStyle = isMe ? 'background:linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,215,0,0.05));border:1px solid var(--gold)' : 'background:var(--bg2)';
+
+        let rankDisplay = '';
+        if (rank === 1) rankDisplay = '<span style="font-size:1.5rem">🥇</span>';
+        else if (rank === 2) rankDisplay = '<span style="font-size:1.4rem">🥈</span>';
+        else if (rank === 3) rankDisplay = '<span style="font-size:1.3rem">🥉</span>';
+        else rankDisplay = `<span style="color:var(--muted);font-weight:bold;font-size:1rem">#${rank}</span>`;
 
         html += `
-            <tr style="border-bottom:1px solid var(--bg1);${rowStyle}">
-                <td style="padding:8px">${rankIcon}</td>
-                <td style="padding:8px">
-                    <div style="font-size:0.9rem">${entry.username}</div>
-                    <div style="font-size:0.75rem;color:var(--muted)">${entry.farmName}</div>
-                </td>
-                <td style="padding:8px;text-align:right;color:var(--gold)">
+            <div class="item" style="${bgStyle};padding:10px 12px;border-radius:8px;display:flex;align-items:center;gap:12px">
+                <div style="width:40px;text-align:center">${rankDisplay}</div>
+                <div style="flex:1;min-width:0">
+                    <div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${entry.username}</div>
+                    <div style="font-size:0.75rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${entry.farmName || 'Unnamed Farm'}</div>
+                </div>
+                <div style="font-weight:bold;color:var(--gold);font-size:1.1rem">
                     $${entry.money.toLocaleString()}
-                </td>
-            </tr>
+                </div>
+            </div>
         `;
     });
-    html += '</table>';
+    html += '</div>';
 
     list.innerHTML = html;
 }
+
 
 // Global exposure
 window.showLeaderboard = showLeaderboard;

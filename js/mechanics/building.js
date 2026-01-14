@@ -87,13 +87,19 @@ export function openBuild(pi, si) {
         const upgradeCost = getUpgradeCost(cur.t, cur.lv);
         const canUpgrade = canAfford(upgradeCost);
         const costStr = Object.entries(upgradeCost).map(([k, v]) => k === 'm' ? `<span class="m">$${v}</span>` : `<span class="r">${v}${R[k]?.i || k}</span>`).join(' ');
+        const isStorageBuilding = cur.t === 'storage';
         const regenBonus = Math.round(((1 + (cur.lv) * 0.1) - 1) * 100);
-        const storageBonus = cur.lv * 10;
+        const storageBonus = cur.lv * 250;
         h += `<div class="cat"><div class="cat-title">⬆️ Upgrade ${curCfg?.n}</div>`;
         h += `<div class="bld ${canUpgrade ? '' : 'off'}" data-t="__upgrade" style="border:1px solid var(--purple)">`;
         h += `<div class="ic">${curCfg.i}</div>`;
         h += `<div class="info"><div class="nm" style="color:var(--purple)">${curCfg.n} Lv${cur.lv} → Lv${cur.lv + 1}</div>`;
-        h += `<div class="prod">Regen: ${regenBonus}% → ${regenBonus + 10}% | Storage: +${storageBonus} → +${storageBonus + 10}</div>`;
+        // Storage buildings don't show regen (they're passive), only storage bonus
+        if (isStorageBuilding) {
+            h += `<div class="prod">Storage: +${storageBonus} → +${storageBonus + 250}</div>`;
+        } else {
+            h += `<div class="prod">Regen: ${regenBonus}% → ${regenBonus + 10}% | Storage: +${storageBonus} → +${storageBonus + 250}</div>`;
+        }
         h += `<div class="cost">${costStr}</div></div></div></div>`;
     } else if (cur && cur.lv >= 5) {
         h += `<div class="cat"><div class="cat-title">⬆️ Upgrade</div>`;

@@ -44,17 +44,27 @@ export function init() {
 
             // Calculate offline progress
             const off = Date.now() - S.lastUpdate;
-            console.log('🔍 DEBUG: Offline time:', off);
+            console.log('🔍 DEBUG: Offline time:', off, 'ms =', Math.round(off / 1000), 'seconds');
 
-            if (off > 5000) { // > 5 seconds
+            // Show welcome back modal if offline for more than 60 seconds
+            if (off > 60000) { // > 60 seconds (was 5 seconds)
                 // Dynamic import to use the new offline module
                 import('../mechanics/offline.js').then(({ processOfflineProgress }) => {
                     // Convert ms to seconds
                     processOfflineProgress(off / 1000).then(result => {
-                        if (result.netGain > 0) {
+                        console.log('🌙 Offline progress result:', result);
+
+                        // Show modal if: any items gained OR offline for 5+ minutes
+                        const hasGains = result.netGain > 0 || Object.keys(result.gainedItems).length > 0;
+                        const longOffline = off > 300000; // 5 minutes
+
+                        if (hasGains || longOffline) {
                             import('../ui/modals/offlineModal.js').then(m => {
                                 m.showOfflineProgress(result.gainedItems, result.seconds);
+                                console.log('🌙 Showing Welcome Back modal');
                             });
+                        } else {
+                            console.log('🌙 No significant offline progress to show');
                         }
                     });
                 });
