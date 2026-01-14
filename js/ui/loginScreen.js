@@ -12,6 +12,7 @@ import { toast } from '../utils/feedback.js';
 export function showLoginScreen() {
     const screen = $('login-screen');
     if (screen) {
+        updateLoginButtons(); // Update button visibility before showing
         screen.classList.remove('hidden');
     }
 }
@@ -128,25 +129,47 @@ export async function handleRegister() {
 }
 
 /**
- * Continue as guest
+ * Continue guest session
  */
-export function continueAsGuest() {
-    console.log('👤 Continuing as guest');
+export function continueSession() {
+    console.log('👤 Resuming session');
 
-    // Do NOT clear existing save data - let them resume their guest session
-    // localStorage.removeItem('tt4'); 
-    // localStorage.removeItem('tt4_user');
+    // Restore user session if it exists
+    if (window.loadSavedUser) window.loadSavedUser();
+    if (window.updateAccountButton) window.updateAccountButton();
 
-    // Set guest flag in localStorage
+    hideLoginScreen();
+    if (window.init) window.init();
+    toast('Welcome back!', 'info');
+}
+
+/**
+ * Start NEW guest game (wipes local save)
+ */
+export function startNewGuestGame() {
+    // Check if save exists
+    if (localStorage.getItem('tt4')) {
+        if (!confirm('⚠️ Starting a new game will DELETE your current local progress.\n\nAre you sure you want to start over?')) {
+            return;
+        }
+    }
+
+    console.log('👤 Starting NEW guest game');
+
+    // Wipe local storage
+    localStorage.removeItem('tt4');
+    localStorage.removeItem('tt4_user');
+
+    // Set guest flag
     localStorage.setItem('tt4_guest', 'true');
 
     // Hide login screen
     hideLoginScreen();
 
-    // Init game (will start with fresh default state)
+    // Init game (will start with fresh default state due to wiped storage)
     if (window.init) window.init();
 
-    toast('Playing as Guest - Your progress will be saved locally!', 'info');
+    toast('Started new game as Guest', 'info');
 
     // Show hint about creating account
     setTimeout(() => {
@@ -155,22 +178,67 @@ export function continueAsGuest() {
 }
 
 /**
+ * Update login buttons based on save state
+ * Called when showing login screen
+ */
+export function updateLoginButtons() {
+    const hasSave = !!localStorage.getItem('tt4');
+    const btnContinue = $('btn-continue');
+
+    if (btnContinue) {
+        if (hasSave) {
+            btnContinue.style.display = 'block';
+
+            // Customize text based on user
+            const savedUser = localStorage.getItem('tt4_user');
+            if (savedUser) {
+                try {
+                    const user = JSON.parse(savedUser);
+                    btnContinue.innerText = `👤 Continue as ${user.username}`;
+                } catch (e) {
+                    btnContinue.innerText = '👤 Continue as Guest';
+                }
+            } else {
+                btnContinue.innerText = '👤 Continue as Guest';
+            }
+        } else {
+            btnContinue.style.display = 'none';
+        }
+    }
+}
+
+/**
  * Check if should show login screen on startup
  * @returns {boolean} True if should show login screen
  */
 export function shouldShowLoginScreen() {
-    // Check if user is already logged in
+    // ALWAYS update buttons based on current state
+    updateLoginButtons();
+
+    // Check if user is already logged in (firebase auth persistence)
+    // Note: window.loggedInUser might not be set yet if auth is async
     if (window.loggedInUser) {
         return false;
     }
 
-    // Check if user chose guest mode
-    const isGuest = localStorage.getItem('tt4_guest') === 'true';
-    if (isGuest) {
-        return false;
-    }
+    // Check if user chose guest mode AND has visited before
+    // BUT we want to show the specific "Continue" option now, so we might want to show screen
+    // unless we auto-resume. 
+    // New design: Always show login screen if not effectively "logged in" to a cloud account?
+    // OR: If guest flag is set, auto-resume?
 
-    // Show login screen for new/logged-out players
+    // User requested "Continue button" on login screen.
+    // This implies the login screen SHOULD be shown to offer the choice.
+    // So distinct from auto-login.
+
+    // However, original logic was:
+    // const isGuest = localStorage.getItem('tt4_guest') === 'true';
+    // if (isGuest) { return false; } 
+
+    // If we want the seamless "Continue" experience requested:
+    // "on my login scren i have 3 buttons, i want to add a continue as button"
+    // This implies they WANT to see the login screen.
+
     return true;
 }
 

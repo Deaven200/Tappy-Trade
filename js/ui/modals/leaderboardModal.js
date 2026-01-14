@@ -15,13 +15,13 @@ export function showLeaderboard() {
     const modal = $('leaderboard-modal');
     if (!modal) return;
 
-    // Build Modal Structure if empty
-    if (!modal.innerHTML.trim()) {
+    // Build Modal Structure if empty OR if legacy structure detected (missing lb-list)
+    if (!modal.innerHTML.trim() || !modal.querySelector('#lb-list')) {
         modal.innerHTML = `
             <div class="modal-content" style="max-width:500px">
                 <div class="modal-header">
                     <h2>🏆 Daily Money Maker</h2>
-                    <button class="close-btn" onclick="closeLeaderboard()">×</button>
+                    <button class="modal-close" onclick="closeLeaderboard()">×</button>
                 </div>
                 <div class="modal-body">
                     <p style="text-align:center;color:var(--muted);margin-bottom:15px">
@@ -83,7 +83,11 @@ function renderLeaderboardList(data) {
     if (!list) return;
 
     if (data.length === 0) {
-        list.innerHTML = `<div style="text-align:center;color:var(--muted);padding:20px">No scores yet today. Be the first!</div>`;
+        if (!window.db) {
+            list.innerHTML = `<div style="text-align:center;color:var(--highlight);padding:20px">⚠️ Database not connected.<br><span style="font-size:0.8em">Check your internet connection.</span></div>`;
+        } else {
+            list.innerHTML = `<div style="text-align:center;color:var(--muted);padding:20px">No scores yet today. Be the first!</div>`;
+        }
         return;
     }
 
@@ -92,7 +96,7 @@ function renderLeaderboardList(data) {
 
     data.forEach((entry, index) => {
         const rank = index + 1;
-        const isMe = entry.id === window.userId;
+        const isMe = entry.id === (window.loggedInUser ? window.loggedInUser.id : null);
         const rowStyle = isMe ? 'background:rgba(255,215,0,0.1);font-weight:bold' : '';
         const rankIcon = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
 

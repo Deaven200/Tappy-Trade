@@ -38,15 +38,17 @@ export function buyPlot() {
 
     S.money -= cost;
 
-    // Create new plot with 4 wild subplots
+    // Create new plot with 3 wild subplots (User requested 3)
     S.plots.push({
         subs: [
-            { t: 'wild', c: 12, lv: 1 },
             { t: 'wild', c: 12, lv: 1 },
             { t: 'wild', c: 12, lv: 1 },
             { t: 'wild', c: 12, lv: 1 }
         ]
     });
+
+    // Increase storage capacity by 1000 per new plot
+    S.cap += 1000;
 
     toast('New plot unlocked!', 'ok');
     playS('ach');

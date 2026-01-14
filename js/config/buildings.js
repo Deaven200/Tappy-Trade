@@ -112,7 +112,7 @@ export const BUILDINGS = {
         { t: 'fishpond', c: { m: 1600, wood: 35 } }
     ],
     utility: [
-        { t: 'storage', c: { m: 1000, wood: 50 } }
+        { t: 'storage', c: { m: 1000, wood: 50, stone: 50 } }
     ]
 };
 

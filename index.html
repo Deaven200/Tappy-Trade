@@ -1270,7 +1270,10 @@
             <div id="login-main-buttons">
                 <button class="login-btn login-btn-primary" onclick="showLoginForm()">🔑 Login</button>
                 <button class="login-btn login-btn-success" onclick="showRegisterForm()">✨ Create Account</button>
-                <button class="login-btn login-btn-guest" onclick="continueAsGuest()">👤 Continue as Guest</button>
+                <button class="login-btn login-btn-success" id="btn-continue" style="display:none; margin-bottom: 10px;"
+                    onclick="continueSession()">👤 Continue as Guest</button>
+                <button class="login-btn login-btn-guest" onclick="startNewGuestGame()">👤 Play as Guest (New
+                    Game)</button>
             </div>
 
             <!-- Login Form (hidden initially) -->
@@ -1425,6 +1428,8 @@
         window.continueAsGuest = () => { if (window.convertGuestToAccount) window.continueAsGuest(); else console.log('⏳ Waiting for game load...'); };
         window.loginAccount = () => { if (window.handleLogin) window.loginAccount(); else console.log('⏳ Waiting for game load...'); };
         window.registerAccount = () => { if (window.handleRegister) window.registerAccount(); else console.log('⏳ Waiting for game load...'); };
+        window.startNewGuestGame = () => { if (window.showLoginScreen) window.startNewGuestGame(); else console.log('⏳ Waiting for game load...'); };
+        window.continueSession = () => { if (window.showLoginScreen) window.continueSession(); else console.log('⏳ Waiting for game load...'); };
     </script>
     <div class="modal" id="daily-modal">
         <div class="modal-box">
