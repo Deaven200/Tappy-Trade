@@ -162,7 +162,9 @@ function renderSubplot(subplot, plotIndex, subIndex) {
     if (!config) return '';
 
     const level = subplot.lv || 1;
-    const storageBonus = (level - 1) * 10;
+    // Storage buildings: +250 per level, other buildings: +10 per level
+    const isStorageType = subplot.t === 'storage';
+    const storageBonus = isStorageType ? (level - 1) * 250 : (level - 1) * 10;
     const maxStorage = (config.m || 999) + storageBonus;
     const count = Math.floor(subplot.c);
 

@@ -182,7 +182,7 @@ function renderListView(items) {
                 <span class="nm">${resource.n}</span>
                 <span class="pr">$${price}</span>
                 <span class="qt">×${qty}</span>
-                <button class="btn green" onclick="window.sell && window.sell('${id}', ${qty})" style="font-size:0.7rem">Sell</button>
+                <button class="btn green" onclick="window.openSellModal && window.openSellModal('${id}', ${qty}, ${price})" style="font-size:0.7rem">Sell</button>
             </div>`;
         }
         html += `</div>`;

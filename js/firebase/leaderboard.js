@@ -72,7 +72,7 @@ export async function submitScore() {
     try {
         await window.db.collection('leaderboards').doc(today)
             .collection('scores').doc(window.userId).set({
-                username: window.loggedInUser?.username || 'Guest',
+                username: window.loggedInUser?.username || S.farmName || 'Guest',
                 farmName: S.farmName || 'Farm',
                 money: earnedToday,
                 lastUpdate: firebase.firestore.FieldValue.serverTimestamp(),

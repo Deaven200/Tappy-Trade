@@ -55,18 +55,19 @@ export function pay(cost) {
 export function getUpgradeCost(subplotType, currentLevel) {
     // Find the base cost from buildings
     const base = Object.values(B).flat().find(b => b.t === subplotType);
-    const multiplier = currentLevel + 1;
+    // Exponential cost scaling: each level costs 1.5x more
+    const multiplier = Math.pow(1.5, currentLevel);
 
     if (base) {
         // Has a building definition, use it
         const cost = {};
         for (const k in base.c) {
-            cost[k] = Math.floor(base.c[k] * multiplier * 0.75);
+            cost[k] = Math.floor(base.c[k] * multiplier);
         }
         return cost;
     } else {
         // No building definition (e.g., wild), use simple cost
-        return { m: 100 * multiplier };
+        return { m: Math.floor(100 * multiplier) };
     }
 }
 
@@ -82,22 +83,27 @@ export function openBuild(pi, si) {
     const cur = S.plots[pi]?.subs[si];
     const curCfg = cur ? T[cur.t] : null;
 
-    // If there's an existing subplot (including wild), show upgrade option first
-    if (cur && cur.lv < 5) {
+    // If there's an existing subplot (including wild), show upgrade option
+    if (cur) {
         const upgradeCost = getUpgradeCost(cur.t, cur.lv);
         const canUpgrade = canAfford(upgradeCost);
         const costStr = Object.entries(upgradeCost).map(([k, v]) => k === 'm' ? `<span class="m">$${v}</span>` : `<span class="r">${v}${R[k]?.i || k}</span>`).join(' ');
+        const isStorageBuilding = cur.t === 'storage';
         const regenBonus = Math.round(((1 + (cur.lv) * 0.1) - 1) * 100);
-        const storageBonus = cur.lv * 10;
+        // Storage buildings: +250/level, regular buildings: +10/level
+        const storageBonus = isStorageBuilding ? cur.lv * 250 : cur.lv * 10;
+        const nextStorageBonus = isStorageBuilding ? (cur.lv + 1) * 250 : (cur.lv + 1) * 10;
         h += `<div class="cat"><div class="cat-title">⬆️ Upgrade ${curCfg?.n}</div>`;
         h += `<div class="bld ${canUpgrade ? '' : 'off'}" data-t="__upgrade" style="border:1px solid var(--purple)">`;
         h += `<div class="ic">${curCfg.i}</div>`;
         h += `<div class="info"><div class="nm" style="color:var(--purple)">${curCfg.n} Lv${cur.lv} → Lv${cur.lv + 1}</div>`;
-        h += `<div class="prod">Regen: ${regenBonus}% → ${regenBonus + 10}% | Storage: +${storageBonus} → +${storageBonus + 10}</div>`;
+        // Storage buildings don't show regen (they're passive), only storage bonus
+        if (isStorageBuilding) {
+            h += `<div class="prod">Storage: +${storageBonus} → +${nextStorageBonus}</div>`;
+        } else {
+            h += `<div class="prod">Regen: ${regenBonus}% → ${regenBonus + 10}% | Storage: +${storageBonus} → +${nextStorageBonus}</div>`;
+        }
         h += `<div class="cost">${costStr}</div></div></div></div>`;
-    } else if (cur && cur.lv >= 5) {
-        h += `<div class="cat"><div class="cat-title">⬆️ Upgrade</div>`;
-        h += `<div class="bld off"><div class="ic">⭐</div><div class="info"><div class="nm">${curCfg.n} MAX LEVEL</div><div class="prod">This subplot is fully upgraded!</div></div></div></div>`;
     }
 
     // Build new options (only show if no building or it's a wild plot)
@@ -140,7 +146,7 @@ export function closeBuild() {
 export function doBuild(t) {
     if (t === '__upgrade') {
         const s = S.plots[buildP]?.subs[buildS];
-        if (!s || s.lv >= 5) return;
+        if (!s) return;
         const cost = getUpgradeCost(s.t, s.lv);  // Fixed: pass both type and level
         if (!canAfford(cost)) {
             toast('Cannot afford upgrade!', 'err');
