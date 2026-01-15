@@ -46,8 +46,9 @@ export function init() {
             const off = Date.now() - S.lastUpdate;
             console.log('🔍 DEBUG: Offline time:', off, 'ms =', Math.round(off / 1000), 'seconds');
 
-            // Show welcome back modal if offline for more than 60 seconds
-            if (off > 60000) { // > 60 seconds (was 5 seconds)
+            // Show welcome back modal if offline for more than 30 seconds
+            // No time cap - instant calculation handles any duration
+            if (off > 30000) { // > 30 seconds
                 // Dynamic import to use the new offline module
                 import('../mechanics/offline.js').then(({ processOfflineProgress }) => {
                     // Convert ms to seconds
