@@ -73,6 +73,9 @@ import { updateDayNight, startDayNightCycle } from './ui/dayNight.js';
 import { showLoginScreen, hideLoginScreen, showLoginForm, showRegisterForm, backToMainLogin, handleLogin, handleRegister, continueSession, startNewGuestGame, convertGuestToAccount, shouldShowLoginScreen, updateLoginButtons } from './ui/loginScreen.js';
 import { init } from './core/init.js';
 
+// Referral System
+import './mechanics/referral.js';
+
 // ===== GLOBAL EXPORTS FOR BACKWARDS COMPATIBILITY =====
 
 // Make everything available on window for the remaining non-modular code

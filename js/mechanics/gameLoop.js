@@ -37,6 +37,11 @@ export function update(delta, isSimulation = false) {
     // Update resource regeneration
     updatePlots(delta);
 
+    // Track playtime for referral verification
+    if (typeof window.trackPlaytime === 'function') {
+        window.trackPlaytime(delta);
+    }
+
     // Update workers (auto-harvest) every 5 seconds
     workerTimer += delta;
     while (workerTimer >= 5) {

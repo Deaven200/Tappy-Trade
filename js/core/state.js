@@ -59,7 +59,18 @@ export function getDefaultState() {
         // Leaderboard / Daily Earnings
         dayId: new Date().toISOString().split('T')[0],
         startOfDayEarned: 0,
-        tempDailyEarned: 0 // Visual fallback if needed
+        tempDailyEarned: 0, // Visual fallback if needed
+
+        // Referral System
+        referredBy: null,           // Referral code that invited this player
+        referralPlaytimeVerified: false, // Has played 10+ min for referrer
+        gameStartTime: Date.now(),  // When player started (for playtime tracking)
+        totalPlaytime: 0,           // Cumulative playtime in seconds
+        referralRewards: {
+            permanentBonus: 0,      // % bonus from referrals (1% per, max 50%)
+            regenBoostUntil: 0,     // Timestamp when 2x boost ends
+            successfulReferrals: 0  // Count of friends who played 10+ min
+        }
     };
 }
 

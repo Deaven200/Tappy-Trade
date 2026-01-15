@@ -71,11 +71,21 @@ export function init() {
                 });
             }
             toast('Welcome back!');
+
+            // Check for pending referral rewards (logged-in users)
+            if (window.claimPendingReferrals) {
+                window.claimPendingReferrals();
+            }
         } else {
             // New game - show tutorial
             const tut = $('tutorial');
             if (tut) tut.style.display = 'flex';
             console.log('🔍 DEBUG: Step 3b - New Game Tutorial Shown');
+        }
+
+        // Check URL for referral code
+        if (window.checkReferralOnLoad) {
+            window.checkReferralOnLoad();
         }
     } catch (e) { console.error('DEBUG Step 3 Error:', e); }
 
