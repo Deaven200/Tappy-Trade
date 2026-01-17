@@ -10,9 +10,33 @@ import { sanitizeInput, sanitizeHTML } from '../utils/security.js';
 // Chat state
 let chatMessages = [];
 let unsubChat = null;
+let lastSeenMessageCount = 0; // Track last seen message count for notification badge
 
 // Discord webhook for sending game messages to Discord
 const DISCORD_WEBHOOK = 'https://discordapp.com/api/webhooks/1459058604500848711/H2AeMm-thJildJtn-8yJe5GWTc68fn2xAecQiCUZ8RlsUO8iqQykIfZz-eRB7tr5DXf2';
+
+/**
+ * Update the chat notification badge visibility
+ * Shows red dot if there are new messages since last opening chat
+ */
+function updateChatBadge() {
+    const badge = document.getElementById('chat-notif-badge');
+    if (badge) {
+        const hasNewMessages = chatMessages.length > lastSeenMessageCount;
+        badge.style.display = hasNewMessages ? 'block' : 'none';
+    }
+}
+
+/**
+ * Clear the notification badge (called when chat is opened)
+ */
+export function clearChatBadge() {
+    lastSeenMessageCount = chatMessages.length;
+    const badge = document.getElementById('chat-notif-badge');
+    if (badge) {
+        badge.style.display = 'none';
+    }
+}
 
 /**
  * Send message to Discord via webhook
@@ -49,6 +73,10 @@ export function showChat() {
     if (modal) {
         modal.classList.add('show');
     }
+
+    // Clear notification badge when chat is opened
+    clearChatBadge();
+
     loadChat();
 
     // Close menu if open
@@ -99,9 +127,18 @@ function loadChat() {
         .orderBy('createdAt', 'desc')
         .limit(50)
         .onSnapshot(snap => {
+            const prevCount = chatMessages.length;
             chatMessages = snap.docs.map(d => ({ id: d.id, ...d.data() })).reverse();
             console.log(`📬 Loaded ${chatMessages.length} chat messages:`, chatMessages);
             window.chatMessages = chatMessages; // Expose for debugging
+
+            // Show badge if new messages arrived and chat is not open
+            const chatModal = $('chat-modal');
+            const isChatOpen = chatModal && chatModal.classList.contains('show');
+            if (!isChatOpen && chatMessages.length > prevCount && prevCount > 0) {
+                updateChatBadge();
+            }
+
             renderChat();
         }, error => {
             console.error('📬 Firebase listener error:', error);

@@ -42,7 +42,7 @@ import { openBuild, doBuild, closeBuild, canAfford, pay, getUpgradeCost } from '
 
 // Multiplayer modules (Phase 2F)
 import { showAccount, closeAccount, registerAccount, loginAccount, logoutAccount, loadSavedUser, getLoggedInUser, updateAccountButton } from './multiplayer/accounts.js';
-import { showChat, closeChat, sendChat, setupChatKeyboard } from './multiplayer/chat.js';
+import { showChat, closeChat, sendChat, setupChatKeyboard, clearChatBadge } from './multiplayer/chat.js';
 import { showLeaderboard, closeLeaderboard } from './ui/modals/leaderboardModal.js';
 import { openSellModal, closeSellModal, adjustSellQty, setSellQty as setSellQtyModal, confirmSell } from './ui/modals/sellModal.js';
 import { loadGovernmentTiers, recordGovernmentSale, calculateGovernmentPrice, getAllPlayerTiers } from './mechanics/governmentTiers.js';
@@ -182,6 +182,13 @@ window.sendChat = sendChat;
 window.setupChatKeyboard = setupChatKeyboard;
 window.showLeaderboard = showLeaderboard;
 window.closeLeaderboard = closeLeaderboard;
+window.clearChatBadge = clearChatBadge;
+
+// Map screen (Coming Soon placeholder)
+function showMap() {
+    switchScreen('map');
+}
+window.showMap = showMap;
 window.loadGovernmentTiers = loadGovernmentTiers;
 window.recordGovernmentSale = recordGovernmentSale;
 window.calculateGovernmentPrice = calculateGovernmentPrice;
