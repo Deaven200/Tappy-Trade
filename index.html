@@ -1342,14 +1342,18 @@
         </div>
     </div>
     <div class="modal" id="menu-modal">
-        <div class="modal-box" style="padding:16px">
+        <div class="modal-box" style="padding:16px;max-height:85vh;overflow-y:auto">
             <div class="modal-head">
                 <h3>☰ Menu</h3><button class="modal-close" onclick="closeMenu()">×</button>
             </div>
+
+            <!-- Account Status -->
             <div id="account-status"
                 style="margin-bottom:12px;padding:10px;background:var(--bg2);border-radius:8px;font-size:0.85rem"></div>
+
+            <!-- Farm Identity -->
             <div
-                style="margin-bottom:12px;padding:10px;background:var(--bg2);border-radius:8px;display:flex;justify-content:space-between;align-items:center">
+                style="margin-bottom:16px;padding:10px;background:var(--bg2);border-radius:8px;display:flex;justify-content:space-between;align-items:center">
                 <div>
                     <div style="font-size:0.7rem;color:var(--muted);margin-bottom:4px">Farm Name</div>
                     <div id="farm-name-display"
@@ -1358,44 +1362,90 @@
                 </div>
                 <button class="btn" onclick="renameFarm()" style="font-size:0.7rem">✏️ Rename</button>
             </div>
-            <button class="btn" style="width:100%;margin-bottom:8px" onclick="showStats()">📊 Statistics</button>
-            <button class="btn" style="width:100%;margin-bottom:8px" onclick="showGovernmentDev()">🏛️
-                Government</button>
-            <button class="btn" style="width:100%;margin-bottom:8px" onclick="showHelp()">❓ Help</button>
-            <button class="btn" style="width:100%;margin-bottom:8px" onclick="showSuggestions()">💡
-                Send Suggestion</button>
-            <button class="btn" style="width:100%;margin-bottom:8px" onclick="showAchievements()">🏆
-                Achievements</button>
-            <button class="btn" style="width:100%;margin-bottom:8px" onclick="showDaily()">🎁 Daily Rewards</button>
-            <button class="btn"
-                style="width:100%;margin-bottom:8px;background:linear-gradient(135deg, #22c55e, #16a34a)"
-                onclick="showReferralModal()">🎁 Share with Friends</button>
-            
-            <!-- New Feature Buttons -->
-            <div style="border-top:1px solid rgba(255,255,255,0.1);margin:12px 0;padding-top:12px">
-                <div style="font-size:0.75rem;color:var(--muted);margin-bottom:8px">✨ New Features</div>
-                <button class="btn purple" style="width:100%;margin-bottom:8px" onclick="showTitleModal()">🏷️ Titles & Badges</button>
-                <button class="btn purple" style="width:100%;margin-bottom:8px" onclick="showMyProfile()">👤 My Profile</button>
-                <button class="btn purple" style="width:100%;margin-bottom:8px" onclick="showFriendsModal()">👥 Friends</button>
-                <button class="btn purple" style="width:100%;margin-bottom:8px" onclick="showGuildModal()">🏰 Guild</button>
-                <button class="btn purple" style="width:100%;margin-bottom:8px" onclick="showContractsModal()">📜 Contracts</button>
-                <button class="btn" style="width:100%;margin-bottom:8px" onclick="showDataModal()">💾 Export/Import</button>
+
+            <!-- Section: My Profile & Progress -->
+            <div style="margin-bottom:16px">
+                <div
+                    style="font-size:0.7rem;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">
+                    📊 Progress</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+                    <button class="btn" onclick="showMyProfile()">👤 Profile</button>
+                    <button class="btn" onclick="showStats()">📈 Stats</button>
+                    <button class="btn" onclick="showAchievements()">🏆 Achievements</button>
+                    <button class="btn" onclick="showTitleModal()">🏷️ Titles</button>
+                </div>
             </div>
-            
-            <button class="btn purple" style="width:100%;margin-bottom:8px" id="sound-btn">🔊 Sound ON</button>
-            <button class="btn" style="width:100%;margin-bottom:8px" id="theme-btn" onclick="toggleTheme()">🌙 Dark
-                Mode</button>
-            <div style="margin-bottom:8px;display:flex;gap:4px;align-items:center">
-                <span style="font-size:0.75rem;color:var(--muted)">Font:</span>
-                <button class="btn" style="flex:1;font-size:0.75rem" onclick="setFontSize('small')">A-</button>
-                <button class="btn" style="flex:1;font-size:0.75rem" onclick="setFontSize('normal')">A</button>
-                <button class="btn" style="flex:1;font-size:0.75rem" onclick="setFontSize('large')">A+</button>
+
+            <!-- Section: Daily & Rewards -->
+            <div style="margin-bottom:16px">
+                <div
+                    style="font-size:0.7rem;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">
+                    🎁 Rewards</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+                    <button class="btn" onclick="showDaily()">📅 Daily</button>
+                    <button class="btn" style="background:linear-gradient(135deg, #22c55e, #16a34a)"
+                        onclick="showReferralModal()">🎁 Refer</button>
+                </div>
             </div>
-            <button class="btn" style="width:100%;margin-bottom:8px" id="account-btn" onclick="showAccount()">👤
-                Account</button>
-            <button class="btn" style="width:100%;margin-bottom:8px" onclick="showLeaderboard()">🏅 Leaderboard</button>
-            <button class="btn green" style="width:100%;margin-bottom:8px" onclick="showPriceList()">💰 Price
-                List</button>
+
+            <!-- Section: Social & Multiplayer -->
+            <div style="margin-bottom:16px">
+                <div
+                    style="font-size:0.7rem;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">
+                    👥 Social</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+                    <button class="btn purple" onclick="showFriendsModal()">👥 Friends</button>
+                    <button class="btn purple" onclick="showGuildModal()">🏰 Guild</button>
+                    <button class="btn purple" onclick="showContractsModal()">📜 Contracts</button>
+                    <button class="btn" onclick="showLeaderboard()">🏅 Leaders</button>
+                </div>
+            </div>
+
+            <!-- Section: Economy -->
+            <div style="margin-bottom:16px">
+                <div
+                    style="font-size:0.7rem;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">
+                    💰 Economy</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+                    <button class="btn" onclick="showGovernmentDev()">🏛️ Government</button>
+                    <button class="btn green" onclick="showPriceList()">💵 Prices</button>
+                </div>
+            </div>
+
+            <!-- Section: Settings -->
+            <div style="margin-bottom:16px">
+                <div
+                    style="font-size:0.7rem;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">
+                    ⚙️ Settings</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
+                    <button class="btn" id="sound-btn">🔊 Sound</button>
+                    <button class="btn" id="theme-btn" onclick="toggleTheme()">🌙 Theme</button>
+                    <button class="btn" id="account-btn" onclick="showAccount()">🔑 Account</button>
+                    <button class="btn" onclick="showDataModal()">💾 Backup</button>
+                </div>
+                <div style="display:flex;gap:4px;align-items:center;margin-bottom:6px">
+                    <span style="font-size:0.7rem;color:var(--muted)">Font:</span>
+                    <button class="btn" style="flex:1;font-size:0.7rem;padding:6px"
+                        onclick="setFontSize('small')">A-</button>
+                    <button class="btn" style="flex:1;font-size:0.7rem;padding:6px"
+                        onclick="setFontSize('normal')">A</button>
+                    <button class="btn" style="flex:1;font-size:0.7rem;padding:6px"
+                        onclick="setFontSize('large')">A+</button>
+                </div>
+            </div>
+
+            <!-- Section: Help & Info -->
+            <div style="margin-bottom:16px">
+                <div
+                    style="font-size:0.7rem;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">
+                    ℹ️ Help</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+                    <button class="btn" onclick="showHelp()">❓ Tutorial</button>
+                    <button class="btn" onclick="showSuggestions()">💡 Feedback</button>
+                </div>
+            </div>
+
+            <!-- Danger Zone -->
             <button class="btn red" style="width:100%" data-action="reset-game">🗑️ Reset Game</button>
         </div>
     </div>
