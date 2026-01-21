@@ -7,7 +7,7 @@ import { tap } from '../mechanics/harvesting.js';
 import { buyPlot } from '../mechanics/plots.js';
 import { hireWorker, fireWorker } from '../mechanics/workers.js';
 import { sell, sellAll } from '../mechanics/market.js';
-import { setInvView, setInvSort } from './render.js';
+import { setInvView, setInvSort, switchScreen } from './render.js';
 
 /**
  * Initialize event delegation - call once on app startup
@@ -28,7 +28,11 @@ export function initializeEventHandlers() {
     // Also listen on document.body for modals/menus outside #main
     document.body.addEventListener('click', handleClick);
 
+    // Keyboard shortcuts
+    document.addEventListener('keydown', handleKeyboardShortcuts);
+
     console.log('✅ Event delegation initialized');
+    console.log('⌨️ Keyboard shortcuts: 1=Home, 2=Inventory, 3=Workers, 4=Market, 5=Map, E=Sell All');
 }
 
 /**
@@ -208,5 +212,43 @@ function handleResetGame() {
         window.resetGame();
     } else {
         console.error('❌ resetGame function not found on window');
+    }
+}
+
+/**
+ * Handle keyboard shortcuts
+ * 1-5: Switch tabs, E: Sell all
+ */
+function handleKeyboardShortcuts(event) {
+    // Don't trigger if user is typing in an input
+    const activeEl = document.activeElement;
+    if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.tagName === 'SELECT')) {
+        return;
+    }
+
+    // Don't trigger if modal is open
+    const openModal = document.querySelector('.modal.show');
+    if (openModal) return;
+
+    switch (event.key) {
+        case '1':
+            switchScreen('home');
+            break;
+        case '2':
+            switchScreen('inventory');
+            break;
+        case '3':
+            switchScreen('workers');
+            break;
+        case '4':
+            switchScreen('player');
+            break;
+        case '5':
+            switchScreen('map');
+            break;
+        case 'e':
+        case 'E':
+            sellAll();
+            break;
     }
 }

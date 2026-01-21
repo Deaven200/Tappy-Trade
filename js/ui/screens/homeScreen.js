@@ -144,7 +144,12 @@ function updateBuyPlotButton(container) {
  * Render a single plot with its subplots (initial render only)
  */
 function renderPlot(plot, plotIndex) {
-    let html = `<div class="plot"><div class="subs">`;
+    let html = `<div class="plot">
+        <div class="plot-header" style="display:flex;justify-content:space-between;align-items:center;padding:4px 8px;background:var(--bg2);border-radius:6px 6px 0 0;margin-bottom:4px">
+            <span style="font-weight:600;font-size:0.85rem">📍 Plot ${plotIndex + 1}</span>
+            <span style="font-size:0.7rem;color:var(--muted)">3 subplots</span>
+        </div>
+        <div class="subs">`;
 
     plot.subs.forEach((subplot, subIndex) => {
         html += renderSubplot(subplot, plotIndex, subIndex);

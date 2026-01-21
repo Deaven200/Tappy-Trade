@@ -1,10 +1,12 @@
 /**
  * Workers Screen Renderer
  * Handles worker management and hiring interface
+ * Now supports specialized worker types with bonuses
  */
 
 import { S } from '../../core/state.js';
 import { T } from '../../config/data.js';
+import { WORKER_TYPES, getWorkerCost } from '../../config/workerTypes.js';
 
 let lastWorkersState = null;
 let isWorkersInitialized = false;
@@ -31,7 +33,7 @@ export function renderWorkersScreen(container) {
         let html = `<div class="panel">
             <h3>👷 Workers (${S.workers.length}/10)</h3>
             <p style="color:var(--muted);font-size:0.8rem;margin-bottom:12px">
-                Workers auto-harvest every 5 seconds. Tap a plot on Home screen, then "Hire Worker" below.
+                Workers auto-harvest every 5 seconds. Specialized workers get +25% bonus!
             </p>`;
 
         // Current workers list
@@ -67,11 +69,18 @@ function renderWorker(worker, index) {
     const subplot = S.plots[worker.plot]?.subs[worker.sub];
     const config = subplot ? T[subplot.t] : null;
 
+    // Get worker type info (default to general for legacy workers)
+    const workerType = worker.type || 'general';
+    const typeInfo = WORKER_TYPES[workerType] || WORKER_TYPES.general;
+
     return `<div class="npc">
-        <div class="ic">👷</div>
+        <div class="ic">${typeInfo.icon}</div>
         <div class="info">
-            <div class="nm">Worker #${index + 1}</div>
-            <div class="rate">On: ${config?.n || '?'} (Plot ${worker.plot + 1})</div>
+            <div class="nm">${typeInfo.name} #${index + 1}</div>
+            <div class="rate" style="display:flex;flex-direction:column;gap:2px">
+                <span>📍 Plot ${worker.plot + 1} - ${config?.n || '?'}</span>
+                <span style="color:var(--green);font-size:0.75rem">${typeInfo.description}</span>
+            </div>
         </div>
         <button class="btn red" data-action="fire-worker" data-index="${index}">Fire</button>
     </div>`;
@@ -82,8 +91,13 @@ function renderWorker(worker, index) {
  * @returns {string} HTML string
  */
 function renderHiringPanel() {
+    const baseCost = getWorkerCost(S.workers.length, 'general');
+
     let html = `<div class="panel">
         <h3>➕ Hire for Plot</h3>
+        <p style="color:var(--muted);font-size:0.75rem;margin-bottom:8px">
+            Tap to select worker type. Base cost: $${baseCost}
+        </p>
         <div class="list">`;
 
     S.plots.forEach((plot, plotIndex) => {
@@ -91,12 +105,24 @@ function renderHiringPanel() {
             const config = T[subplot.t];
             if (!config) return;
 
-            const cost = 500 + S.workers.length * 200;
-            html += `<div class="item">
-                <span class="ic">${config.i}</span>
-                <span class="nm">Plot ${plotIndex + 1} - ${config.n}</span>
-                <button class="btn green" data-action="hire-worker" data-plot="${plotIndex}" data-sub="${subIndex}">$${cost}</button>
-            </div>`;
+            // Check if already has a worker
+            const hasWorker = S.workers.some(w => w.plot === plotIndex && w.sub === subIndex);
+
+            if (hasWorker) {
+                html += `<div class="item" style="opacity:0.5">
+                    <span class="ic">${config.i}</span>
+                    <span class="nm">Plot ${plotIndex + 1} - ${config.n}</span>
+                    <span style="color:var(--muted);font-size:0.8rem">✓ Has worker</span>
+                </div>`;
+            } else {
+                html += `<div class="item">
+                    <span class="ic">${config.i}</span>
+                    <span class="nm">Plot ${plotIndex + 1} - ${config.n}</span>
+                    <button class="btn green" data-action="hire-worker" data-plot="${plotIndex}" data-sub="${subIndex}">
+                        Hire $${baseCost}+
+                    </button>
+                </div>`;
+            }
         });
     });
 

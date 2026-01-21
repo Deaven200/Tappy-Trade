@@ -1,7 +1,12 @@
 /**
  * Plot Effects Module
  * Visual effects and bonus calculations for plots
+ * Enhanced with new synergy and fertilizer systems
  */
+
+// Import the detailed synergy calculations
+import { calculateSynergyBonus as calculateDetailedSynergyBonus, getSynergyInfo } from './synergies.js';
+import { getFertilizerBonus, isFertilized, getFertilizerTimeRemaining, formatFertilizerTime } from './fertilizer.js';
 
 /**
  * Show confetti animation
@@ -21,17 +26,38 @@ export function showConfetti() {
 }
 
 /**
- * Calculate synergy bonus for a plot based on building diversity
- * @param {Object} plot - Plot object
+ * Calculate synergy bonus for a plot based on building diversity and adjacency
+ * @param {Object} plot - Plot object (legacy signature)
+ * @param {number} plotIndex - Plot index (new signature)
+ * @param {number} subIndex - Subplot index (new signature)
  * @returns {number} - Bonus multiplier (1.0 = no bonus)
  */
-export function calculateSynergyBonus(plot) {
+export function calculateSynergyBonus(plotOrPlotIndex, subIndex) {
+    // New signature: (plotIndex, subIndex)
+    if (typeof plotOrPlotIndex === 'number' && typeof subIndex === 'number') {
+        return calculateDetailedSynergyBonus(plotOrPlotIndex, subIndex);
+    }
+
+    // Legacy signature: (plot)
+    const plot = plotOrPlotIndex;
     if (!plot || !plot.subs || plot.subs.length < 3) return 1.0;
 
     const types = new Set(plot.subs.map(s => s.t).filter(t => t));
     if (types.size >= 3) return 1.2; // 20% bonus for 3+ different types
     if (types.size >= 2) return 1.1; // 10% bonus for 2+ different types
     return 1.0;
+}
+
+/**
+ * Get total production bonus for a subplot (synergy + fertilizer)
+ * @param {number} plotIndex 
+ * @param {number} subIndex 
+ * @returns {number} Total multiplier
+ */
+export function getTotalProductionBonus(plotIndex, subIndex) {
+    const synergyBonus = calculateDetailedSynergyBonus(plotIndex, subIndex);
+    const fertBonus = getFertilizerBonus(plotIndex, subIndex);
+    return synergyBonus * fertBonus;
 }
 
 /**
@@ -51,3 +77,25 @@ export function getPlotBackground(plot) {
 
     return 'var(--bg2)';
 }
+
+/**
+ * Get bonus info for tooltip display
+ * @param {number} plotIndex 
+ * @param {number} subIndex 
+ * @returns {Object} Bonus info for display
+ */
+export function getBonusInfo(plotIndex, subIndex) {
+    const synergy = getSynergyInfo(plotIndex, subIndex);
+    const isFert = isFertilized(plotIndex, subIndex);
+    const fertTimeRemaining = getFertilizerTimeRemaining(plotIndex, subIndex);
+
+    return {
+        synergy: synergy,
+        fertilized: isFert,
+        fertilizerTime: isFert ? formatFertilizerTime(fertTimeRemaining) : null,
+        total: getTotalProductionBonus(plotIndex, subIndex)
+    };
+}
+
+// Export for use in main.js
+export { getSynergyInfo, isFertilized, getFertilizerBonus };

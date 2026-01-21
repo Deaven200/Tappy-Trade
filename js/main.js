@@ -76,6 +76,20 @@ import { init } from './core/init.js';
 // Referral System
 import './mechanics/referral.js';
 
+// New Feature Modules (Phase 3+)
+import './config/workerTypes.js';           // Worker specialization
+import './mechanics/synergies.js';          // Building adjacency bonuses
+import './mechanics/fertilizer.js';         // Farm fertilizer system
+import './mechanics/titles.js';             // Title/badge system
+import './ui/tooltips.js';                  // Contextual tooltips
+import './ui/gestures.js';                  // Mobile swipe navigation
+import './ui/notifications.js';             // Smart notification system
+import './ui/dataManagement.js';            // Save export/import
+import './multiplayer/friends.js';          // Friend system
+import './multiplayer/profiles.js';         // Player profiles
+import './multiplayer/contracts.js';        // Trade contracts
+import './multiplayer/guilds.js';           // Guild system
+
 // ===== GLOBAL EXPORTS FOR BACKWARDS COMPATIBILITY =====
 
 // Make everything available on window for the remaining non-modular code

@@ -13,8 +13,9 @@ import { save } from '../core/storage.js';
  * Tap a subplot to harvest resources
  * @param {number} plotIndex - Index of the plot
  * @param {number} subplotIndex - Index of the subplot within the plot
+ * @param {number} workerBonus - Multiplier from specialized workers (default 1.0)
  */
-export function tap(plotIndex, subplotIndex) {
+export function tap(plotIndex, subplotIndex, workerBonus = 1.0) {
     const subplot = S.plots[plotIndex]?.subs[subplotIndex];
     if (!subplot) return;
 
@@ -35,19 +36,25 @@ export function tap(plotIndex, subplotIndex) {
         return;
     }
 
+    // Calculate amount to harvest (base 1, modified by worker bonus)
+    const baseAmount = 1;
+    const bonusAmount = Math.floor(baseAmount * workerBonus);
+    const harvestAmount = Math.max(1, bonusAmount);
+
     // Wild subplot gives random resources from pool
     if (config.pool) {
         if (subplot.c < 1) return; // Check if resources available
         subplot.c--; // Decrement resource count
         const randomItem = config.pool[Math.floor(Math.random() * config.pool.length)];
 
-        // Use window functions for compatibility
-        window.addItem(randomItem, 1);
-        S.stats.harvested++;
+        // Use window functions for compatibility, apply bonus
+        window.addItem(randomItem, harvestAmount);
+        S.stats.harvested += harvestAmount;
         playS('tap');
         // Only show floating text when on Home screen (element visible)
         if (window.getScreen && window.getScreen() === 'home') {
-            window.floatTextAt(`+1 ${R[randomItem]?.i}`, element);
+            const bonusText = harvestAmount > 1 ? ` (+${harvestAmount - 1})` : '';
+            window.floatTextAt(`+${harvestAmount} ${R[randomItem]?.i}${bonusText}`, element);
         }
 
         const iconEl = element?.querySelector('.icon');
@@ -76,23 +83,25 @@ export function tap(plotIndex, subplotIndex) {
         }
 
         window.remItem(config.req, config.use);
-        window.addItem(config.o, 1);
-        S.stats.harvested++;
+        window.addItem(config.o, harvestAmount);
+        S.stats.harvested += harvestAmount;
         playS('tap');
         // Only show floating text when on Home screen
         if (window.getScreen && window.getScreen() === 'home') {
-            window.floatTextAt(`+1 ${R[config.o]?.i}`, element);
+            const bonusText = harvestAmount > 1 ? ` (+${harvestAmount - 1})` : '';
+            window.floatTextAt(`+${harvestAmount} ${R[config.o]?.i}${bonusText}`, element);
         }
     } else {
         // Regular resource buildings
         if (subplot.c < 1) return;
         subplot.c--;
-        window.addItem(config.o, 1);
-        S.stats.harvested++;
+        window.addItem(config.o, harvestAmount);
+        S.stats.harvested += harvestAmount;
         playS('tap');
         // Only show floating text when on Home screen
         if (window.getScreen && window.getScreen() === 'home') {
-            window.floatTextAt(`+1 ${R[config.o]?.i}`, element);
+            const bonusText = harvestAmount > 1 ? ` (+${harvestAmount - 1})` : '';
+            window.floatTextAt(`+${harvestAmount} ${R[config.o]?.i}${bonusText}`, element);
         }
 
         const iconEl = element?.querySelector('.icon');

@@ -48,7 +48,7 @@ export const SUBPLOT_TYPES = {
         r: 0.03,
         m: 10,
         b: 1,
-        x: { beef: 0.005, leather: 0.008 }
+        x: { beef: 0.15, leather: 0.12 }
     },
     sheepPen: {
         n: 'Sheep',
