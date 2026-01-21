@@ -62,6 +62,9 @@ export function buyPlot() {
  * @param {number} delta - Time in seconds
  */
 export function updatePlots(delta) {
+    // Get referral multipliers if available
+    const referralMult = window.getReferralMultipliers ? window.getReferralMultipliers() : { combined: 1 };
+
     S.plots.forEach(plot => {
         plot.subs.forEach(subplot => {
             const config = window.T[subplot.t];
@@ -70,13 +73,16 @@ export function updatePlots(delta) {
             // Calculate regeneration rate with level bonus
             const level = subplot.lv || 1;
             const regenBonus = 1 + (level - 1) * 0.1; // 10% per level
-            const regenRate = (config.r || 0) * regenBonus;
+            const baseRegenRate = (config.r || 0) * regenBonus;
 
-            if (regenRate > 0) {
+            // Apply referral bonuses (permanent + 2x boost if active)
+            const effectiveRate = baseRegenRate * referralMult.combined;
+
+            if (effectiveRate > 0) {
                 const maxStorage = (config.m || 999) + (level - 1) * 10;
 
                 // Regenerate resources
-                subplot.c = Math.min(subplot.c + regenRate * delta, maxStorage);
+                subplot.c = Math.min(subplot.c + effectiveRate * delta, maxStorage);
             }
         });
     });

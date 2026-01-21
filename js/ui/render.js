@@ -110,6 +110,9 @@ export function render() {
             if (window.renderPriceList) window.renderPriceList(container);
             else container.innerHTML = '<div class="panel">Loading...</div>';
             break;
+        case 'map':
+            renderMapScreen(container);
+            break;
         default:
             // Unknown screen - show home
             renderHomeScreen(container);
@@ -149,6 +152,20 @@ function renderHelpScreen(container) {
         <h3>❓ Help</h3>
         <p>Tappy Trade - A farming idle game</p>
         <p style="color:var(--muted);margin-top:10px">More help content coming soon...</p>
+    </div>`;
+}
+
+// Map screen placeholder
+function renderMapScreen(container) {
+    container.innerHTML = `<div class="panel" style="text-align:center;padding:40px 20px">
+        <div style="font-size:4rem;margin-bottom:16px">🗺️</div>
+        <h3 style="margin-bottom:12px;color:var(--gold)">Map</h3>
+        <p style="color:var(--muted);font-size:1rem;margin-bottom:20px">Explore new regions and discover resources!</p>
+        <div style="background:var(--bg2);border-radius:12px;padding:20px;margin-top:16px">
+            <div style="font-size:2rem;margin-bottom:8px">🚧</div>
+            <p style="color:var(--purple);font-weight:600;font-size:1.1rem">Coming Soon</p>
+            <p style="color:var(--muted);font-size:0.85rem;margin-top:8px">This feature is under development</p>
+        </div>
     </div>`;
 }
 

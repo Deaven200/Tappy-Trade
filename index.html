@@ -1234,6 +1234,33 @@
         .menu-item:hover {
             background: var(--bg3);
         }
+
+        /* Chat notification badge */
+        .notif-badge {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 10px;
+            height: 10px;
+            background: var(--red);
+            border-radius: 50%;
+            border: 2px solid var(--card);
+            animation: pulse-badge 1.5s infinite;
+        }
+
+        @keyframes pulse-badge {
+
+            0%,
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(248, 113, 113, 0.7);
+            }
+
+            50% {
+                transform: scale(1.1);
+                box-shadow: 0 0 8px 4px rgba(248, 113, 113, 0);
+            }
+        }
     </style>
 </head>
 
@@ -1242,7 +1269,11 @@
         <header class="stats">
             <div class="stat">💰 <b id="money">$0</b></div>
             <div class="stat inv">📦 <b id="inv">0</b></div>
-            <div class="stat" style="font-size:0.65rem;color:var(--muted)" id="save-indicator">💾 Saved</div>
+            <button id="header-chat-btn" onclick="showChat()"
+                style="position:relative;background:var(--card);border:none;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:1rem">
+                💬
+                <span id="chat-notif-badge" class="notif-badge" style="display:none"></span>
+            </button>
             <button style="background:var(--card);border:none;padding:6px 10px;border-radius:6px;cursor:pointer"
                 id="menu-btn" onclick="toggleMenu()">☰</button>
         </header>
@@ -1256,7 +1287,7 @@
                     class="lbl">Workers</span></button>
             <button data-s="player" onclick="showPlayerMarket()"><span class="num">4</span><span
                     class="lbl">Market</span></button>
-            <button data-s="chat" onclick="showChat()"><span class="num">5</span><span class="lbl">Chat</span></button>
+            <button data-s="map" onclick="showMap()"><span class="num">5</span><span class="lbl">Map</span></button>
         </nav>
     </div>
 
@@ -1336,6 +1367,9 @@
             <button class="btn" style="width:100%;margin-bottom:8px" onclick="showAchievements()">🏆
                 Achievements</button>
             <button class="btn" style="width:100%;margin-bottom:8px" onclick="showDaily()">🎁 Daily Rewards</button>
+            <button class="btn"
+                style="width:100%;margin-bottom:8px;background:linear-gradient(135deg, #22c55e, #16a34a)"
+                onclick="showReferralModal()">🎁 Share with Friends</button>
             <button class="btn purple" style="width:100%;margin-bottom:8px" id="sound-btn">🔊 Sound ON</button>
             <button class="btn" style="width:100%;margin-bottom:8px" id="theme-btn" onclick="toggleTheme()">🌙 Dark
                 Mode</button>
