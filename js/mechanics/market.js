@@ -16,7 +16,10 @@ import { save } from '../core/storage.js';
 export function getPrice(itemId) {
     const resource = R[itemId];
     if (!resource) return 0;
-    // Could add dynamic pricing here
+    // Use government tier price if available, otherwise fall back to base price
+    if (window.calculateGovernmentPrice) {
+        return window.calculateGovernmentPrice(itemId, resource.p);
+    }
     return resource.p || 0;
 }
 

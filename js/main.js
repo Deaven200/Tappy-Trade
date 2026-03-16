@@ -22,21 +22,21 @@ import { getInvTotal, hasItem, addItem, remItem } from './utils/inventory.js';
 setupImageErrorFallback();
 
 // Core modules
-import { S, getDefaultState } from './core/state.js';
+import { S, getDefaultState, migrateState } from './core/state.js';
 import { save, load, saveToCloud, loadFromCloud } from './core/storage.js';
 
 // UI modules (Phase 2D)
 import {
     render, switchScreen, updateStats, setInvView, setInvSort,
-    showHome, showInventory, showWorkers, showPlayerMarket, showStats, showHelp, showAchievements, showPriceList
+    showHome, showInventory, showWorkers, showPlayerMarket, showStats, showHelp, showAchievements, showPriceList, showRecipes
 } from './ui/render.js';
 import { initializeEventHandlers } from './ui/eventHandlers.js';
 
 // Mechanics modules (Phase 2E)
 import { tap } from './mechanics/harvesting.js';
 import { buyPlot, getPlotCost, canAffordPlot } from './mechanics/plots.js';
-import { hireWorker, fireWorker, updateWorkers } from './mechanics/workers.js';
-import { sell, sellAll, buyFromGov, submitLimitOrder, cancelOrder, getPrice } from './mechanics/market.js';
+import { hireWorker, fireWorker, updateWorkers, getWorkerCost, getWorkerCap } from './mechanics/workers.js';
+import { sell, sellAll, buyFromGov, submitLimitOrder, cancelOrder as cancelMarketOrder, getPrice } from './mechanics/market.js';
 import { update, startGameLoop } from './mechanics/gameLoop.js';
 import { openBuild, doBuild, closeBuild, canAfford, pay, getUpgradeCost } from './mechanics/building.js';
 
@@ -47,7 +47,6 @@ import { showLeaderboard, closeLeaderboard } from './ui/modals/leaderboardModal.
 import { openSellModal, closeSellModal, adjustSellQty, setSellQty as setSellQtyModal, confirmSell } from './ui/modals/sellModal.js';
 import { loadGovernmentTiers, recordGovernmentSale, calculateGovernmentPrice, getAllPlayerTiers } from './mechanics/governmentTiers.js';
 import './mechanics/events.js'; // Exposes window.triggerEvent
-// Duplicate removed
 
 // UI System modules (Phase 2H)
 import { applySettings, setTheme, setFontSize, toggleTheme, updateThemeButton } from './ui/settings.js';
@@ -77,7 +76,6 @@ import { init } from './core/init.js';
 import './mechanics/referral.js';
 
 // New Feature Modules (Phase 3+)
-import './config/workerTypes.js';           // Worker specialization
 import './mechanics/synergies.js';          // Building adjacency bonuses
 import './mechanics/fertilizer.js';         // Farm fertilizer system
 import './mechanics/titles.js';             // Title/badge system
@@ -131,13 +129,12 @@ window.hasItem = (id, n) => hasItem(S.inv || {}, id, n);
 window.addItem = (id, n) => addItem(S.inv || {}, id, n);
 window.remItem = (id, n) => remItem(id, n); // Uses S.inv directly now
 
-// Core  
+// Core
 window.S = S;
 window.getDefaultState = getDefaultState;
+window.migrateState = migrateState;
 window.save = save;
 window.load = load;
-window.saveToCloud = saveToCloud;
-window.loadFromCloud = loadFromCloud;
 window.saveToCloud = saveToCloud;
 window.loadFromCloud = loadFromCloud;
 
@@ -164,11 +161,13 @@ window.canAffordPlot = canAffordPlot;
 window.hireWorker = hireWorker;
 window.fireWorker = fireWorker;
 window.updateWorkers = updateWorkers;
+window.getWorkerCost = getWorkerCost;
+window.getWorkerCap = getWorkerCap;
 window.sell = sell;
 window.sellAll = sellAll;
 window.buyFromGov = buyFromGov;
 window.submitLimitOrder = submitLimitOrder;
-window.cancelOrder = cancelOrder;
+window.cancelOrder = cancelMarketOrder;
 window.getPrice = getPrice;
 window.update = update;
 window.startGameLoop = startGameLoop;
@@ -252,7 +251,7 @@ window.cancelLimitOrder = cancelLimitOrder;
 window.processLimitOrders = processLimitOrders;
 window.postOrder = postOrder;
 window.fillOrder = fillOrder;
-window.cancelOrder = cancelPlayerOrder; // Renamed to avoid conflict
+window.cancelOrder = cancelMarketOrder; // Single canonical assignment
 window.updateDayNight = updateDayNight;
 window.startDayNightCycle = startDayNightCycle;
 window.showLoginScreen = showLoginScreen;
@@ -268,73 +267,74 @@ window.updateLoginButtons = updateLoginButtons;
 window.convertGuestToAccount = convertGuestToAccount;
 window.shouldShowLoginScreen = shouldShowLoginScreen;
 window.renderPriceList = renderPriceList; // Export renderPriceList
-window.showPriceList = showPriceList; // Export showPriceList
+window.showPriceList = showPriceList;
+window.showRecipes = showRecipes; // Export showPriceList
 window.initializeEventHandlers = initializeEventHandlers; // Export initializeEventHandlers
 window.init = init; // MOBILE FIX: Now properly imported at top of file
 
 // ===== MODULE STATUS LOG =====
 
-if (CONFIG.DEBUG_MODE || true) {  // Always log for now
+if (CONFIG.DEBUG_MODE) {
     console.log('%c🎮 TAPPY TRADE - MODULAR VERSION', 'font-size:20px; font-weight:bold; color:#ffd700');
     console.log('%cVersion: ' + GAME_VERSION, 'font-size:14px; color:#4ade80');
     console.log('✅ Modularization: 43 modules active');
-
-    // Detailed logs commented out - enable if debugging:
-    /*
-    console.log('%cSave Version: ' + SAVE_VERSION, 'font-size:12px; color:#60a5fa');
-    console.log('');
-    console.log('✅ Phase 2A: Config modules loaded');
-    console.log('  📦 Resources: ' + Object.keys(RESOURCES).length + ' types');
-    console.log('  🏗️ Buildings: ' + Object.keys(SUBPLOT_TYPES).length + ' types');
-    console.log('  🏆 Achievements: ' + ACHIEVEMENTS.length + ' total');
-    console.log('✅ Phase 2B: Utility modules loaded');
-    console.log('  🔒 Security utilities');
-    console.log('  🎨 UI feedback');
-    console.log('  📦 Inventory helpers');
-    console.log('✅ Phase 2C: Core modules loaded');
-    console.log('  💾 State management');
-    console.log('  💿 Storage system');
-    console.log('🔄 Phase 2D: UI modules loading...');
-    console.log('  🎨 Render coordinator');
-    console.log('  🏠 Home screen (extracted)');
-    console.log('  📦 Inventory screen (extracted)');
-    console.log('  👷 Workers screen (extracted)');
-    console.log('  📊 Stats screen (extracted)');
-    console.log('🔄 Phase 2E: Mechanics modules loading...');
-    console.log('  ⛏️ Harvesting (tap mechanics)');
-    console.log('  🏞️ Plot management');
-    console.log('  👷 Workers (hire/fire/automation)');
-    console.log('  💰 Market (sell/buy/orders)');
-    console.log('  🔄 Game loop (update cycle)');
-    console.log('🔄 Phase 2F: Multiplayer modules loading...');
-    console.log('  👤 Accounts (login/register/logout)');
-    console.log('🔄 Phase 2G: Building system loading...');
-    console.log('  🏗️ Building placement & upgrades');
-    console.log('  ⬆️ Upgrade cost calculations');
-    console.log('  🔨 Build modal UI');
-    console.log('✅ Phase 2H: UI & User Systems loaded');
-    console.log('  ⚙️ Settings & Theme');
-    console.log('  📋 Menu System');
-    console.log('  🏆 Achievements UI');
-    console.log('  🎁 Daily Rewards');
-    console.log('  🎲 Events System');
-    console.log('  📖 Tutorial');
-    console.log('✅ Phase 2I: Chat System loaded');
-    console.log('  💬 Firebase Chat (fully functional)');
-    console.log('✅ Phase 2J: Leaderboard loaded');
-    console.log('  🏆 Top 20 Players');
-    console.log('✅ Phase 2K: Help Screen loaded');
-    console.log('  📖 Tutorial Content');
-    console.log('✅ Phase 2L: Final UI Utilities loaded');
-    console.log('  📊 Stats Screen');
-    console.log('  ✏️ Farm Naming');
-    console.log('  🔄 Game Reset');
-    console.log('  💡 Tooltips');
-    console.log('');
-    console.log('✅ Modularization progress: 43 modules active!');
-    console.log('📝 Remaining in index.html: Firebase init, account functions, music, utilities');
-    */
 }
+// Detailed logs commented out - enable if debugging:
+/*
+console.log('%cSave Version: ' + SAVE_VERSION, 'font-size:12px; color:#60a5fa');
+console.log('');
+console.log('✅ Phase 2A: Config modules loaded');
+console.log('  📦 Resources: ' + Object.keys(RESOURCES).length + ' types');
+console.log('  🏗️ Buildings: ' + Object.keys(SUBPLOT_TYPES).length + ' types');
+console.log('  🏆 Achievements: ' + ACHIEVEMENTS.length + ' total');
+console.log('✅ Phase 2B: Utility modules loaded');
+console.log('  🔒 Security utilities');
+console.log('  🎨 UI feedback');
+console.log('  📦 Inventory helpers');
+console.log('✅ Phase 2C: Core modules loaded');
+console.log('  💾 State management');
+console.log('  💿 Storage system');
+console.log('🔄 Phase 2D: UI modules loading...');
+console.log('  🎨 Render coordinator');
+console.log('  🏠 Home screen (extracted)');
+console.log('  📦 Inventory screen (extracted)');
+console.log('  👷 Workers screen (extracted)');
+console.log('  📊 Stats screen (extracted)');
+console.log('🔄 Phase 2E: Mechanics modules loading...');
+console.log('  ⛏️ Harvesting (tap mechanics)');
+console.log('  🏞️ Plot management');
+console.log('  👷 Workers (hire/fire/automation)');
+console.log('  💰 Market (sell/buy/orders)');
+console.log('  🔄 Game loop (update cycle)');
+console.log('🔄 Phase 2F: Multiplayer modules loading...');
+console.log('  👤 Accounts (login/register/logout)');
+console.log('🔄 Phase 2G: Building system loading...');
+console.log('  🏗️ Building placement & upgrades');
+console.log('  ⬆️ Upgrade cost calculations');
+console.log('  🔨 Build modal UI');
+console.log('✅ Phase 2H: UI & User Systems loaded');
+console.log('  ⚙️ Settings & Theme');
+console.log('  📋 Menu System');
+console.log('  🏆 Achievements UI');
+console.log('  🎁 Daily Rewards');
+console.log('  🎲 Events System');
+console.log('  📖 Tutorial');
+console.log('✅ Phase 2I: Chat System loaded');
+console.log('  💬 Firebase Chat (fully functional)');
+console.log('✅ Phase 2J: Leaderboard loaded');
+console.log('  🏆 Top 20 Players');
+console.log('✅ Phase 2K: Help Screen loaded');
+console.log('  📖 Tutorial Content');
+console.log('✅ Phase 2L: Final UI Utilities loaded');
+console.log('  📊 Stats Screen');
+console.log('  ✏️ Farm Naming');
+console.log('  🔄 Game Reset');
+console.log('  💡 Tooltips');
+console.log('');
+console.log('✅ Modularization progress: 43 modules active!');
+console.log('📝 Remaining in index.html: Firebase init, account functions, music, utilities');
+*/
+
 
 // Save on page close/exit (Reliable for Desktop)
 window.addEventListener('beforeunload', () => {

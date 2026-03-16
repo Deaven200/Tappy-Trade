@@ -11,7 +11,7 @@ import { CONFIG, SAVE_VERSION } from '../config/constants.js';
 export function getDefaultState() {
     return {
         saveVersion: SAVE_VERSION,
-        money: 0,
+        money: 100, // Starter money to help new players get going
         inv: {},
         cap: CONFIG.BASE_INVENTORY_CAP,
         invSort: 'name',
@@ -45,9 +45,7 @@ export function getDefaultState() {
         dailyStreak: 0,
         streakBonus: 0,
         limitOrders: [],
-        farmName: "Untitled Farm",
-        limitOrders: [],
-        farmName: "Untitled Farm",
+        farmName: 'Untitled Farm',
         hasRenamedFarm: false,
         governmentTiers: {
             farming: { totalSold: 0, currentTier: 0 },
@@ -59,19 +57,48 @@ export function getDefaultState() {
         // Leaderboard / Daily Earnings
         dayId: new Date().toISOString().split('T')[0],
         startOfDayEarned: 0,
-        tempDailyEarned: 0, // Visual fallback if needed
+        tempDailyEarned: 0,
 
         // Referral System
-        referredBy: null,           // Referral code that invited this player
-        referralPlaytimeVerified: false, // Has played 10+ min for referrer
-        gameStartTime: Date.now(),  // When player started (for playtime tracking)
-        totalPlaytime: 0,           // Cumulative playtime in seconds
+        referredBy: null,
+        referralPlaytimeVerified: false,
+        gameStartTime: Date.now(),
+        totalPlaytime: 0,
         referralRewards: {
-            permanentBonus: 0,      // % bonus from referrals (1% per, max 50%)
-            regenBoostUntil: 0,     // Timestamp when 2x boost ends
-            successfulReferrals: 0  // Count of friends who played 10+ min
+            permanentBonus: 0,
+            regenBoostUntil: 0,
+            successfulReferrals: 0
         }
     };
+}
+
+/**
+ * Migrate a loaded save to fill in any keys missing from older save versions.
+ * This prevents crashes when loading saves that predate new state fields.
+ * @param {Object} loaded - The raw loaded state object
+ */
+export function migrateState(loaded) {
+    const defaults = getDefaultState();
+    // Fill in any top-level keys that are missing
+    for (const key of Object.keys(defaults)) {
+        if (loaded[key] === undefined) {
+            loaded[key] = defaults[key];
+        }
+    }
+    // Ensure nested stats exist
+    if (!loaded.stats) loaded.stats = defaults.stats;
+    for (const key of Object.keys(defaults.stats)) {
+        if (loaded.stats[key] === undefined) loaded.stats[key] = 0;
+    }
+    // Ensure referralRewards exist
+    if (!loaded.referralRewards) loaded.referralRewards = defaults.referralRewards;
+    // Ensure governmentTiers exist
+    if (!loaded.governmentTiers) loaded.governmentTiers = defaults.governmentTiers;
+    // Strip any leftover 'type' field from workers (worker simplification)
+    if (Array.isArray(loaded.workers)) {
+        loaded.workers = loaded.workers.map(w => ({ plot: w.plot, sub: w.sub }));
+    }
+    return loaded;
 }
 
 /**

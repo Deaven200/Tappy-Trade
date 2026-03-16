@@ -3,7 +3,7 @@
  * Save/load game state to localStorage and cloud (Firebase)
  */
 
-import { S } from './state.js';
+import { S, migrateState } from './state.js';
 import { CONFIG, SAVE_VERSION } from '../config/constants.js';
 import { showOfflineProgress } from '../ui/modals/offlineModal.js';
 
@@ -95,8 +95,10 @@ export function load() {
         const d = JSON.parse(saved);
         if (!d || typeof d !== 'object') return 0;
 
-        // Migrate if needed
+        // Migrate version-based fields
         const migrated = migrateSave(d);
+        // Fill any missing fields from newer state versions
+        migrateState(migrated);
 
         // Validate critical fields with type checking
         if (typeof migrated.money !== 'number' || isNaN(migrated.money)) migrated.money = 0;
@@ -132,9 +134,6 @@ export function load() {
     }
 }
 
-/**
- * Save to cloud (Firebase)
- */
 /**
  * Save to cloud (Firebase)
  */
@@ -211,8 +210,9 @@ export async function loadFromCloud() {
             const data = doc.data();
             const cloudState = JSON.parse(data.state);
 
-            // Migrate cloud state if needed
+            // Migrate cloud state
             const migrated = migrateSave(cloudState);
+            migrateState(migrated);
 
             // Calculate offline progress
             const cloudTime = migrated.lastUpdate || 0;

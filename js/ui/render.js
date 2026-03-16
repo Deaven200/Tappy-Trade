@@ -8,6 +8,7 @@ import { renderHomeScreen, resetHomeInit } from './screens/homeScreen.js';
 import { renderInventoryScreen, setInventoryView, setInventorySort, resetInventoryInit } from './screens/inventoryScreen.js';
 import { renderWorkersScreen, resetWorkersInit } from './screens/workersScreen.js';
 import { renderStatsScreen } from './screens/statsScreen.js';
+import { renderRecipeBook } from './screens/recipeBook.js';
 
 // Current screen state
 let currentScreen = 'home';
@@ -110,11 +111,13 @@ export function render() {
             if (window.renderPriceList) window.renderPriceList(container);
             else container.innerHTML = '<div class="panel">Loading...</div>';
             break;
+        case 'recipes':
+            renderRecipeBook(container);
+            break;
         case 'map':
             renderMapScreen(container);
             break;
         default:
-            // Unknown screen - show home
             renderHomeScreen(container);
     }
 
@@ -212,4 +215,9 @@ export function showPriceList() {
 
 export function showAchievements() {
     switchScreen('stats'); // Achievements are on stats screen for now
+}
+
+export function showRecipes() {
+    switchScreen('recipes');
+    if (window.closeMenu) window.closeMenu();
 }

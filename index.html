@@ -211,7 +211,20 @@
         }
 
         .sub.ready {
-            border-color: var(--green)
+            border-color: var(--green);
+            animation: readyGlow 1.5s ease-in-out infinite;
+        }
+
+        @keyframes readyGlow {
+
+            0%,
+            100% {
+                box-shadow: 0 0 6px rgba(74, 222, 128, 0.3);
+            }
+
+            50% {
+                box-shadow: 0 0 16px rgba(74, 222, 128, 0.7);
+            }
         }
 
         .sub .icon {
@@ -1409,6 +1422,7 @@
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
                     <button class="btn" onclick="showGovernmentDev()">🏛️ Government</button>
                     <button class="btn green" onclick="showPriceList()">💵 Prices</button>
+                    <button class="btn green" onclick="showRecipes();closeMenu()">📖 Recipe Book</button>
                 </div>
             </div>
 

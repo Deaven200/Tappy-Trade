@@ -8,11 +8,6 @@ import { updatePlots } from './plots.js';
 import { updateWorkers } from './workers.js';
 import { save } from '../core/storage.js';
 
-// Export for index.html to use
-window.update = update;
-window.startGameLoop = startGameLoop;
-window.stopGameLoop = stopGameLoop;
-
 let gameLoopId = null;
 window.gameLoopId = null; // Expose for debugging
 

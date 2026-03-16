@@ -5,6 +5,7 @@
  */
 
 import { S } from '../core/state.js';
+import { SUBPLOT_TYPES } from '../config/buildings.js';
 
 /**
  * Calculate offline progress instantly using math
@@ -21,16 +22,13 @@ export async function processOfflineProgress(offlineSeconds) {
     // Track all gains
     const gainedItems = {};
 
-    // Get building configs
-    const T = window.T;
-
     // Helper to get current inventory total
     const getInvTotal = () => Object.values(S.inv).reduce((a, b) => a + b, 0);
 
     // ===== STEP 1: Calculate plot regeneration (fill up subplots) =====
     S.plots.forEach(plot => {
         plot.subs.forEach(subplot => {
-            const config = T[subplot.t];
+            const config = SUBPLOT_TYPES[subplot.t];
             if (!config) return;
 
             const level = subplot.lv || 1;
@@ -53,7 +51,7 @@ export async function processOfflineProgress(offlineSeconds) {
             const subplot = S.plots[worker.plot]?.subs[worker.sub];
             if (!subplot) continue;
 
-            const config = T[subplot.t];
+            const config = SUBPLOT_TYPES[subplot.t];
             if (!config) continue;
 
             // Check remaining inventory space (recalculated for each worker!)

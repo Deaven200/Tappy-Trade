@@ -1,166 +1,162 @@
 /**
  * Worker Mechanics
- * Handles worker hiring, firing, and automation
- * Now supports specialized worker types with bonuses
+ * Simple, generic workers that auto-harvest their assigned subplot.
+ * No specialized types — just hire a worker and assign them a plot.
  */
 
 import { S } from '../core/state.js';
 import { T } from '../config/buildings.js';
 import { toast, playS } from '../utils/feedback.js';
 import { save } from '../core/storage.js';
-import { WORKER_TYPES, getWorkerBonus, getWorkerCost } from '../config/workerTypes.js';
 
-// Track pending hire for type selection modal
-let pendingHire = null;
+/** Fixed harvest bonus all workers apply (25%) */
+const WORKER_HARVEST_BONUS = 1.25;
 
 /**
- * Open worker type selection modal
+ * Get the cost of hiring the next worker.
+ * Scales with number of workers already hired.
+ * @returns {number}
+ */
+export function getWorkerCost() {
+    return 200 + S.workers.length * 150;
+}
+
+/**
+ * Get the maximum allowed workers (3 per owned plot).
+ * @returns {number}
+ */
+export function getWorkerCap() {
+    return S.plots.length * 3;
+}
+
+/**
+ * Hire a worker and assign them to a subplot.
  * @param {number} plotIndex - Plot index
  * @param {number} subplotIndex - Subplot index
  */
-export function openHireWorkerModal(plotIndex, subplotIndex) {
-    if (S.workers.length >= 10) {
-        toast('Max 10 workers!', 'err');
+export function hireWorker(plotIndex, subplotIndex) {
+    const cap = getWorkerCap();
+    if (S.workers.length >= cap) {
+        toast(`Max ${cap} workers! Buy more land to hire more.`, 'err');
         playS('err');
         return;
     }
 
-    pendingHire = { plot: plotIndex, sub: subplotIndex };
-
-    // Get subplot type to suggest best worker
-    const subplot = S.plots[plotIndex]?.subs[subplotIndex];
-    const buildingType = subplot?.t || 'wild';
-
-    // Build modal HTML
-    let html = `<div class="modal-box">
-        <div class="modal-head">
-            <h3>👷 Select Worker Type</h3>
-            <button class="modal-close" onclick="closeHireWorkerModal()">×</button>
-        </div>
-        <div class="modal-body">
-            <p style="color:var(--muted);font-size:0.8rem;margin-bottom:12px">
-                Specialized workers give +25% bonus for their specialty
-            </p>
-            <div style="display:flex;flex-direction:column;gap:8px">`;
-
-    for (const [typeId, type] of Object.entries(WORKER_TYPES)) {
-        const cost = getWorkerCost(S.workers.length, typeId);
-        const canAfford = S.money >= cost;
-        const bonus = getWorkerBonus(typeId, buildingType, null);
-        const isRecommended = bonus > 1.0;
-
-        html += `<button class="btn${canAfford ? '' : ' off'}" 
-                         onclick="confirmHireWorker('${typeId}')"
-                         ${canAfford ? '' : 'disabled'}
-                         style="display:flex;justify-content:space-between;align-items:center;padding:12px;${isRecommended ? 'border:2px solid var(--green)' : ''}">
-            <span>
-                ${type.icon} ${type.name}
-                <span style="font-size:0.75rem;opacity:0.7">${type.description}</span>
-                ${isRecommended ? '<span style="color:var(--green);font-size:0.7rem;margin-left:4px">✓ Best fit</span>' : ''}
-            </span>
-            <span style="color:var(--gold)">$${cost}</span>
-        </button>`;
-    }
-
-    html += `</div></div></div>`;
-
-    // Create or update modal
-    let modal = document.getElementById('hire-worker-modal');
-    if (!modal) {
-        modal = document.createElement('div');
-        modal.id = 'hire-worker-modal';
-        modal.className = 'modal';
-        document.body.appendChild(modal);
-    }
-    modal.innerHTML = html;
-    modal.classList.add('show');
-}
-
-/**
- * Close the hire worker modal
- */
-export function closeHireWorkerModal() {
-    const modal = document.getElementById('hire-worker-modal');
-    if (modal) modal.classList.remove('show');
-    pendingHire = null;
-}
-
-/**
- * Confirm hiring a worker of a specific type
- * @param {string} workerType - Worker type ID
- */
-export function confirmHireWorker(workerType) {
-    if (!pendingHire) return;
-
-    const cost = getWorkerCost(S.workers.length, workerType);
+    const cost = getWorkerCost();
     if (S.money < cost) {
-        toast('Not enough money!', 'err');
+        toast(`Need $${cost} to hire a worker!`, 'err');
         playS('err');
         return;
     }
 
     S.money -= cost;
-    S.workers.push({
-        plot: pendingHire.plot,
-        sub: pendingHire.sub,
-        type: workerType
-    });
+    S.workers.push({ plot: plotIndex, sub: subplotIndex });
 
-    const type = WORKER_TYPES[workerType];
-    toast(`${type.icon} ${type.name} hired!`, 'ok');
+    toast(`👷 Worker hired for $${cost}!`, 'ok');
     playS('ach');
-
-    closeHireWorkerModal();
     save();
     window.render();
 }
 
 /**
- * Legacy hire worker function - opens modal for type selection
- * @param {number} plotIndex - Plot index
- * @param {number} subplotIndex - Subplot index
- */
-export function hireWorker(plotIndex, subplotIndex) {
-    openHireWorkerModal(plotIndex, subplotIndex);
-}
-
-/**
- * Fire a worker by index
- * @param {number} index - Worker index to remove
+ * Fire a worker by index.
+ * @param {number} index - Worker array index
  */
 export function fireWorker(index) {
-    if (!confirm('Fire this worker?')) return;
-    S.workers.splice(index, 1);
-    toast('Worker fired', 'ok');
-    save();
-    window.render();
+    // Show custom in-game confirmation modal instead of native confirm()
+    showFireWorkerConfirm(index);
 }
 
 /**
- * Update workers - auto-harvest their assigned plots
- * Called from game loop every 5 seconds
- * Now applies worker type bonuses
+ * Show a custom confirmation modal before firing a worker.
+ * @param {number} index - Worker index
+ */
+function showFireWorkerConfirm(index) {
+    const existing = document.getElementById('fire-worker-modal');
+    if (existing) existing.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'fire-worker-modal';
+    modal.className = 'modal show';
+    modal.innerHTML = `
+        <div class="modal-box" style="max-width:340px">
+            <div class="modal-head">
+                <h3>👷 Fire Worker?</h3>
+                <button class="modal-close" onclick="document.getElementById('fire-worker-modal')?.remove()">×</button>
+            </div>
+            <div class="modal-body" style="text-align:center;padding:16px">
+                <div style="font-size:2.5rem;margin-bottom:12px">😢</div>
+                <p style="margin-bottom:20px;color:var(--muted)">This worker will stop harvesting their assigned subplot.</p>
+                <div style="display:flex;gap:8px">
+                    <button class="btn" style="flex:1;background:var(--red)"
+                        onclick="window._confirmFireWorker(${index})">Fire</button>
+                    <button class="btn" style="flex:1"
+                        onclick="document.getElementById('fire-worker-modal')?.remove()">Cancel</button>
+                </div>
+            </div>
+        </div>`;
+    document.body.appendChild(modal);
+}
+
+// Internal confirm handler exposed on window for the modal button
+window._confirmFireWorker = function (index) {
+    document.getElementById('fire-worker-modal')?.remove();
+    S.workers.splice(index, 1);
+    toast('Worker let go', 'ok');
+    save();
+    window.render();
+};
+
+/**
+ * Update all workers — auto-harvest their assigned subplots.
+ * Called from game loop every 5 seconds.
+ * Manufacturing buildings are handled specially (they process inventory).
  */
 export function updateWorkers() {
     S.workers.forEach(w => {
         const subplot = S.plots[w.plot]?.subs[w.sub];
         if (!subplot) return;
 
-        // Get worker type bonus
-        const workerType = w.type || 'general';
         const config = T[subplot.t];
-        const resourceId = config?.o || null;
-        const bonus = getWorkerBonus(workerType, subplot.t, resourceId);
+        if (!config) return;
 
-        // Workers auto-tap their assigned subplot with bonus
-        window.tap(w.plot, w.sub, bonus);
+        // Check inventory capacity first
+        const invTotal = window.getInvTotal ? window.getInvTotal() : 0;
+        if (invTotal >= S.cap) return;
+
+        if (config.pool) {
+            // Wild subplot — random resource from pool
+            if (subplot.c >= 1) {
+                subplot.c--;
+                const item = config.pool[Math.floor(Math.random() * config.pool.length)];
+                window.addItem?.(item, 1);
+                S.stats.harvested = (S.stats.harvested || 0) + 1;
+            }
+        } else if (config.req) {
+            // Manufacturing building — consume input, produce output
+            const available = (S.inv[config.req] || 0);
+            if (available >= config.use && config.o) {
+                window.remItem?.(config.req, config.use);
+                window.addItem?.(config.o, 1);
+                S.stats.harvested = (S.stats.harvested || 0) + 1;
+            }
+        } else if (config.o && config.r) {
+            // Regular resource building — harvest when ready
+            if (subplot.c >= 1) {
+                const amount = Math.max(1, Math.floor(WORKER_HARVEST_BONUS));
+                subplot.c -= 1;
+                window.addItem?.(config.o, amount);
+                S.stats.harvested = (S.stats.harvested || 0) + amount;
+
+                // Handle bonus drops (livestock extras: beef, leather, mutton, etc.)
+                if (config.x) {
+                    for (const [bonusItem, bonusRate] of Object.entries(config.x)) {
+                        if (Math.random() < bonusRate) {
+                            window.addItem?.(bonusItem, 1);
+                        }
+                    }
+                }
+            }
+        }
     });
 }
-
-// Export worker types for UI
-export { WORKER_TYPES };
-
-// Expose functions globally for modals
-window.openHireWorkerModal = openHireWorkerModal;
-window.closeHireWorkerModal = closeHireWorkerModal;
-window.confirmHireWorker = confirmHireWorker;

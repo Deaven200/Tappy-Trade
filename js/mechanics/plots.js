@@ -4,7 +4,7 @@
  */
 
 import { S } from '../core/state.js';
-import { PLOTS } from '../config/data.js';
+import { PLOTS, SUBPLOT_TYPES } from '../config/buildings.js';
 import { toast, playS } from '../utils/feedback.js';
 import { save } from '../core/storage.js';
 
@@ -65,9 +65,9 @@ export function updatePlots(delta) {
     // Get referral multipliers if available
     const referralMult = window.getReferralMultipliers ? window.getReferralMultipliers() : { combined: 1 };
 
-    S.plots.forEach(plot => {
-        plot.subs.forEach(subplot => {
-            const config = window.T[subplot.t];
+    S.plots.forEach((plot, plotIndex) => {
+        plot.subs.forEach((subplot, subIndex) => {
+            const config = SUBPLOT_TYPES[subplot.t];
             if (!config) return;
 
             // Calculate regeneration rate with level bonus
@@ -75,8 +75,13 @@ export function updatePlots(delta) {
             const regenBonus = 1 + (level - 1) * 0.1; // 10% per level
             const baseRegenRate = (config.r || 0) * regenBonus;
 
+            // Apply synergy bonus from adjacent buildings
+            const synergyBonus = window.calculateSynergyBonus
+                ? window.calculateSynergyBonus(plotIndex, subIndex)
+                : 1.0;
+
             // Apply referral bonuses (permanent + 2x boost if active)
-            const effectiveRate = baseRegenRate * referralMult.combined;
+            const effectiveRate = baseRegenRate * synergyBonus * referralMult.combined;
 
             if (effectiveRate > 0) {
                 const maxStorage = (config.m || 999) + (level - 1) * 10;

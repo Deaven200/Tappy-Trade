@@ -72,7 +72,7 @@ export function claimDaily() {
     // Calculate Bonus Multiplier
     const bonusMult = 1 + (S.streakBonus / 100);
 
-    // Give reward
+    // Give reward — scales with progression (1% of lifetime earned, minimum = flat reward)
     let rewardAmount = 0;
     if (typeof reward.reward === 'number') {
         rewardAmount = reward.reward;
@@ -80,7 +80,11 @@ export function claimDaily() {
         rewardAmount = reward.m;
     }
 
-    // Apply bonus
+    // Scale: 1% of lifetime earnings, but at least the base reward
+    const progressionReward = Math.floor((S.stats?.earned || 0) * 0.01);
+    rewardAmount = Math.max(rewardAmount, progressionReward);
+
+    // Apply streak bonus
     const finalAmount = Math.floor(rewardAmount * bonusMult);
     S.money += finalAmount;
 
